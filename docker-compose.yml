@@ -1,0 +1,107 @@
+x-airflow-common: &airflow-common
+  build:
+    context: airflow
+    dockerfile: Dockerfile
+    network: host
+  extra_hosts:
+    - "host.docker.internal:host-gateway"
+  environment:
+    &airflow-common-env
+    AIRFLOW__CORE__EXECUTOR: SequentialExecutor
+    AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: sqlite:////opt/airflow/airflow.db
+    AIRFLOW__CORE__LOAD_EXAMPLES: False
+    AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: True
+    _PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:-}
+  volumes:
+    - airflow-data:/opt/airflow/
+    - ./airflow/dags:/opt/airflow/dags
+    - ./data/bs4:/opt/airflow/data
+    - /var/run/docker.sock:/var/run/docker.sock
+  user: "${AIRFLOW_UID:-50000}:0"
+  networks:
+    - llm-rag-app
+
+
+services:
+  airflow-webserver:
+    <<: *airflow-common
+    ports:
+      - "8080:8080"
+    depends_on:
+      airflow-init:
+        condition: service_completed_successfully
+    command: webserver
+
+  airflow-scheduler:
+    <<: *airflow-common
+    depends_on:
+      airflow-init:
+        condition: service_completed_successfully
+    command: scheduler
+
+  airflow-init:
+    <<: *airflow-common
+    entrypoint: /bin/bash
+    command:
+      - -c
+      - |
+        echo "${AIRFLOW_UID}:0"
+        exec /entrypoint airflow version
+    environment:
+      <<: *airflow-common-env
+      _AIRFLOW_DB_MIGRATE: 'true'
+      _AIRFLOW_WWW_USER_CREATE: 'true'
+      _AIRFLOW_WWW_USER_USERNAME: ${_AIRFLOW_WWW_USER_USERNAME:-airflow}
+      _AIRFLOW_WWW_USER_PASSWORD: ${_AIRFLOW_WWW_USER_PASSWORD:-airflow}
+      _PIP_ADDITIONAL_REQUIREMENTS: ''
+    user: "${AIRFLOW_UID:-50000}:0"
+
+  streamlit-app:
+    build:
+      context: streamlit
+      dockerfile: Dockerfile
+    ports:
+      - "8501:8501"
+    environment:
+      - STREAMLIT_SERVER_PORT=8501
+      - STREAMLIT_SERVER_HEADLESS=true
+    volumes:
+      - ./streamlit/:/app
+    command: ["streamlit", "run", "/app/app.py"]
+    networks:
+        - llm-rag-app
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama_llama
+    volumes:
+      - ollama_data:/root/.ollama
+    ports:
+      - "11434:11434"
+    restart: unless-stopped
+    networks:
+      - llm-rag-app
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.4.3
+    container_name: elasticsearch
+    environment:
+      - node.name=elasticsearch
+      - cluster.name=es-docker-cluster
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+    mem_limit: 1G
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    ports:
+      - 9200:9200
+    networks:
+      - llm-rag-app
+
+volumes:
+  elasticsearch_data:
+  ollama_data:
+  airflow-data:
+
+networks:
+  llm-rag-app:
