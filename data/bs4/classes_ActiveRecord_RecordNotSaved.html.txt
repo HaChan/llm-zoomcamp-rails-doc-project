@@ -1,0 +1,7 @@
+Raised byActiveRecord::Base#save!andActiveRecord::Base.update_attribute!methods when a record failed to validate or cannot be saved due to any of thebefore_*callbacks throwing:abort. SeeActiveRecord::Callbacksfor further details.class Product < ActiveRecord::Base
+  before_save do
+    throw :abort if price < 0
+  end
+end
+
+Product.create! # => raises an ActiveRecord::RecordNotSavedMethodsNnewAttributes[R]recordClass Public methodsnew(message = nil, record = nil)LinkSource:show|on GitHub# File activerecord/lib/active_record/errors.rb, line 151definitialize(message=nil,record=nil)@record=recordsuper(message)end

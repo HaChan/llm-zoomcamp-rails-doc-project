@@ -1,0 +1,1 @@
+NamespaceMODULEActiveRecordMODULEActiveRecord::TypeMODULEActiveRecord::Type::InternalMODULEActiveRecord::Type::Internal::Timezone

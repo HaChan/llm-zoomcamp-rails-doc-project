@@ -1,0 +1,1 @@
+SeeResponder#api_behaviorMethodsNnewClass Public methodsnew(format)LinkSource:show|on GitHub# File actionpack/lib/action_controller/metal/renderers.rb, line 20definitialize(format)super"No renderer defined for format: #{format}"end

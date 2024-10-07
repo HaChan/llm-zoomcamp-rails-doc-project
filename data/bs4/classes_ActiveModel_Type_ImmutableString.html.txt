@@ -1,0 +1,20 @@
+Active Model ImmutableString TypeAttribute type to represent immutable strings. It casts incoming values to frozen strings.class Person
+  include ActiveModel::Attributes
+
+  attribute :name, :immutable_string
+end
+
+person = Person.new
+person.name = 1
+
+person.name # => "1"
+person.name.frozen? # => trueValues are coerced to strings using theirto_smethod.Booleanvalues are treated differently, however:truewill be cast to"t"andfalsewill be cast to"f". These strings can be customized when declaring an attribute:class Person
+  include ActiveModel::Attributes
+
+  attribute :active, :immutable_string, true: "aye", false: "nay"
+end
+
+person = Person.new
+person.active = true
+
+person.active # => "aye"MethodsNnewSserializeTtypeClass Public methodsnew(**args)LinkSource:show|on GitHub# File activemodel/lib/active_model/type/immutable_string.rb, line 38definitialize(**args)@true=-(args.delete(:true)&.to_s||"t")@false=-(args.delete(:false)&.to_s||"f")superendInstance Public methodsserialize(value)LinkSource:show|on GitHub# File activemodel/lib/active_model/type/immutable_string.rb, line 48defserialize(value)casevaluewhen::Numeric,::Symbol,ActiveSupport::Durationthenvalue.to_swhentruethen@truewhenfalsethen@falseelsesuperendendtype()LinkSource:show|on GitHub# File activemodel/lib/active_model/type/immutable_string.rb, line 44deftype:stringend

@@ -1,0 +1,3 @@
+String InquirerWrapping a string in this class gives you a prettier way to test for equality. The value returned byRails.envis wrapped in aStringInquirerobject, so instead of calling this:Rails.env == 'production'you can call this:Rails.env.production?Instantiating a new StringInquirervehicle = ActiveSupport::StringInquirer.new('car')
+vehicle.car?   # => true
+vehicle.bike?  # => false

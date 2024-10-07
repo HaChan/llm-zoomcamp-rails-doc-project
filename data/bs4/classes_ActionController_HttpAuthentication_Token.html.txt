@@ -1,0 +1,52 @@
+HTTPTokenauthenticationSimpleTokenexampleclass PostsController < ApplicationController
+  TOKEN = "secret"
+
+  before_action :authenticate, except: [ :index ]
+
+  def index
+    render plain: "Everyone can see me!"
+  end
+
+  def edit
+    render plain: "I'm only accessible if you know the password"
+  end
+
+  private
+    def authenticate
+      authenticate_or_request_with_http_token do |token, options|
+        # Compare the tokens in a time-constant manner, to mitigate
+        # timing attacks.
+        ActiveSupport::SecurityUtils.secure_compare(token, TOKEN)
+      end
+    end
+endHere is a more advancedTokenexample where only Atom feeds and the XMLAPIare protected by HTTP token authentication. The regular HTML interface is protected by a session approach:class ApplicationController < ActionController::Base
+  before_action :set_account, :authenticate
+
+  private
+    def set_account
+      @account = Account.find_by(url_name: request.subdomains.first)
+    end
+
+    def authenticate
+      case request.format
+      when Mime[:xml], Mime[:atom]
+        if user = authenticate_with_http_token { |t, o| @account.users.authenticate(t, o) }
+          @current_user = user
+        else
+          request_http_token_authentication
+        end
+      else
+        if session_authenticated?
+          @current_user = @account.users.find(session[:authenticated][:user_id])
+        else
+          redirect_to(login_url) and return false
+        end
+      end
+    end
+endIn your integration tests, you can do something like this:def test_access_granted_from_xml
+  authorization = ActionController::HttpAuthentication::Token.encode_credentials(users(:dhh).token)
+
+  get "/notes/1.xml", headers: { 'HTTP_AUTHORIZATION' => authorization }
+
+  assert_equal 200, status
+endOn shared hosts, Apache sometimes doesnât pass authentication headers to FCGI instances. If your environment matches this description and you cannot authenticate, try this rule in your Apache setup:RewriteRule ^(.*)$ dispatch.fcgi [E=X-HTTP_AUTHORIZATION:%{HTTP:Authorization},QSA,L]NamespaceMODULEActionController::HttpAuthentication::Token::ControllerMethodsMethodsAauthenticate,authentication_requestEencode_credentialsPparams_array_fromRraw_params,rewrite_param_valuesTtoken_and_options,token_params_fromConstantsAUTHN_PAIR_DELIMITERS=/(?:,|;|\t)/TOKEN_KEY="token="TOKEN_REGEX=/^(Token|Bearer)\s+/Instance Public methodsauthenticate(controller, &login_procedure)LinkIf token Authorization header is present, call the login procedure with the present token and options.Returns the return value oflogin_procedureif a token is found. Returnsnilif no token is found.Parameterscontroller-ActionController::Baseinstance for the current request.login_procedure- Proc to call if a token is present. The Proc should take two arguments:authenticate(controller) { |token, options| ... }Source:show|on GitHub# File actionpack/lib/action_controller/metal/http_authentication.rb, line 472defauthenticate(controller,&login_procedure)token,options=token_and_options(controller.request)unlesstoken.blank?login_procedure.call(token,options)endendauthentication_request(controller, realm, message = nil)LinkSets a WWW-Authenticate header to let the client know a token is desired.Returns nothing.Parameterscontroller-ActionController::Baseinstance for the outgoing response.realm-Stringrealm to use in the header.Source:show|on GitHub# File actionpack/lib/action_controller/metal/http_authentication.rb, line 558defauthentication_request(controller,realm,message=nil)message||="HTTP Token: Access denied.\n"controller.headers["WWW-Authenticate"] =%(Token realm="#{realm.tr('"', "")}")controller.__send__:render,plain:message,status::unauthorizedendencode_credentials(token, options = {})LinkEncodes the given token and options into an Authorization header value.ReturnsString.Parameterstoken-Stringtoken.options- OptionalHashof the options.Source:show|on GitHub# File actionpack/lib/action_controller/metal/http_authentication.rb, line 542defencode_credentials(token,options= {})values= ["#{TOKEN_KEY}#{token.to_s.inspect}"]+options.mapdo|key,value|"#{key}=#{value.to_s.inspect}"end"Token #{values * ", "}"endparams_array_from(raw_params)LinkTakesraw_paramsand turns it into an array of parameters.Source:show|on GitHub# File actionpack/lib/action_controller/metal/http_authentication.rb, line 507defparams_array_from(raw_params)raw_params.map{|param|param.split%r/=(.+)?/}endraw_params(auth)LinkThis method takes an authorization body and splits up the key-value pairs by the standardized:,;, or\tdelimiters defined inAUTHN_PAIR_DELIMITERS.Source:show|on GitHub# File actionpack/lib/action_controller/metal/http_authentication.rb, line 522defraw_params(auth)_raw_params=auth.sub(TOKEN_REGEX,"").split(WHITESPACED_AUTHN_PAIR_DELIMITERS)_raw_params.reject!(&:empty?)if!_raw_params.first&.start_with?(TOKEN_KEY)_raw_params[0] ="#{TOKEN_KEY}#{_raw_params.first}"end_raw_paramsendrewrite_param_values(array_params)LinkThis removes the"characters wrapping the value.Source:show|on GitHub# File actionpack/lib/action_controller/metal/http_authentication.rb, line 512defrewrite_param_values(array_params)array_params.each{|param|(param[1]||+"").gsub!%r/^"|"$/,""}endtoken_and_options(request)LinkParses the token and options out of the token Authorization header. The value for the Authorization header is expected to have the prefix"Token"or"Bearer". If the header looks like this:Authorization: Token token="abc", nonce="def"Then the returned token is"abc", and the options are{nonce: "def"}.Returns anArrayof[String, Hash]if a token is present. Returnsnilif no token is found.Parametersrequest-ActionDispatch::Requestinstance with the current headers.Source:show|on GitHub# File actionpack/lib/action_controller/metal/http_authentication.rb, line 494deftoken_and_options(request)authorization_request=request.authorization.to_sifauthorization_request[TOKEN_REGEX]params=token_params_fromauthorization_request[params.shift[1],Hash[params].with_indifferent_access]endendtoken_params_from(auth)LinkSource:show|on GitHub# File actionpack/lib/action_controller/metal/http_authentication.rb, line 502deftoken_params_from(auth)rewrite_param_valuesparams_array_fromraw_paramsauthend

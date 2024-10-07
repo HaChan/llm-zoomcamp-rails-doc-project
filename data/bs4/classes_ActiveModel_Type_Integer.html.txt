@@ -1,0 +1,18 @@
+Active Model Integer TypeAttribute type for integer representation. This type is registered under the:integerkey.class Person
+  include ActiveModel::Attributes
+
+  attribute :age, :integer
+endValues are cast using theirto_imethod, except for blank strings, which are cast tonil. If ato_imethod is not defined or raises an error, the value will be cast tonil.person = Person.new
+
+person.age = "18"
+person.age # => 18
+
+person.age = ""
+person.age # => nil
+
+person.age = :not_an_integer
+person.age # => nil (because Symbol does not define #to_i)Serializationalso works under the same principle. Non-numeric strings are serialized asnil, for example.Serializationalso validates that the integer can be stored using a limited number of bytes. If it cannot, anActiveModel::RangeErrorwill be raised. The default limit is 4 bytes, and can be customized when declaring an attribute:class Person
+  include ActiveModel::Attributes
+
+  attribute :age, :integer, limit: 6
+endMethodsDdeserializeNnewSserializable?,serializeTtypeIncluded ModulesActiveModel::Type::Helpers::NumericConstantsDEFAULT_LIMIT=4Column storage size in bytes. 4 bytes means an integer as opposed to smallint etc.Class Public methodsnew(**)LinkSource:show|on GitHub# File activemodel/lib/active_model/type/integer.rb, line 51definitialize(**)super@range=min_value...max_valueendInstance Public methodsdeserialize(value)LinkSource:show|on GitHub# File activemodel/lib/active_model/type/integer.rb, line 60defdeserialize(value)returnifvalue.blank?value.to_iendserializable?(value)LinkSource:show|on GitHub# File activemodel/lib/active_model/type/integer.rb, line 74defserializable?(value)cast_value=cast(value)in_range?(cast_value)||beginyieldcast_valueifblock_given?falseendendserialize(value)LinkSource:show|on GitHub# File activemodel/lib/active_model/type/integer.rb, line 65defserialize(value)returnifvalue.is_a?(::String)&&non_numeric_string?(value)ensure_in_range(super)endtype()LinkSource:show|on GitHub# File activemodel/lib/active_model/type/integer.rb, line 56deftype:integerend

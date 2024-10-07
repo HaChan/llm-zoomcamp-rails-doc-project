@@ -1,0 +1,1 @@
+Required Filesactive_record/middleware/database_selector/resolver/sessionactive_support/core_ext/numeric/timeNamespaceMODULEActiveRecordMODULEActiveRecord::MiddlewareMODULEActiveSupportCLASSActiveRecord::Middleware::DatabaseSelector

@@ -1,0 +1,1 @@
+NamespaceMODULEActionDispatch::Assertions::RoutingAssertions::WithIntegrationRouting::ClassMethods

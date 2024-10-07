@@ -1,0 +1,1 @@
+Specify binary encoding for parameters for a given action.NamespaceMODULEActionController::ParameterEncoding::ClassMethods

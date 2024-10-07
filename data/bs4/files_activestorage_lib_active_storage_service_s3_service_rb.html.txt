@@ -1,0 +1,1 @@
+Required Filesaws-sdk-s3active_support/core_ext/numeric/bytesNamespaceMODULEActiveStorageCLASSActiveStorage::ServiceCLASSActiveStorage::Service::S3Service

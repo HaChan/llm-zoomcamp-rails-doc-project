@@ -1,0 +1,48 @@
+StrongParametersIt provides an interface for protecting attributes from end-user assignment. This makes Action Controller parameters forbidden to be used in Active Model mass assignment until they have been explicitly enumerated.In addition, parameters can be marked as required and flow through a predefined raise/rescue flow to end up as a400 Bad Requestwith no effort.class PeopleController < ActionController::Base
+  # Using "Person.create(params[:person])" would raise an
+  # ActiveModel::ForbiddenAttributesError exception because it'd
+  # be using mass assignment without an explicit permit step.
+  # This is the recommended form:
+  def create
+    Person.create(person_params)
+  end
+
+  # This will pass with flying colors as long as there's a person key in the
+  # parameters, otherwise it'll raise an ActionController::ParameterMissing
+  # exception, which will get caught by ActionController::Base and turned
+  # into a 400 Bad Request reply.
+  def update
+    redirect_to current_account.people.find(params[:id]).tap { |person|
+      person.update!(person_params)
+    }
+  end
+
+  private
+    # Using a private method to encapsulate the permissible parameters is
+    # a good pattern since you'll be able to reuse the same permit
+    # list between create and update. Also, you can specialize this method
+    # with per-user checking of permissible attributes.
+    def person_params
+      params.require(:person).permit(:name, :age)
+    end
+endIn order to useaccepts_nested_attributes_forwith StrongParameters, you will need to specify which nested attributes should be permitted. You might want to allow:idand:_destroy, seeActiveRecord::NestedAttributesfor more information.class Person
+  has_many :pets
+  accepts_nested_attributes_for :pets
+end
+
+class PeopleController < ActionController::Base
+  def create
+    Person.create(person_params)
+  end
+
+  ...
+
+  private
+
+    def person_params
+      # It's mandatory to specify the nested attributes that should be permitted.
+      # If you use `permit` with just the key that points to the nested attributes hash,
+      # it will return an empty hash.
+      params.require(:person).permit(:name, :age, pets_attributes: [ :id, :name, :category ])
+    end
+endSeeActionController::Parameters.requireandActionController::Parameters.permitfor more information.MethodsPparams,params=Instance Public methodsparams()LinkReturns a newActionController::Parametersobject that has been instantiated with therequest.parameters.Source:show|on GitHub# File actionpack/lib/action_controller/metal/strong_parameters.rb, line 1326defparams@_params||=begincontext= {controller:self.class.name,action:action_name,request:request,params:request.filtered_parameters}Parameters.new(request.parameters,context)endendparams=(value)LinkAssigns the givenvalueto theparamshash. Ifvalueis aHash, this will create anActionController::Parametersobject that has been instantiated with the givenvaluehash.Source:show|on GitHub# File actionpack/lib/action_controller/metal/strong_parameters.rb, line 1341defparams=(value)@_params=value.is_a?(Hash)?Parameters.new(value):valueend

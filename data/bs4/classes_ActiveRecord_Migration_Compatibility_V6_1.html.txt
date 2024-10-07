@@ -1,0 +1,1 @@
+NamespaceMODULEActiveRecord::Migration::Compatibility::V6_1::TableDefinitionCLASSActiveRecord::Migration::Compatibility::V6_1::PostgreSQLCompat

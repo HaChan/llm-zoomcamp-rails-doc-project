@@ -1,0 +1,48 @@
+Active Record Autosave AssociationAutosaveAssociationis a module that takes care of automatically saving associated records when their parent is saved. In addition to saving, it also destroys any associated records that were marked for destruction. (Seemark_for_destructionandmarked_for_destruction?).Saving of the parent, its associations, and the destruction of marked associations, all happen inside a transaction. This should never leave the database in an inconsistent state.If validations for any of the associations fail, their error messages will be applied to the parent.Note that it also means that associations marked for destruction wonât be destroyed directly. They will however still be marked for destruction.Note thatautosave: falseis not same as not declaring:autosave. When the:autosaveoption is not present then new association records are saved but the updated association records are not saved.ValidationChild records are validated unless:validateisfalse.CallbacksAssociation with autosave option defines several callbacks on your model (around_save, before_save, after_create, after_update). Please note that callbacks are executed in the order they were defined in model. You should avoid modifying the association content before autosave callbacks are executed. Placing your callbacks after associations is usually a good practice.One-to-one Exampleclass Post < ActiveRecord::Base
+  has_one :author, autosave: true
+endSaving changes to the parent and its associated model can now be performed automaticallyandatomically:post = Post.find(1)
+post.title       # => "The current global position of migrating ducks"
+post.author.name # => "alloy"
+
+post.title = "On the migration of ducks"
+post.author.name = "Eloy Duran"
+
+post.save
+post.reload
+post.title       # => "On the migration of ducks"
+post.author.name # => "Eloy Duran"Destroying an associated model, as part of the parentâs save action, is as simple as marking it for destruction:post.author.mark_for_destruction
+post.author.marked_for_destruction? # => trueNote that the model isnotyet removed from the database:id = post.author.id
+Author.find_by(id: id).nil? # => false
+
+post.save
+post.reload.author # => nilNow itisremoved from the database:Author.find_by(id: id).nil? # => trueOne-to-many ExampleWhen:autosaveis not declared new children are saved when their parent is saved:class Post < ActiveRecord::Base
+  has_many :comments # :autosave option is not declared
+end
+
+post = Post.new(title: 'ruby rocks')
+post.comments.build(body: 'hello world')
+post.save # => saves both post and comment
+
+post = Post.create(title: 'ruby rocks')
+post.comments.build(body: 'hello world')
+post.save # => saves both post and comment
+
+post = Post.create(title: 'ruby rocks')
+comment = post.comments.create(body: 'hello world')
+comment.body = 'hi everyone'
+post.save # => saves post, but not commentWhen:autosaveis true all children are saved, no matter whether they are new records or not:class Post < ActiveRecord::Base
+  has_many :comments, autosave: true
+end
+
+post = Post.create(title: 'ruby rocks')
+comment = post.comments.create(body: 'hello world')
+comment.body = 'hi everyone'
+post.comments.build(body: "good morning.")
+post.save # => saves post and both comments.Destroying one of the associated models as part of the parentâs save action is as simple as marking it for destruction:post.comments # => [#<Comment id: 1, ...>, #<Comment id: 2, ...]>
+post.comments[1].mark_for_destruction
+post.comments[1].marked_for_destruction? # => true
+post.comments.length # => 2Note that the model isnotyet removed from the database:id = post.comments.last.id
+Comment.find_by(id: id).nil? # => false
+
+post.save
+post.reload.comments.length # => 1Now itisremoved from the database:Comment.find_by(id: id).nil? # => trueCaveatsNote that autosave will only trigger for already-persisted association records if the records themselves have been changed. This is to protect againstSystemStackErrorcaused by circular association validations. The one exception is if a custom validation context is used, in which case the validations will always fire on the associated records.MethodsCchanged_for_autosave?Ddestroyed_by_association,destroyed_by_association=Mmark_for_destruction,marked_for_destruction?RreloadInstance Public methodschanged_for_autosave?()LinkReturns whether or not this record has been changed in any way (including whether any of its nested autosave associations are likewise changed)Source:show|on GitHub# File activerecord/lib/active_record/autosave_association.rb, line 273defchanged_for_autosave?new_record?||has_changes_to_save?||marked_for_destruction?||nested_records_changed_for_autosave?enddestroyed_by_association()LinkReturns the association for the parent being destroyed.Used to avoid updating the counter cache unnecessarily.Source:show|on GitHub# File activerecord/lib/active_record/autosave_association.rb, line 267defdestroyed_by_association@destroyed_by_associationenddestroyed_by_association=(reflection)LinkRecords the association that is being destroyed and destroying this record in the process.Source:show|on GitHub# File activerecord/lib/active_record/autosave_association.rb, line 260defdestroyed_by_association=(reflection)@destroyed_by_association=reflectionendmark_for_destruction()LinkMarks this record to be destroyed as part of the parentâs save transaction. This doesnotactually destroy the record instantly, rather child record will be destroyed whenparent.saveis called.Only useful if the:autosaveoption on the parent is enabled for this associated model.Source:show|on GitHub# File activerecord/lib/active_record/autosave_association.rb, line 247defmark_for_destruction@marked_for_destruction=trueendmarked_for_destruction?()LinkReturns whether or not this record will be destroyed as part of the parentâs save transaction.Only useful if the:autosaveoption on the parent is enabled for this associated model.Source:show|on GitHub# File activerecord/lib/active_record/autosave_association.rb, line 254defmarked_for_destruction?@marked_for_destructionendreload(options = nil)LinkReloads the attributes of the object as usual and clearsmarked_for_destructionflag.Source:show|on GitHub# File activerecord/lib/active_record/autosave_association.rb, line 236defreload(options=nil)@marked_for_destruction=false@destroyed_by_association=nilsuperend

@@ -1,0 +1,1 @@
+NamespaceMODULEActiveRecordMODULEActiveRecord::ValidationsMODULEActiveRecord::Validations::ClassMethods

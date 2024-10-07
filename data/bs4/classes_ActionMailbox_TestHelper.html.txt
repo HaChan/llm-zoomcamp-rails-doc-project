@@ -1,0 +1,25 @@
+MethodsCcreate_inbound_email_from_fixture,create_inbound_email_from_mail,create_inbound_email_from_sourceRreceive_inbound_email_from_fixture,receive_inbound_email_from_mail,receive_inbound_email_from_sourceInstance Public methodscreate_inbound_email_from_fixture(fixture_name, status: :processing)LinkCreate anInboundEmailrecord using an eml fixture in the format of message/rfc822 referenced withfixture_namelocated intest/fixtures/files/fixture_name.Source:show|on GitHub# File actionmailbox/lib/action_mailbox/test_helper.rb, line 9defcreate_inbound_email_from_fixture(fixture_name,status::processing)create_inbound_email_from_sourcefile_fixture(fixture_name).read,status:statusendcreate_inbound_email_from_mail(status: :processing, **mail_options, &block)LinkCreates anInboundEmailby specifying through options or a block.Options:status- Thestatusto set for the createdInboundEmail. For possible statuses, see its documentation.Creating a simple emailWhen you only need to set basic fields likefrom,to,subject, andbody, you can pass them directly as options.create_inbound_email_from_mail(from: "david@loudthinking.com", subject: "Hello!")Creating a multi-part emailWhen you need to create a more intricate email, like a multi-part email that contains both a plaintext version and an HTML version, you can pass a block.create_inbound_email_from_mail do
+  to "David Heinemeier Hansson <david@loudthinking.com>"
+  from "Bilbo Baggins <bilbo@bagend.com>"
+  subject "Come down to the Shire!"
+
+  text_part do
+    body "Please join us for a party at Bag End"
+  end
+
+  html_part do
+    body "<h1>Please join us for a party at Bag End</h1>"
+  end
+endAs withMail.new, you can also use a block parameter to define the parts of the message:create_inbound_email_from_mail do |mail|
+  mail.to "David Heinemeier Hansson <david@loudthinking.com>"
+  mail.from "Bilbo Baggins <bilbo@bagend.com>"
+  mail.subject "Come down to the Shire!"
+
+  mail.text_part do |part|
+    part.body "Please join us for a party at Bag End"
+  end
+
+  mail.html_part do |part|
+    part.body "<h1>Please join us for a party at Bag End</h1>"
+  end
+endSource:show|on GitHub# File actionmailbox/lib/action_mailbox/test_helper.rb, line 63defcreate_inbound_email_from_mail(status::processing,**mail_options,&block)mail=Mail.new(mail_options,&block)# Bcc header is not encoded by defaultmail[:bcc].include_in_headers=trueifmail[:bcc]create_inbound_email_from_sourcemail.to_s,status:statusendcreate_inbound_email_from_source(source, status: :processing)LinkCreate anInboundEmailusing the raw rfc822sourceas text.Source:show|on GitHub# File actionmailbox/lib/action_mailbox/test_helper.rb, line 72defcreate_inbound_email_from_source(source,status::processing)ActionMailbox::InboundEmail.create_and_extract_message_id!source,status:statusendreceive_inbound_email_from_fixture(*args)LinkCreate anInboundEmailfrom fixture using the same arguments ascreate_inbound_email_from_fixtureand immediately route it to processing.Source:show|on GitHub# File actionmailbox/lib/action_mailbox/test_helper.rb, line 79defreceive_inbound_email_from_fixture(*args)create_inbound_email_from_fixture(*args).tap(&:route)endreceive_inbound_email_from_mail(**kwargs, &block)LinkCreate anInboundEmailusing the same options or block ascreate_inbound_email_from_mail, then immediately route it for processing.Source:show|on GitHub# File actionmailbox/lib/action_mailbox/test_helper.rb, line 85defreceive_inbound_email_from_mail(**kwargs,&block)create_inbound_email_from_mail(**kwargs,&block).tap(&:route)endreceive_inbound_email_from_source(*args)LinkCreate anInboundEmailusing the same arguments ascreate_inbound_email_from_sourceand immediately route it to processing.Source:show|on GitHub# File actionmailbox/lib/action_mailbox/test_helper.rb, line 91defreceive_inbound_email_from_source(*args)create_inbound_email_from_source(*args).tap(&:route)end

@@ -1,0 +1,1 @@
+NamespaceMODULEActiveModelMODULEActiveModel::TypeMODULEActiveRecordMODULEActiveRecord::StoreMODULEActiveRecord::TypeCLASSActiveModel::Type::Binary

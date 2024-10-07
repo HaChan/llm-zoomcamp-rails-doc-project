@@ -1,0 +1,1 @@
+Required FilesstrscanNamespaceMODULEActiveRecordMODULEActiveRecord::ConnectionAdaptersMODULEActiveRecord::ConnectionAdapters::PostgreSQLMODULEActiveRecord::ConnectionAdapters::PostgreSQL::OID

@@ -1,0 +1,215 @@
+Action View Form Option HelpersProvides a number of methods for turning different kinds of containers into a set of option tags.Thecollection_select,selectandtime_zone_selectmethods take anoptionsparameter, a hash::include_blank- set to true or a prompt string if the first option element of the select element is a blank. Useful if there is not a default value required for the select element.select(:post, :category, Post::CATEGORIES, { include_blank: true })could become:<select name="post[category]" id="post_category">
+  <option value="" label=" "></option>
+  <option value="joke">joke</option>
+  <option value="poem">poem</option>
+</select>Another common case is a select tag for abelongs_to-associated object.Example with@post.person_id => 2:select(:post, :person_id, Person.all.collect { |p| [ p.name, p.id ] }, { include_blank: "None" })could become:<select name="post[person_id]" id="post_person_id">
+  <option value="">None</option>
+  <option value="1">David</option>
+  <option value="2" selected="selected">Eileen</option>
+  <option value="3">Rafael</option>
+</select>:prompt- set to true or a prompt string. When the select element doesnât have a value yet, this prepends an option with a generic prompt â âPlease selectâ â or the given prompt string.select(:post, :person_id, Person.all.collect { |p| [ p.name, p.id ] }, { prompt: "Select Person" })could become:<select name="post[person_id]" id="post_person_id">
+  <option value="">Select Person</option>
+  <option value="1">David</option>
+  <option value="2">Eileen</option>
+  <option value="3">Rafael</option>
+</select>:index- like the other form helpers,selectcan accept an:indexoption to manually set the ID used in the resulting output. Unlike other helpers,selectexpects this option to be in thehtml_optionsparameter.select("album[]", :genre, %w[ rap rock country ], {}, { index: nil })becomes:<select name="album[][genre]" id="album__genre">
+  <option value="rap">rap</option>
+  <option value="rock">rock</option>
+  <option value="country">country</option>
+</select>:disabled- can be a single value or an array of values that will be disabled options in the final output.select(:post, :category, Post::CATEGORIES, { disabled: "restricted" })could become:<select name="post[category]" id="post_category">
+  <option value="joke">joke</option>
+  <option value="poem">poem</option>
+  <option disabled="disabled" value="restricted">restricted</option>
+</select>When used with thecollection_selecthelper,:disabledcan also be a Proc that identifies those options that should be disabled.collection_select(:post, :category_id, Category.all, :id, :name, { disabled: -> (category) { category.archived? } })If the categories â2008 stuffâ and âChristmasâ return true when the methodarchived?is called, this would return:<select name="post[category_id]" id="post_category_id">
+  <option value="1" disabled="disabled">2008 stuff</option>
+  <option value="2" disabled="disabled">Christmas</option>
+  <option value="3">Jokes</option>
+  <option value="4">Poems</option>
+</select>MethodsCcollection_check_boxes,collection_radio_buttons,collection_selectGgrouped_collection_select,grouped_options_for_selectOoption_groups_from_collection_for_select,options_for_select,options_from_collection_for_selectSselectTtime_zone_options_for_select,time_zone_selectWweekday_options_for_select,weekday_selectIncluded ModulesActionView::Helpers::TextHelperInstance Public methodscollection_check_boxes(object, method, collection, value_method, text_method, options = {}, html_options = {}, &block)LinkReturns check box tags for the collection of existing return values ofmethodforobjectâs class. The value returned from callingmethodon the instanceobjectwill be selected. If callingmethodreturnsnil, no selection is made.The:value_methodand:text_methodparameters are methods to be called on each member ofcollection. The return values are used as thevalueattribute and contents of each check box tag, respectively. They can also be any object that responds tocall, such as aproc, that will be called for each member of thecollectionto retrieve the value/text.Example object structure for use with this method:class Post < ActiveRecord::Base
+  has_and_belongs_to_many :authors
+end
+class Author < ActiveRecord::Base
+  has_and_belongs_to_many :posts
+  def name_with_initial
+    "#{first_name.first}. #{last_name}"
+  end
+endSample usage (selecting the associated Author for an instance of Post,@post):collection_check_boxes(:post, :author_ids, Author.all, :id, :name_with_initial)If@post.author_idsis already[1], this would return:<input id="post_author_ids_1" name="post[author_ids][]" type="checkbox" value="1" checked="checked" />
+<label for="post_author_ids_1">D. Heinemeier Hansson</label>
+<input id="post_author_ids_2" name="post[author_ids][]" type="checkbox" value="2" />
+<label for="post_author_ids_2">D. Thomas</label>
+<input id="post_author_ids_3" name="post[author_ids][]" type="checkbox" value="3" />
+<label for="post_author_ids_3">M. Clark</label>
+<input name="post[author_ids][]" type="hidden" value="" />It is also possible to customize the way the elements will be shown by giving a block to the method:collection_check_boxes(:post, :author_ids, Author.all, :id, :name_with_initial) do |b|
+  b.label { b.check_box }
+endThe argument passed to the block is a special kind of builder for this collection, which has the ability to generate the label and check box for the current item in the collection, with proper text and value. Using it, you can change the label and check box display order or even use the label as wrapper, as in the example above.The builder methodslabelandcheck_boxalso accept extra HTML options:collection_check_boxes(:post, :author_ids, Author.all, :id, :name_with_initial) do |b|
+  b.label(class: "check_box") { b.check_box(class: "check_box") }
+endThere are also three special methods available:object,textandvalue, which are the current item being rendered, its text and value methods, respectively. You can use them like this:collection_check_boxes(:post, :author_ids, Author.all, :id, :name_with_initial) do |b|
+   b.label(:"data-value" => b.value) { b.check_box + b.text }
+endGotchaWhen no selection is made for a collection of checkboxes most web browsers will not send any value.For example, if we have aUsermodel withcategory_idsfield and we have the following code in our update action:@user.update(params[:user])If nocategory_idsare selected then we can safely assume this field will not be updated.This is possible thanks to a hidden field generated by the helper method for every collection of checkboxes. This hidden field is given the same field name as the checkboxes with a blank value.In the rare case you donât want this hidden field, you can pass theinclude_hidden: falseoption to the helper method.Source:show|on GitHub# File actionview/lib/action_view/helpers/form_options_helper.rb, line 782defcollection_check_boxes(object,method,collection,value_method,text_method,options= {},html_options= {},&block)Tags::CollectionCheckBoxes.new(object,method,self,collection,value_method,text_method,options,html_options).render(&block)endcollection_radio_buttons(object, method, collection, value_method, text_method, options = {}, html_options = {}, &block)LinkReturns radio button tags for the collection of existing return values ofmethodforobjectâs class. The value returned from callingmethodon the instanceobjectwill be selected. If callingmethodreturnsnil, no selection is made.The:value_methodand:text_methodparameters are methods to be called on each member ofcollection. The return values are used as thevalueattribute and contents of each radio button tag, respectively. They can also be any object that responds tocall, such as aproc, that will be called for each member of thecollectionto retrieve the value/text.Example object structure for use with this method:class Post < ActiveRecord::Base
+  belongs_to :author
+end
+
+class Author < ActiveRecord::Base
+  has_many :posts
+
+  def name_with_initial
+    "#{first_name.first}. #{last_name}"
+  end
+endSample usage (selecting the associated Author for an instance of Post,@post):collection_radio_buttons(:post, :author_id, Author.all, :id, :name_with_initial)If@post.author_idis already1, this would return:<input id="post_author_id_1" name="post[author_id]" type="radio" value="1" checked="checked" />
+<label for="post_author_id_1">D. Heinemeier Hansson</label>
+<input id="post_author_id_2" name="post[author_id]" type="radio" value="2" />
+<label for="post_author_id_2">D. Thomas</label>
+<input id="post_author_id_3" name="post[author_id]" type="radio" value="3" />
+<label for="post_author_id_3">M. Clark</label>It is also possible to customize the way the elements will be shown by giving a block to the method:collection_radio_buttons(:post, :author_id, Author.all, :id, :name_with_initial) do |b|
+  b.label { b.radio_button }
+endThe argument passed to the block is a special kind of builder for this collection, which has the ability to generate the label and radio button for the current item in the collection, with proper text and value. Using it, you can change the label and radio button display order or even use the label as wrapper, as in the example above.The builder methodslabelandradio_buttonalso accept extra HTML options:collection_radio_buttons(:post, :author_id, Author.all, :id, :name_with_initial) do |b|
+  b.label(class: "radio_button") { b.radio_button(class: "radio_button") }
+endThere are also three special methods available:object,textandvalue, which are the current item being rendered, its text and value methods, respectively. You can use them like this:collection_radio_buttons(:post, :author_id, Author.all, :id, :name_with_initial) do |b|
+   b.label(:"data-value" => b.value) { b.radio_button + b.text }
+endGotchaThe HTML specification says when nothing is selected on a collection of radio buttons web browsers do not send any value to server. Unfortunately this introduces a gotcha: if aUsermodel has acategory_idfield and in the form no category is selected, nocategory_idparameter is sent. So, any strong parameters idiom like:params.require(:user).permit(...)will raise an error since no{user: ...}will be present.To prevent this the helper generates an auxiliary hidden field before every collection of radio buttons. The hidden field has the same name as collection radio button and blank value.In case if you donât want the helper to generate this hidden field you can specifyinclude_hidden: falseoption.Source:show|on GitHub# File actionview/lib/action_view/helpers/form_options_helper.rb, line 698defcollection_radio_buttons(object,method,collection,value_method,text_method,options= {},html_options= {},&block)Tags::CollectionRadioButtons.new(object,method,self,collection,value_method,text_method,options,html_options).render(&block)endcollection_select(object, method, collection, value_method, text_method, options = {}, html_options = {})LinkReturns<select>and<option>tags for the collection of existing return values ofmethodforobjectâs class. The value returned from callingmethodon the instanceobjectwill be selected. If callingmethodreturnsnil, no selection is made without including:promptor:include_blankin theoptionshash.The:value_methodand:text_methodparameters are methods to be called on each member ofcollection. The return values are used as thevalueattribute and contents of each<option>tag, respectively. They can also be any object that responds tocall, such as aproc, that will be called for each member of thecollectionto retrieve the value/text.Example object structure for use with this method:class Post < ActiveRecord::Base
+  belongs_to :author
+end
+
+class Author < ActiveRecord::Base
+  has_many :posts
+
+  def name_with_initial
+    "#{first_name.first}. #{last_name}"
+  end
+endSample usage (selecting the associated Author for an instance of Post,@post):collection_select(:post, :author_id, Author.all, :id, :name_with_initial, prompt: true)If@post.author_idis already1, this would return:<select name="post[author_id]" id="post_author_id">
+  <option value="">Please select</option>
+  <option value="1" selected="selected">D. Heinemeier Hansson</option>
+  <option value="2">D. Thomas</option>
+  <option value="3">M. Clark</option>
+</select>Source:show|on GitHub# File actionview/lib/action_view/helpers/form_options_helper.rb, line 199defcollection_select(object,method,collection,value_method,text_method,options= {},html_options= {})Tags::CollectionSelect.new(object,method,self,collection,value_method,text_method,options,html_options).renderendgrouped_collection_select(object, method, collection, group_method, group_label_method, option_key_method, option_value_method, options = {}, html_options = {})LinkReturns<select>,<optgroup>and<option>tags for the collection of existing return values ofmethodforobjectâs class. The value returned from callingmethodon the instanceobjectwill be selected. If callingmethodreturnsnil, no selection is made without including:promptor:include_blankin theoptionshash.Parameters:object- The instance of the class to be used for the select tagmethod- The attribute ofobjectcorresponding to the select tagcollection- An array of objects representing the<optgroup>tags.group_method- The name of a method which, when called on a member ofcollection, returns an array of child objects representing the<option>tags. It can also be any object that responds tocall, such as aproc, that will be called for each member of thecollectionto retrieve the value.group_label_method- The name of a method which, when called on a member ofcollection, returns a string to be used as thelabelattribute for its<optgroup>tag. It can also be any object that responds tocall, such as aproc, that will be called for each member of thecollectionto retrieve the label.option_key_method- The name of a method which, when called on a child object of a member ofcollection, returns a value to be used as thevalueattribute for its<option>tag.option_value_method- The name of a method which, when called on a child object of a member ofcollection, returns a value to be used as the contents of its<option>tag.Example object structure for use with this method:# attributes: id, name
+class Continent < ActiveRecord::Base
+  has_many :countries
+end
+
+# attributes: id, name, continent_id
+class Country < ActiveRecord::Base
+  belongs_to :continent
+end
+
+# attributes: id, name, country_id
+class City < ActiveRecord::Base
+  belongs_to :country
+endSample usage:grouped_collection_select(:city, :country_id, @continents, :countries, :name, :id, :name)Possible output:<select name="city[country_id]" id="city_country_id">
+  <optgroup label="Africa">
+    <option value="1">South Africa</option>
+    <option value="3">Somalia</option>
+  </optgroup>
+  <optgroup label="Europe">
+    <option value="7" selected="selected">Denmark</option>
+    <option value="2">Ireland</option>
+  </optgroup>
+</select>Source:show|on GitHub# File actionview/lib/action_view/helpers/form_options_helper.rb, line 258defgrouped_collection_select(object,method,collection,group_method,group_label_method,option_key_method,option_value_method,options= {},html_options= {})Tags::GroupedCollectionSelect.new(object,method,self,collection,group_method,group_label_method,option_key_method,option_value_method,options,html_options).renderendgrouped_options_for_select(grouped_options, selected_key = nil, options = {})LinkReturns a string of<option>tags, likeoptions_for_select, but wraps them with<optgroup>tags:grouped_options = [
+ ['North America',
+   [['United States','US'],'Canada']],
+ ['Europe',
+   ['Denmark','Germany','France']]
+]
+grouped_options_for_select(grouped_options)
+
+grouped_options = {
+  'North America' => [['United States','US'], 'Canada'],
+  'Europe' => ['Denmark','Germany','France']
+}
+grouped_options_for_select(grouped_options)Possible output:<optgroup label="North America">
+  <option value="US">United States</option>
+  <option value="Canada">Canada</option>
+</optgroup>
+<optgroup label="Europe">
+  <option value="Denmark">Denmark</option>
+  <option value="Germany">Germany</option>
+  <option value="France">France</option>
+</optgroup>Parameters:grouped_options- Accepts a nested array or hash of strings. The first value serves as the<optgroup>label while the second value must be an array of options. The second value can be a nested array of text-value pairs. Seeoptions_for_selectfor more info.Ex. ["North America",[["United States","US"],["Canada","CA"]]]An optional third value can be provided as HTML attributes for theoptgroup.Ex. ["North America",[["United States","US"],["Canada","CA"]], { disabled: "disabled" }]selected_key- A value equal to thevalueattribute for one of the<option>tags, which will have theselectedattribute set. Note: It is possible for this value to match multiple options as you might have the same option in multiple groups. Each will then getselected="selected".Options::prompt- set to true or a prompt string. When the select element doesnât have a value yet, this prepends an option with a generic prompt - âPlease selectâ - or the given prompt string.:divider- the divider for the options groups.grouped_options = [
+  [['United States','US'], 'Canada'],
+  ['Denmark','Germany','France']
+]
+grouped_options_for_select(grouped_options, nil, divider: '---------')Possible output:<optgroup label="---------">
+  <option value="US">United States</option>
+  <option value="Canada">Canada</option>
+</optgroup>
+<optgroup label="---------">
+  <option value="Denmark">Denmark</option>
+  <option value="Germany">Germany</option>
+  <option value="France">France</option>
+</optgroup>Note:Only the<optgroup>and<option>tags are returned, so you still have to wrap the output in an appropriate<select>tag.Source:show|on GitHub# File actionview/lib/action_view/helpers/form_options_helper.rb, line 534defgrouped_options_for_select(grouped_options,selected_key=nil,options= {})prompt=options[:prompt]divider=options[:divider]body="".html_safeifpromptbody.safe_concatcontent_tag("option",prompt_text(prompt),value:"")endgrouped_options.eachdo|container|html_attributes=option_html_attributes(container)ifdividerlabel=dividerelselabel,container=containerendhtml_attributes= {label:label}.merge!(html_attributes)body.safe_concatcontent_tag("optgroup",options_for_select(container,selected_key),html_attributes)endbodyendoption_groups_from_collection_for_select(collection, group_method, group_label_method, option_key_method, option_value_method, selected_key = nil)LinkReturns a string of<option>tags, likeoptions_from_collection_for_select, but groups them by<optgroup>tags based on the object relationships of the arguments.Parameters:collection- An array of objects representing the<optgroup>tags.group_method- The name of a method which, when called on a member ofcollection, returns an array of child objects representing the<option>tags.group_label_method- The name of a method which, when called on a member ofcollection, returns a string to be used as thelabelattribute for its<optgroup>tag.option_key_method- The name of a method which, when called on a child object of a member ofcollection, returns a value to be used as thevalueattribute for its<option>tag.option_value_method- The name of a method which, when called on a child object of a member ofcollection, returns a value to be used as the contents of its<option>tag.selected_key- A value equal to thevalueattribute for one of the<option>tags, which will have theselectedattribute set. Corresponds to the return value of one of the calls tooption_key_method. Ifnil, no selection is made. Can also be a hash if disabled values are to be specified.Example object structure for use with this method:class Continent < ActiveRecord::Base
+  has_many :countries
+  # attribs: id, name
+end
+
+class Country < ActiveRecord::Base
+  belongs_to :continent
+  # attribs: id, name, continent_id
+endSample usage:option_groups_from_collection_for_select(@continents, :countries, :name, :id, :name, 3)Possible output:<optgroup label="Africa">
+  <option value="1">Egypt</option>
+  <option value="4">Rwanda</option>
+  ...
+</optgroup>
+<optgroup label="Asia">
+  <option value="3" selected="selected">China</option>
+  <option value="12">India</option>
+  <option value="5">Japan</option>
+  ...
+</optgroup>Note:Only the<optgroup>and<option>tags are returned, so you still have to wrap the output in an appropriate<select>tag.Source:show|on GitHub# File actionview/lib/action_view/helpers/form_options_helper.rb, line 462defoption_groups_from_collection_for_select(collection,group_method,group_label_method,option_key_method,option_value_method,selected_key=nil)collection.mapdo|group|option_tags=options_from_collection_for_select(value_for_collection(group,group_method),option_key_method,option_value_method,selected_key)content_tag("optgroup",option_tags,label:value_for_collection(group,group_label_method))end.join.html_safeendoptions_for_select(container, selected = nil)LinkAccepts a container (hash, array, enumerable, your type) and returns a string of option tags. Given a container where the elements respond to first and last (such as a two-element array), the âlastsâ serve as option values and the âfirstsâ as option text. Hashes are turned into this form automatically, so the keys become âfirstsâ and values become lasts. Ifselectedis specified, the matching âlastâ or element will get the selected option-tag.selectedmay also be an array of values to be selected when using a multiple select.options_for_select([["Dollar", "$"], ["Kroner", "DKK"]])
+# => <option value="$">Dollar</option>
+# => <option value="DKK">Kroner</option>
+
+options_for_select([ "VISA", "MasterCard" ], "MasterCard")
+# => <option value="VISA">VISA</option>
+# => <option selected="selected" value="MasterCard">MasterCard</option>
+
+options_for_select({ "Basic" => "$20", "Plus" => "$40" }, "$40")
+# => <option value="$20">Basic</option>
+# => <option value="$40" selected="selected">Plus</option>
+
+options_for_select([ "VISA", "MasterCard", "Discover" ], ["VISA", "Discover"])
+# => <option selected="selected" value="VISA">VISA</option>
+# => <option value="MasterCard">MasterCard</option>
+# => <option selected="selected" value="Discover">Discover</option>You can optionally provide HTML attributes as the last element of the array.options_for_select([ "Denmark", ["USA", { class: 'bold' }], "Sweden" ], ["USA", "Sweden"])
+# => <option value="Denmark">Denmark</option>
+# => <option value="USA" class="bold" selected="selected">USA</option>
+# => <option value="Sweden" selected="selected">Sweden</option>
+
+options_for_select([["Dollar", "$", { class: "bold" }], ["Kroner", "DKK", { onclick: "alert('HI');" }]])
+# => <option value="$" class="bold">Dollar</option>
+# => <option value="DKK" onclick="alert('HI');">Kroner</option>If you wish to specify disabled option tags, setselectedto be a hash, with:disabledbeing either a value or array of values to be disabled. In this case, you can use:selectedto specify selected option tags.options_for_select(["Free", "Basic", "Advanced", "Super Platinum"], disabled: "Super Platinum")
+# => <option value="Free">Free</option>
+# => <option value="Basic">Basic</option>
+# => <option value="Advanced">Advanced</option>
+# => <option value="Super Platinum" disabled="disabled">Super Platinum</option>
+
+options_for_select(["Free", "Basic", "Advanced", "Super Platinum"], disabled: ["Advanced", "Super Platinum"])
+# => <option value="Free">Free</option>
+# => <option value="Basic">Basic</option>
+# => <option value="Advanced" disabled="disabled">Advanced</option>
+# => <option value="Super Platinum" disabled="disabled">Super Platinum</option>
+
+options_for_select(["Free", "Basic", "Advanced", "Super Platinum"], selected: "Free", disabled: "Super Platinum")
+# => <option value="Free" selected="selected">Free</option>
+# => <option value="Basic">Basic</option>
+# => <option value="Advanced">Advanced</option>
+# => <option value="Super Platinum" disabled="disabled">Super Platinum</option>NOTE: Only the option tags are returned, you have to wrap this call in a regular HTML select tag.Source:show|on GitHub# File actionview/lib/action_view/helpers/form_options_helper.rb, line 358defoptions_for_select(container,selected=nil)returncontainerifString===containerselected,disabled=extract_selected_and_disabled(selected).mapdo|r|Array(r).map(&:to_s)endcontainer.mapdo|element|html_attributes=option_html_attributes(element)text,value=option_text_and_value(element).map(&:to_s)html_attributes[:selected]||=option_value_selected?(value,selected)html_attributes[:disabled]||=disabled&&option_value_selected?(value,disabled)html_attributes[:value] =valuetag_builder.content_tag_string(:option,text,html_attributes)end.join("\n").html_safeendoptions_from_collection_for_select(collection, value_method, text_method, selected = nil)LinkReturns a string of option tags that have been compiled by iterating over thecollectionand assigning the result of a call to thevalue_methodas the option value and thetext_methodas the option text.options_from_collection_for_select(@people, 'id', 'name')
+# => <option value="#{person.id}">#{person.name}</option>This is more often than not used inside a select_tag like this example:select_tag 'person', options_from_collection_for_select(@people, 'id', 'name')Ifselectedis specified as a value or array of values, the element(s) returning a match onvalue_methodwill be selected option tag(s).Ifselectedis specified as a Proc, those members of the collection that return true for the anonymous function are the selected values.selectedcan also be a hash, specifying both:selectedand/or:disabledvalues as required.Be sure to specify the same class as thevalue_methodwhen specifying selected or disabled options. Failure to do this will produce undesired results. Example:options_from_collection_for_select(@people, 'id', 'name', '1')Will not select a person with the id of 1 because 1 (anInteger) is not the same as â1â (a string)options_from_collection_for_select(@people, 'id', 'name', 1)should produce the desired results.Source:show|on GitHub# File actionview/lib/action_view/helpers/form_options_helper.rb, line 401defoptions_from_collection_for_select(collection,value_method,text_method,selected=nil)options=collection.mapdo|element|[value_for_collection(element,text_method),value_for_collection(element,value_method),option_html_attributes(element)]endselected,disabled=extract_selected_and_disabled(selected)select_deselect= {selected:extract_values_from_collection(collection,value_method,selected),disabled:extract_values_from_collection(collection,value_method,disabled)
+  }options_for_select(options,select_deselect)endselect(object, method, choices = nil, options = {}, html_options = {}, &block)LinkCreate a select tag and a series of contained option tags for the provided object and method. The option currently held by the object will be selected, provided that the object is available.There are two possible formats for thechoicesparameter, corresponding to other helpersâ output:A flat collection (seeoptions_for_select).A nested collection (seegrouped_options_for_select).Example with@post.person_id => 2:select :post, :person_id, Person.all.collect { |p| [ p.name, p.id ] }, { include_blank: true })would become:<select name="post[person_id]" id="post_person_id">
+  <option value="" label=" "></option>
+  <option value="1">David</option>
+  <option value="2" selected="selected">Eileen</option>
+  <option value="3">Rafael</option>
+</select>This can be used to provide a default set of options in the standard way: before rendering the create form, a new model instance is assigned the default options and bound to @model_name. Usually this model is not saved to the database. Instead, a second model object is created when the create request is received. This allows the user to submit a form page more than once with the expected results of creating multiple records. In addition, this allows a single partial to be used to generate form inputs for both edit and create forms.By default,post.person_idis the selected option. Specifyselected: valueto use a different selection orselected: nilto leave all options unselected. Similarly, you can specify values to be disabled in the option tags by specifying the:disabledoption. This can either be a single value or an array of values to be disabled.A block can be passed toselectto customize how the options tags will be rendered. This is useful when the options tag has complex attributes.select(report, :campaign_ids) do
+  available_campaigns.each do |c|
+    tag.option(c.name, value: c.id, data: { tags: c.tags.to_json })
+  end
+endGotchaThe HTML specification says whenmultipleparameter passed to select and all options got deselected web browsers do not send any value to server. Unfortunately this introduces a gotcha: if aUsermodel has manyrolesand haverole_idsaccessor, and in the form that edits roles of the user the user deselects all roles fromrole_idsmultiple select box, norole_idsparameter is sent. So, any mass-assignment idiom like@user.update(params[:user])wouldnât update roles.To prevent this the helper generates an auxiliary hidden field before every multiple select. The hidden field has the same name as multiple select and blank value.Note:The client either sends only the hidden field (representing the deselected multiple select box), or both fields. This means that the resulting array always contains a blank string.In case if you donât want the helper to generate this hidden field you can specifyinclude_hidden: falseoption.Source:show|on GitHub# File actionview/lib/action_view/helpers/form_options_helper.rb, line 159defselect(object,method,choices=nil,options= {},html_options= {},&block)Tags::Select.new(object,method,self,choices,options,html_options,&block).renderendtime_zone_options_for_select(selected = nil, priority_zones = nil, model = ::ActiveSupport::TimeZone)LinkReturns a string of option tags for pretty much any time zone in the world. Supply anActiveSupport::TimeZonename asselectedto have it marked as the selected option tag. You can also supply an array ofActiveSupport::TimeZoneobjects aspriority_zones, so that they will be listed above the rest of the (long) list. (You can useActiveSupport::TimeZone.us_zonesas a convenience for obtaining a list of the US time zones, or aRegexpto select the zones of your choice)Theselectedparameter must be eithernil, or a string that names anActiveSupport::TimeZone.By default,modelis theActiveSupport::TimeZoneconstant (which can be obtained in Active Record as a value object). Themodelparameter must respond toalland return an array of objects that represent time zones; each object must respond toname. If aRegexpis given it will attempt to match the zones usingmatch?method.NOTE: Only the option tags are returned, you have to wrap this call in a regular HTML select tag.Source:show|on GitHub# File actionview/lib/action_view/helpers/form_options_helper.rb, line 579deftime_zone_options_for_select(selected=nil,priority_zones=nil,model=::ActiveSupport::TimeZone)zone_options="".html_safezones=model.allconvert_zones=lambda{|list|list.map{|z|[z.to_s,z.name] } }ifpriority_zonesifpriority_zones.is_a?(Regexp)priority_zones=zones.select{|z|z.match?(priority_zones) }endzone_options.safe_concatoptions_for_select(convert_zones[priority_zones],selected)zone_options.safe_concatcontent_tag("option","-------------",value:"",disabled:true)zone_options.safe_concat"\n"zones=zones-priority_zonesendzone_options.safe_concatoptions_for_select(convert_zones[zones],selected)endtime_zone_select(object, method, priority_zones = nil, options = {}, html_options = {})LinkReturns select and option tags for the given object and method, usingtime_zone_options_for_selectto generate the list of option tags.In addition to the:include_blankoption documented above, this method also supports a:modeloption, which defaults toActiveSupport::TimeZone. This may be used by users to specify a different time zone model object. (Seetime_zone_options_for_selectfor more information.)You can also supply an array ofActiveSupport::TimeZoneobjects aspriority_zonesso that they will be listed above the rest of the (long) list. You can useActiveSupport::TimeZone.us_zonesfor a list of US time zones,ActiveSupport::TimeZone.country_zones(country_code)for another countryâs time zones, or aRegexpto select the zones of your choice.Finally, this method supports a:defaultoption, which selects a defaultActiveSupport::TimeZoneif the objectâs time zone isnil.time_zone_select(:user, :time_zone, nil, include_blank: true)
+
+time_zone_select(:user, :time_zone, nil, default: "Pacific Time (US & Canada)")
+
+time_zone_select(:user, :time_zone, ActiveSupport::TimeZone.us_zones, default: "Pacific Time (US & Canada)")
+
+time_zone_select(:user, :time_zone, [ ActiveSupport::TimeZone["Alaska"], ActiveSupport::TimeZone["Hawaii"] ])
+
+time_zone_select(:user, :time_zone, /Australia/)
+
+time_zone_select(:user, :time_zone, ActiveSupport::TimeZone.all.sort, model: ActiveSupport::TimeZone)Source:show|on GitHub# File actionview/lib/action_view/helpers/form_options_helper.rb, line 292deftime_zone_select(object,method,priority_zones=nil,options= {},html_options= {})Tags::TimeZoneSelect.new(object,method,self,priority_zones,options,html_options).renderendweekday_options_for_select(selected = nil, index_as_value: false, day_format: :day_names, beginning_of_week: Date.beginning_of_week)LinkReturns a string of option tags for the days of the week.Options::index_as_value- Defaults to false, set to true to use the indexes fromI18n.translate("date.day_names")as the values. By default, Sunday is always 0.:day_format- The I18n key of the array to use for the weekday options. Defaults to:day_names, set to:abbr_day_namesfor abbreviations.:beginning_of_week- Defaults toDate.beginning_of_week.NOTE: Only the option tags are returned, you have to wrap this call in a regular HTML select tag.Source:show|on GitHub# File actionview/lib/action_view/helpers/form_options_helper.rb, line 611defweekday_options_for_select(selected=nil,index_as_value:false,day_format::day_names,beginning_of_week:Date.beginning_of_week)day_names=I18n.translate("date.#{day_format}")day_names=day_names.map.with_index.to_aifindex_as_valueday_names=day_names.rotate(Date::DAYS_INTO_WEEK.fetch(beginning_of_week))options_for_select(day_names,selected)endweekday_select(object, method, options = {}, html_options = {}, &block)LinkReturns select and option tags for the given object and method, usingweekday_options_for_selectto generate the list of option tags.Source:show|on GitHub# File actionview/lib/action_view/helpers/form_options_helper.rb, line 298defweekday_select(object,method,options= {},html_options= {},&block)Tags::WeekdaySelect.new(object,method,self,options,html_options,&block).renderend

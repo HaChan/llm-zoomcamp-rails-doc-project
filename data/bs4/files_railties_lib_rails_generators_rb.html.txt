@@ -1,0 +1,1 @@
+Required Filesthor/grouprails/commandactive_support/core_ext/array/extract_optionsactive_support/core_ext/enumerableactive_support/core_ext/hash/deep_mergeactive_support/core_ext/module/attribute_accessorsactive_support/core_ext/string/indentactive_support/core_ext/string/inflectionsNamespaceMODULERailsMODULERails::CommandMODULERails::Generators

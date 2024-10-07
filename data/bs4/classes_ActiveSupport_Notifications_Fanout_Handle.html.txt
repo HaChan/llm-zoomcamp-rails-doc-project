@@ -1,0 +1,7 @@
+AHandleis used to record the start and finish time of event.Bothstartandfinishmust each be called exactly once.Where possible, itâs best to use the block form:ActiveSupport::Notifications.instrument.Handleis a low-level API intended for cases where the block form canât be used.handle = ActiveSupport::Notifications.instrumenter.build_handle("my.event", {})
+begin
+  handle.start
+  # work to be instrumented
+ensure
+  handle.finish
+endMethodsFfinishSstartInstance Public methodsfinish()LinkSource:show|on GitHub# File activesupport/lib/active_support/notifications/fanout.rb, line 250deffinishfinish_with_values(@name,@id,@payload)endstart()LinkSource:show|on GitHub# File activesupport/lib/active_support/notifications/fanout.rb, line 241defstartensure_state!:initialized@state=:startediterate_guarding_exceptions(@groups)do|group|group.start(@name,@id,@payload)endend

@@ -1,0 +1,22 @@
+SeeActiveSupport::Cache::Storefor documentation.NamespaceMODULEActiveSupport::Cache::SerializerWithFallbackMODULEActiveSupport::Cache::StrategyCLASSActiveSupport::Cache::CoderCLASSActiveSupport::Cache::FileStoreCLASSActiveSupport::Cache::MemCacheStoreCLASSActiveSupport::Cache::MemoryStoreCLASSActiveSupport::Cache::NullStoreCLASSActiveSupport::Cache::RedisCacheStoreCLASSActiveSupport::Cache::StoreCLASSActiveSupport::Cache::WriteOptionsMethodsEexpand_cache_keyLlookup_storeConstantsDEFAULT_COMPRESS_LIMIT=1.kilobyteDeserializationError=Class.new(StandardError)Raised by coders when the cache entry canât be deserialized. This error is treated as a cache miss.OPTION_ALIASES={
+expires_in: [:expire_in, :expired_in]
+}.freezeMapping of canonical option names to aliases that a store will recognize.UNIVERSAL_OPTIONS=[
+:coder,
+:compress,
+:compress_threshold,
+:compressor,
+:expire_in,
+:expired_in,
+:expires_in,
+:namespace,
+:race_condition_ttl,
+:serializer,
+:skip_nil,
+]These options mean something to all cache implementations. Individual cache implementations may support additional options.Attributes[RW]format_versionClass Public methodsexpand_cache_key(key, namespace = nil)LinkExpands out thekeyargument into a key that can be used for the cache store. Optionally accepts a namespace, and all keys will be scoped within that namespace.If thekeyargument provided is an array, or responds toto_a, then each of elements in the array will be turned into parameters/keys and concatenated into a single key. For example:ActiveSupport::Cache.expand_cache_key([:foo, :bar])               # => "foo/bar"
+ActiveSupport::Cache.expand_cache_key([:foo, :bar], "namespace")  # => "namespace/foo/bar"Thekeyargument can also respond tocache_keyorto_param.Source:show|on GitHub# File activesupport/lib/active_support/cache.rb, line 111defexpand_cache_key(key,namespace=nil)expanded_cache_key=namespace?+"#{namespace}/":+""ifprefix=ENV["RAILS_CACHE_ID"]||ENV["RAILS_APP_VERSION"]expanded_cache_key<<"#{prefix}/"endexpanded_cache_key<<retrieve_cache_key(key)expanded_cache_keyendlookup_store(store = nil, *parameters)LinkCreates a newStoreobject according to the given options.If no arguments are passed to this method, then a newActiveSupport::Cache::MemoryStoreobject will be returned.If you pass aSymbolas the first argument, then a corresponding cache store class under theActiveSupport::Cachenamespace will be created. For example:ActiveSupport::Cache.lookup_store(:memory_store)
+# => returns a new ActiveSupport::Cache::MemoryStore object
+
+ActiveSupport::Cache.lookup_store(:mem_cache_store)
+# => returns a new ActiveSupport::Cache::MemCacheStore objectAny additional arguments will be passed to the corresponding cache store classâs constructor:ActiveSupport::Cache.lookup_store(:file_store, '/tmp/cache')
+# => same as: ActiveSupport::Cache::FileStore.new('/tmp/cache')If the first argument is not aSymbol, then it will simply be returned:ActiveSupport::Cache.lookup_store(MyOwnCacheStore.new)
+# => returns MyOwnCacheStore.newSource:show|on GitHub# File activesupport/lib/active_support/cache.rb, line 85deflookup_store(store=nil,*parameters)casestorewhenSymboloptions=parameters.extract_options!retrieve_store_class(store).new(*parameters,**options)whenArraylookup_store(*store)whennilActiveSupport::Cache::MemoryStore.newelsestoreendend

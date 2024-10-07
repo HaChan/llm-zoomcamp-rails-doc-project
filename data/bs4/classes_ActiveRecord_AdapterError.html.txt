@@ -1,0 +1,1 @@
+Superclass for all errors raised from an Active Record adapter.MethodsNnewAttributes[R]connection_poolClass Public methodsnew(message = nil, connection_pool: nil)LinkSource:show|on GitHub# File activerecord/lib/active_record/errors.rb, line 56definitialize(message=nil,connection_pool:nil)@connection_pool=connection_poolsuper(message)end

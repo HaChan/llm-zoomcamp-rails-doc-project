@@ -1,0 +1,1 @@
+NamespaceMODULEActionMailboxMODULEActionMailbox::IngressesMODULEActionMailbox::Ingresses::RelayCLASSActionMailbox::Ingresses::Relay::InboundEmailsController

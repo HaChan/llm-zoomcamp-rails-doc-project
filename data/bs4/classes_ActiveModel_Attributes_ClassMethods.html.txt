@@ -1,0 +1,19 @@
+MethodsAattribute,attribute_namesTtype_for_attributeInstance Public methodsattribute(name, cast_type = nil, default: nil, **options)LinkDefines a model attribute. In addition to the attribute name, a cast type and default value may be specified, as well as any options supported by the given cast type.class Person
+  include ActiveModel::Attributes
+
+  attribute :name, :string
+  attribute :active, :boolean, default: true
+end
+
+person = Person.new
+person.name = "Volmer"
+
+person.name   # => "Volmer"
+person.active # => trueSource:show|on GitHub# File activemodel/lib/active_model/attributes.rb, line 59defattribute(name,...)superdefine_attribute_method(name)endattribute_names()LinkReturns an array of attribute names as strings.class Person
+  include ActiveModel::Attributes
+
+  attribute :name, :string
+  attribute :age, :integer
+end
+
+Person.attribute_names # => ["name", "age"]Source:show|on GitHub# File activemodel/lib/active_model/attributes.rb, line 74defattribute_namesattribute_types.keysendtype_for_attribute(attribute_name, █)LinkReturns the type of the specified attribute after applying any modifiers. This method is the only valid source of information for anything related to the types of a modelâs attributes. The return value of this method will implement the interface described byActiveModel::Type::Value(though the object itself may not subclass it).Source:on GitHub# File activemodel/lib/active_model/attributes.rb, line 79

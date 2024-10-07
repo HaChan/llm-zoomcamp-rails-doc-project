@@ -1,0 +1,1 @@
+NamespaceMODULERails::Generators::Testing::AssertionsMODULERails::Generators::Testing::BehaviorMODULERails::Generators::Testing::SetupAndTeardown

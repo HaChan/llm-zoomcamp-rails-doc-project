@@ -1,0 +1,14 @@
+Action DispatchFlashThe flash provides a way to pass temporary primitive-types (String,Array,Hash) between actions. Anything you place in the flash will be exposed to the very next action and then cleared out. This is a great way of doing notices and alerts, such as a create action that setsflash[:notice] = "Post successfully created"before redirecting to a display action that can then expose the flash to its template. Actually, that exposure is automatically done.class PostsController < ActionController::Base
+  def create
+    # save post
+    flash[:notice] = "Post successfully created"
+    redirect_to @post
+  end
+
+  def show
+    # doesn't need to assign the flash notice to the template, that's done automatically
+  end
+endThen inshow.html.erb:<% if flash[:notice] %>
+  <div class="notice"><%= flash[:notice] %></div>
+<% end %>Since thenoticeandalertkeys are a common idiom, convenience accessors are available:flash.alert = "You must be logged in"
+flash.notice = "Post successfully created"This example places a string in the flash. And of course, you can put as many as you like at a time too. If you want to pass non-primitive types, you will have to handle that in your application. Example: To show messages with links, you will have to use sanitize helper.Just remember: Theyâll be gone by the time the next action has been performed.See docs on theFlashHashclass for more details about the flash.NamespaceMODULEActionDispatch::Flash::RequestMethodsCLASSActionDispatch::Flash::FlashHashMethodsNnewConstantsKEY="action_dispatch.request.flash_hash"Class Public methodsnew(app)LinkSource:show|on GitHub# File actionpack/lib/action_dispatch/middleware/flash.rb, line 312defself.new(app)app;end

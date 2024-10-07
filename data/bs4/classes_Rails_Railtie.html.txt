@@ -1,0 +1,37 @@
+Rails::Railtieis the core of the Rails framework and provides several hooks to extend Rails and/or modify the initialization process.Every major component of Rails (Action Mailer, Action Controller, Active Record, etc.) implements a railtie. Each of them is responsible for their own initialization. This makes Rails itself absent of any component hooks, allowing other components to be used in place of any of the Rails defaults.Developing a Rails extension doesnotrequire implementing a railtie, but if you need to interact with the Rails framework during or after boot, then a railtie is needed.For example, an extension doing any of the following would need a railtie:creating initializersconfiguring a Rails framework for the application, like setting a generatoraddingconfig.*keys to the environmentsetting up a subscriber withActiveSupport::Notificationsadding Rake tasksCreating aRailtieTo extend Rails using a railtie, create a subclass ofRails::Railtie. This class must be loaded during the Rails boot process, and is conventionally calledMyNamespace::Railtie.The following example demonstrates an extension which can be used with or without Rails.# lib/my_gem/railtie.rb
+module MyGem
+  class Railtie < Rails::Railtie
+  end
+end
+
+# lib/my_gem.rb
+require "my_gem/railtie" if defined?(Rails::Railtie)InitializersTo add an initialization step to the Rails boot process from your railtie, just define the initialization code with theinitializermacro:class MyRailtie < Rails::Railtie
+  initializer "my_railtie.configure_rails_initialization" do
+    # some initialization behavior
+  end
+endIf specified, the block can also receive the application object, in case you need to access some application-specific configuration, like middleware:class MyRailtie < Rails::Railtie
+  initializer "my_railtie.configure_rails_initialization" do |app|
+    app.middleware.use MyRailtie::Middleware
+  end
+endFinally, you can also pass:beforeand:afteras options toinitializer, in case you want to couple it with a specific step in the initialization process.ConfigurationRailties can access a config object which contains configuration shared by all railties and the application:class MyRailtie < Rails::Railtie
+  # Customize the ORM
+  config.app_generators.orm :my_railtie_orm
+
+  # Add a to_prepare block which is executed once in production
+  # and before each request in development.
+  config.to_prepare do
+    MyRailtie.setup!
+  end
+endLoading Rake Tasks andGeneratorsIf your railtie has Rake tasks, you can tell Rails to load them through the methodrake_tasks:class MyRailtie < Rails::Railtie
+  rake_tasks do
+    load "path/to/my_railtie.tasks"
+  end
+endBy default, Rails loads generators from your load path. However, if you want to place your generators at a different location, you can specify in your railtie a block which will load them during normal generators lookup:class MyRailtie < Rails::Railtie
+  generators do
+    require "path/to/my_railtie_generator"
+  end
+endSince filenames on the load path are shared across gems, be sure that files you load through a railtie have unique names.Run another program when the Rails server startsIn development, itâs very usual to have to run another process next to the RailsServer. In example you might want to start the Webpack or React server. Or maybe you need to run your job scheduler process like Sidekiq. This is usually done by opening a new shell and running the program from here.Rails allow you to specify aserverblock which will get called when a Rails server starts. This way, your users donât need to remember to have to open a new shell and run another program, making this less confusing for everyone. It can be used like this:class MyRailtie < Rails::Railtie
+  server do
+    WebpackServer.start
+  end
+endApplicationandEngineAn engine is nothing more than a railtie with some initializers already set. And sinceRails::Applicationis an engine, the same configuration described here can be used in both.Be sure to look at the documentation of those specific classes for more information.NamespaceMODULERails::Railtie::ConfigurableCLASSRails::Railtie::ConfigurationMethodsAabstract_railtie?Cconfig,configure,consoleGgeneratorsIincrement_load_index,inherited,instanceRrailtie_name,rake_tasks,runnerSserver,subclassesIncluded ModulesRails::InitializableConstantsABSTRACT_RAILTIES=%w(Rails::Railtie Rails::Engine Rails::Application)Attributes[R]load_indexClass Public methodsabstract_railtie?()LinkSource:show|on GitHub# File railties/lib/rails/railtie.rb, line 172defabstract_railtie?ABSTRACT_RAILTIES.include?(name)endconfigure(&block)LinkAllows you to configure the railtie. This is the same method seen inRailtie::Configurable, but this module is no longer required for all subclasses ofRailtieso we provide the class method here.Source:show|on GitHub# File railties/lib/rails/railtie.rb, line 190defconfigure(&block)instance.configure(&block)endconsole(&blk)LinkSource:show|on GitHub# File railties/lib/rails/railtie.rb, line 156defconsole(&blk)register_block_for(:load_console,&blk)endgenerators(&blk)LinkSource:show|on GitHub# File railties/lib/rails/railtie.rb, line 164defgenerators(&blk)register_block_for(:generators,&blk)endinherited(subclass)LinkSource:show|on GitHub# File railties/lib/rails/railtie.rb, line 198definherited(subclass)subclass.increment_load_indexsuperendinstance()LinkSinceRails::Railtiecannot be instantiated, any methods that callinstanceare intended to be called only on subclasses of aRailtie.Source:show|on GitHub# File railties/lib/rails/railtie.rb, line 183definstance@instance||=newendrailtie_name(name = nil)LinkSource:show|on GitHub# File railties/lib/rails/railtie.rb, line 176defrailtie_name(name=nil)@railtie_name=name.to_sifname@railtie_name||=generate_railtie_name(self.name)endrake_tasks(&blk)LinkSource:show|on GitHub# File railties/lib/rails/railtie.rb, line 152defrake_tasks(&blk)register_block_for(:rake_tasks,&blk)endrunner(&blk)LinkSource:show|on GitHub# File railties/lib/rails/railtie.rb, line 160defrunner(&blk)register_block_for(:runner,&blk)endserver(&blk)LinkSource:show|on GitHub# File railties/lib/rails/railtie.rb, line 168defserver(&blk)register_block_for(:server,&blk)endsubclasses()LinkSource:show|on GitHub# File railties/lib/rails/railtie.rb, line 148defsubclassessuper.reject(&:abstract_railtie?).sortendClass Protected methodsincrement_load_index()LinkSource:show|on GitHub# File railties/lib/rails/railtie.rb, line 206defincrement_load_index@@load_counter||=0@load_index= (@@load_counter+=1)endInstance Public methodsconfig()LinkThis is used to create theconfigobject on Railties, an instance ofRailtie::Configuration, that is used by Railties andApplicationto store related configuration.Source:show|on GitHub# File railties/lib/rails/railtie.rb, line 262defconfig@config||=Railtie::Configuration.newend

@@ -1,0 +1,1 @@
+Validation error class to wrap association recordsâ errors, with index_errors support.NamespaceMODULEActiveRecordMODULEActiveRecord::AssociationsCLASSActiveRecord::Associations::NestedError

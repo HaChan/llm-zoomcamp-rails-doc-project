@@ -1,0 +1,14 @@
+ActiveModelTime TypeAttribute type for time of day representation. It is registered under the:timekey.class Event
+  include ActiveModel::Attributes
+
+  attribute :start, :time
+endStringvalues are parsed using the ISO 8601 datetime format, but are normalized to have a date of 2000-01-01 and be in the UTC time zone.event = Event.new
+event.start = "2004-10-25T01:23:45-06:00"
+
+event.start.class # => Time
+event.start       # => 2000-01-01 07:23:45 UTCPartial time-only formats are also accepted.event.start = "00:01:02+03:00"
+event.start # => 1999-12-31 21:01:02 UTCThe degree of sub-second precision can be customized when declaring an attribute:class Event
+  include ActiveModel::Attributes
+
+  attribute :start, :time, precision: 4
+endMethodsTtypeUuser_input_in_time_zoneIncluded ModulesActiveModel::Type::Helpers::TimezoneActiveModel::Type::Helpers::TimeValueInstance Public methodstype()LinkSource:show|on GitHub# File activemodel/lib/active_model/type/time.rb, line 45deftype:timeenduser_input_in_time_zone(value)LinkSource:show|on GitHub# File activemodel/lib/active_model/type/time.rb, line 49defuser_input_in_time_zone(value)returnunlessvalue.present?casevaluewhen::Stringvalue="2000-01-01 #{value}"time_hash=begin::Date._parse(value)rescueArgumentErrorendreturniftime_hash.nil?||time_hash[:hour].nil?when::Timevalue=value.change(year:2000,day:1,month:1)endsuper(value)end

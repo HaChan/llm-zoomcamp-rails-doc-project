@@ -1,0 +1,1 @@
+NamespaceMODULEActionTextMODULEActionText::AttachmentsMODULEActionText::Attachments::Minification

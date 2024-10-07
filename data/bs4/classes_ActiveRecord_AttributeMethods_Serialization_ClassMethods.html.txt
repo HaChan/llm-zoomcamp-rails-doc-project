@@ -1,0 +1,57 @@
+MethodsSserializeInstance Public methodsserialize(attr_name, coder: nil, type: Object, yaml: {}, **options)LinkIf you have an attribute that needs to be saved to the database as a serialized object, and retrieved by deserializing into the same object, then specify the name of that attribute using this method and serialization will be handled automatically.The serialization format may be YAML, JSON, or any custom format using a custom coder class.Keep in mind that database adapters handle certain serialization tasks for you. For instance:jsonandjsonbtypes in PostgreSQL will be converted between JSON object/array syntax and RubyHashorArrayobjects transparently. There is no need to useserializein this case.For more complex cases, such as conversion to or from your application domain objects, consider using theActiveRecord::AttributesAPI.Parametersattr_name- The name of the attribute to serialize.coderThe serializer implementation to use, e.g.JSON.The attribute value will be serialized using the coderâsdump(value)method, and will be deserialized using the coderâsload(string)method. Thedumpmethod may returnnilto serialize the value asNULL.type- Optional. What the type of the serialized object should be.Attempting to serialize another type will raise anActiveRecord::SerializationTypeMismatcherror.If the column isNULLor starting from a new record, the default value will set totype.newyaml- Optional. Yaml specific options. The allowed config is::permitted_classes-Arraywith the permitted classes.:unsafe_load- Unsafely load YAML blobs, allow YAML to load any class.Options:default- The default value to use when no value is provided. If this option is not passed, the previous default value (if any) will be used. Otherwise, the default will benil.Choosing a serializerWhile any serialization format can be used, it is recommended to carefully evaluate the properties of a serializer before using it, as migrating to another format later on can be difficult.Avoid accepting arbitrary typesWhen serializing data in a column, it is heavily recommended to make sure only expected types will be serialized. For instance some serializer likeMarshalorYAMLare capable of serializing almost any Ruby object.This can lead to unexpected types being serialized, and it is important that type serialization remains backward and forward compatible as long as some database records still contain these serialized types.class Address
+  def initialize(line, city, country)
+    @line, @city, @country = line, city, country
+  end
+endIn the above example, if any of theAddressattributes is renamed, instances that were persisted before the change will be loaded with the old attributes. This problem is even worse when the serialized type comes from a dependency which doesnât expect to be serialized this way and may change its internal representation without notice.As such, it is heavily recommended to instead convert these objects into primitives of the serialization format, for example:class Address
+  attr_reader :line, :city, :country
+
+  def self.load(payload)
+    data = YAML.safe_load(payload)
+    new(data["line"], data["city"], data["country"])
+  end
+
+  def self.dump(address)
+    YAML.safe_dump(
+      "line" => address.line,
+      "city" => address.city,
+      "country" => address.country,
+    )
+  end
+
+  def initialize(line, city, country)
+    @line, @city, @country = line, city, country
+  end
+end
+
+class User < ActiveRecord::Base
+  serialize :address, coder: Address
+endThis pattern allows to be more deliberate about what is serialized, and to evolve the format in a backward compatible way.Ensure serialization stabilitySome serialization methods may accept some types they donât support by silently casting them to other types. This can cause bugs when the data is deserialized.For instance theJSONserializer provided in the standard library will silently cast unsupported types toString:>> JSON.parse(JSON.dump(Struct.new(:foo)))
+=> "#<Class:0x000000013090b4c0>"ExamplesSerialize thepreferencesattribute using YAMLclass User < ActiveRecord::Base
+  serialize :preferences, coder: YAML
+endSerialize thepreferencesattribute using JSONclass User < ActiveRecord::Base
+  serialize :preferences, coder: JSON
+endSerialize thepreferencesHashusing YAMLclass User < ActiveRecord::Base
+  serialize :preferences, type: Hash, coder: YAML
+endSerializespreferencesto YAML, permitting select classesclass User < ActiveRecord::Base
+  serialize :preferences, coder: YAML, yaml: { permitted_classes: [Symbol, Time] }
+endSerialize thepreferencesattribute using a custom coderclass Rot13JSON
+  def self.rot13(string)
+    string.tr("a-zA-Z", "n-za-mN-ZA-M")
+  end
+
+  # Serializes an attribute value to a string that will be stored in the database.
+  def self.dump(value)
+    rot13(ActiveSupport::JSON.dump(value))
+  end
+
+  # Deserializes a string from the database to an attribute value.
+  def self.load(string)
+    ActiveSupport::JSON.load(rot13(string))
+  end
+end
+
+class User < ActiveRecord::Base
+  serialize :preferences, coder: Rot13JSON
+endSource:show|on GitHub# File activerecord/lib/active_record/attribute_methods/serialization.rb, line 183defserialize(attr_name,coder:nil,type:Object,yaml:{},**options)coder||=default_column_serializerunlesscoderraiseArgumentError,<<~MSG.squishmissing keyword: :coder
+
+              If no default coder is configured, a coder must be provided to `serialize`.MSGendcolumn_serializer=build_column_serializer(attr_name,coder,type,yaml)attribute(attr_name,**options)decorate_attributes([attr_name])do|attr_name,cast_type|iftype_incompatible_with_serialize?(cast_type,coder,type)raiseColumnNotSerializableError.new(attr_name,cast_type)endcast_type=cast_type.subtypeifType::Serialized===cast_typeType::Serialized.new(cast_type,column_serializer)endend

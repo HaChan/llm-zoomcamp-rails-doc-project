@@ -1,0 +1,1 @@
+Required Filesactive_support/inflectoractive_support/core_ext/hash/indifferent_accessNamespaceMODULEActiveRecordMODULEActiveRecord::InheritanceMODULEActiveRecord::Inheritance::ClassMethods

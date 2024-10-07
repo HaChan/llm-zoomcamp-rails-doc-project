@@ -1,0 +1,1 @@
+NamespaceMODULEActiveRecordMODULEActiveRecord::AssertionsMODULEActiveRecord::Assertions::QueryAssertionsMODULEActiveSupport

@@ -1,0 +1,1 @@
+Required Filesactive_support/core_ext/module/redefine_methodNamespaceMODULEActionCableCLASSActionCable::RemoteConnectionsCLASSActionCable::RemoteConnections::RemoteConnectionCLASSActionCable::RemoteConnections::RemoteConnection::InvalidIdentifiersError

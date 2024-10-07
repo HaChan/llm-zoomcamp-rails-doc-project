@@ -1,0 +1,1 @@
+NamespaceMODULEActiveRecordMODULEActiveRecord::ConnectionAdaptersCLASSActiveRecord::ConnectionAdapters::ColumnCLASSActiveRecord::ConnectionAdapters::NullColumn

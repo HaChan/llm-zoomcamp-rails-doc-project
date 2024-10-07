@@ -1,0 +1,1 @@
+Raised when association is being configured improperly or user tries to use offset and limit together withActiveRecord::Base.has_manyorActiveRecord::Base.has_and_belongs_to_manyassociations.

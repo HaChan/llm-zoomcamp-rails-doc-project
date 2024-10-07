@@ -1,0 +1,1 @@
+Required Filesactive_support/concernrails/generators/actions/create_migrationNamespaceMODULERailsMODULERails::GeneratorsMODULERails::Generators::ActionsMODULERails::Generators::Migration

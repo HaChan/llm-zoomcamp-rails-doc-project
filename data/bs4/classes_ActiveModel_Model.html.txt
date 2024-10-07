@@ -1,0 +1,23 @@
+Active Model Basic ModelAllows implementing models similar toActiveRecord::Base. IncludesActiveModel::APIfor the required interface for an object to interact with Action Pack and Action View, but can be extended with other functionalities.A minimal implementation could be:class Person
+  include ActiveModel::Model
+  attr_accessor :name, :age
+end
+
+person = Person.new(name: 'bob', age: '18')
+person.name # => "bob"
+person.age  # => "18"If for some reason you need to run code oninitialize, make sure you callsuperif you want the attributes hash initialization to happen.class Person
+  include ActiveModel::Model
+  attr_accessor :id, :name, :omg
+
+  def initialize(attributes={})
+    super
+    @omg ||= true
+  end
+end
+
+person = Person.new(id: 1, name: 'bob')
+person.omg # => trueFor more detailed information on other functionalities available, please refer to the specific modules included inActiveModel::Model(see below).MethodsSsliceVvalues_atIncluded ModulesActiveModel::APIInstance Public methodsslice(*methods)LinkReturns a hash of the given methods with their names as keys and returned values as values.person = Person.new(id: 1, name: "bob")
+person.slice(:id, :name)
+=> { "id" => 1, "name" => "bob" }Source:on GitHub# File activemodel/lib/active_model/model.rb, line 48values_at(*methods)LinkReturns an array of the values returned by the given methods.person = Person.new(id: 1, name: "bob")
+person.values_at(:id, :name)
+=> [1, "bob"]Source:on GitHub# File activemodel/lib/active_model/model.rb, line 63

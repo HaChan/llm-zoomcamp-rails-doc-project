@@ -1,0 +1,219 @@
+Action ControllerParametersAllows you to choose which attributes should be permitted for mass updating and thus prevent accidentally exposing that which shouldnât be exposed. Provides two methods for this purpose:requireandpermit. The former is used to mark parameters as required. The latter is used to set the parameter as permitted and limit which attributes should be allowed for mass updating.params = ActionController::Parameters.new({
+  person: {
+    name: "Francesco",
+    age:  22,
+    role: "admin"
+  }
+})
+
+permitted = params.require(:person).permit(:name, :age)
+permitted            # => #<ActionController::Parameters {"name"=>"Francesco", "age"=>22} permitted: true>
+permitted.permitted? # => true
+
+Person.first.update!(permitted)
+# => #<Person id: 1, name: "Francesco", age: 22, role: "user">It provides two options that controls the top-level behavior of new instances:permit_all_parameters- If itâstrue, all the parameters will be permitted by default. The default isfalse.action_on_unpermitted_parameters- Controls behavior when parameters that are not explicitly permitted are found. The default value is:login test and development environments,falseotherwise. The values can be:falseto take no action.:logto emit anActiveSupport::Notifications.instrumentevent on theunpermitted_parameters.action_controllertopic and log at the DEBUG level.:raiseto raise anActionController::UnpermittedParametersexception.Examples:params = ActionController::Parameters.new
+params.permitted? # => false
+
+ActionController::Parameters.permit_all_parameters = true
+
+params = ActionController::Parameters.new
+params.permitted? # => true
+
+params = ActionController::Parameters.new(a: "123", b: "456")
+params.permit(:c)
+# => #<ActionController::Parameters {} permitted: true>
+
+ActionController::Parameters.action_on_unpermitted_parameters = :raise
+
+params = ActionController::Parameters.new(a: "123", b: "456")
+params.permit(:c)
+# => ActionController::UnpermittedParameters: found unpermitted keys: a, bPlease note that these optionsare not thread-safe. In a multi-threaded environment they should only be set once at boot-time and never mutated at runtime.You can fetch values ofActionController::Parametersusing either:keyor"key".params = ActionController::Parameters.new(key: "value")
+params[:key]  # => "value"
+params["key"] # => "value"Methods#==,[],[]=Aallow_deprecated_parameters_hash_equality,allow_deprecated_parameters_hash_equality=,as_jsonCcompact,compact!,compact_blank,compact_blank!,converted_arraysDdeep_dup,deep_merge,deep_merge!,deep_transform_keys,deep_transform_keys!,delete,delete_if,digEeach,each_key,each_nested_attribute,each_pair,each_value,empty?,eql?,except,exclude?,extract!,extract_valueFfetchHhas_key?,has_value?,hashIinclude?,inspectKkeep_if,key?,keysMmember?,merge,merge!Nnested_attributes?,newPpermit,permit!,permitted?Rreject,reject!,require,required,reverse_merge,reverse_merge!Sselect,select!,slice,slice!Tto_h,to_hash,to_param,to_query,to_s,to_unsafe_h,to_unsafe_hash,transform_keys,transform_keys!,transform_values,transform_values!Vvalue?,values,values_atWwith_defaults,with_defaults!,withoutConstantsPERMITTED_SCALAR_TYPES=[
+String,
+Symbol,
+NilClass,
+Numeric,
+TrueClass,
+FalseClass,
+Date,
+Time,
+# DateTimes are Dates, we document the type but avoid the redundant check.
+StringIO,
+IO,
+ActionDispatch::Http::UploadedFile,
+Rack::Test::UploadedFile,
+]â Filtering âââââââââââââââââââ-This is a list of permitted scalar types that includes the ones supported in XML and JSON requests.This list is in particular used to filter ordinary requests,Stringgoes as first element to quickly short-circuit the common case.If you modify this collection please update the one in thepermitdoc as well.Attributes[R]parameters[W]permittedClass Public methodsallow_deprecated_parameters_hash_equality()LinkSource:show|on GitHub# File actionpack/lib/action_controller/metal/strong_parameters.rb, line 253defallow_deprecated_parameters_hash_equalityActionController.deprecator.warn<<-WARNING.squish`Rails.application.config.action_controller.allow_deprecated_parameters_hash_equality` is
+          deprecated and will be removed in Rails 8.0.WARNINGendallow_deprecated_parameters_hash_equality=(value)LinkSource:show|on GitHub# File actionpack/lib/action_controller/metal/strong_parameters.rb, line 260defallow_deprecated_parameters_hash_equality=(value)ActionController.deprecator.warn<<-WARNING.squish`Rails.application.config.action_controller.allow_deprecated_parameters_hash_equality`
+          is deprecated and will be removed in Rails 8.0.WARNINGendnew(parameters = {}, logging_context = {})LinkReturns a newActionController::Parametersinstance. Also, sets thepermittedattribute to the default value ofActionController::Parameters.permit_all_parameters.class Person < ActiveRecord::Base
+end
+
+params = ActionController::Parameters.new(name: "Francesco")
+params.permitted?  # => false
+Person.new(params) # => ActiveModel::ForbiddenAttributesError
+
+ActionController::Parameters.permit_all_parameters = true
+
+params = ActionController::Parameters.new(name: "Francesco")
+params.permitted?  # => true
+Person.new(params) # => #<Person id: nil, name: "Francesco">Source:show|on GitHub# File actionpack/lib/action_controller/metal/strong_parameters.rb, line 288definitialize(parameters= {},logging_context= {})parameters.each_keydo|key|unlesskey.is_a?(String)||key.is_a?(Symbol)raiseInvalidParameterKey,"all keys must be Strings or Symbols, got: #{key.class}"endend@parameters=parameters.with_indifferent_access@logging_context=logging_context@permitted=self.class.permit_all_parametersendInstance Public methods==(other)LinkReturns true if anotherParametersobject contains the same content and permitted flag.Source:show|on GitHub# File actionpack/lib/action_controller/metal/strong_parameters.rb, line 302def==(other)ifother.respond_to?(:permitted?)permitted?==other.permitted?&&parameters==other.parameterselsesuperendend[](key)LinkReturns a parameter for the givenkey. If not found, returnsnil.params = ActionController::Parameters.new(person: { name: "Francesco" })
+params[:person] # => #<ActionController::Parameters {"name"=>"Francesco"} permitted: false>
+params[:none]   # => nilSource:show|on GitHub# File actionpack/lib/action_controller/metal/strong_parameters.rb, line 670def[](key)convert_hashes_to_parameters(key,@parameters[key])end[]=(key, value)LinkAssigns a value to a givenkey. The given key may still get filtered out whenpermitis called.Source:show|on GitHub# File actionpack/lib/action_controller/metal/strong_parameters.rb, line 676def[]=(key,value)@parameters[key] =valueendas_json(options=nil)LinkReturns a hash that can be used as the JSON representation for the parameters.Source:on GitHub# File actionpack/lib/action_controller/metal/strong_parameters.rb, line 181compact()LinkReturns a newActionController::Parametersinstance withnilvalues removed.Source:show|on GitHub# File actionpack/lib/action_controller/metal/strong_parameters.rb, line 847defcompactnew_instance_with_inherited_permitted_status(@parameters.compact)endcompact!()LinkRemoves allnilvalues in place and returnsself, ornilif no changes were made.Source:show|on GitHub# File actionpack/lib/action_controller/metal/strong_parameters.rb, line 853defcompact!selfif@parameters.compact!endcompact_blank()LinkReturns a newActionController::Parametersinstance without the blank values. UsesObject#blank?for determining if a value is blank.Source:show|on GitHub# File actionpack/lib/action_controller/metal/strong_parameters.rb, line 859defcompact_blankreject{|_k,v|v.blank?}endcompact_blank!()LinkRemoves all blank values in place and returns self. UsesObject#blank?for determining if a value is blank.Source:show|on GitHub# File actionpack/lib/action_controller/metal/strong_parameters.rb, line 865defcompact_blank!reject!{|_k,v|v.blank?}endconverted_arrays()LinkAttribute that keeps track of converted arrays, if any, to avoid double looping in the common use case permit + mass-assignment. Defined in a method to instantiate it only if needed.Testingmembership still loops, but itâs going to be faster than our own loop that converts values. Also, we are not going to build a new array object per fetch.Source:show|on GitHub# File actionpack/lib/action_controller/metal/strong_parameters.rb, line 436defconverted_arrays@converted_arrays||=Set.newenddeep_dup()LinkReturns a duplicateActionController::Parametersinstance with the same permitted parameters.Source:show|on GitHub# File actionpack/lib/action_controller/metal/strong_parameters.rb, line 965defdeep_dupself.class.new(@parameters.deep_dup,@logging_context).tapdo|duplicate|duplicate.permitted=@permittedendenddeep_merge(other_hash, █)LinkReturns a newActionController::Parametersinstance withselfandother_hashmerged recursively.Like withHash#mergein the standard library, a block can be provided to merge values.Source:on GitHub# File actionpack/lib/action_controller/metal/strong_parameters.rb, line 155deep_merge!(other_hash, █)LinkSame as#deep_merge, but modifiesself.Source:on GitHub# File actionpack/lib/action_controller/metal/strong_parameters.rb, line 170deep_transform_keys(&block)LinkReturns a newActionController::Parametersinstance with the results of runningblockonce for every key. This includes the keys from the root hash and from all nested hashes and arrays. The values are unchanged.Source:show|on GitHub# File actionpack/lib/action_controller/metal/strong_parameters.rb, line 797defdeep_transform_keys(&block)new_instance_with_inherited_permitted_status(_deep_transform_keys_in_object(@parameters,&block).to_unsafe_h)enddeep_transform_keys!(&block)LinkReturns the sameActionController::Parametersinstance with changed keys. This includes the keys from the root hash and from all nested hashes and arrays. The values are unchanged.Source:show|on GitHub# File actionpack/lib/action_controller/metal/strong_parameters.rb, line 806defdeep_transform_keys!(&block)@parameters=_deep_transform_keys_in_object(@parameters,&block).to_unsafe_hselfenddelete(key, &block)LinkDeletes a key-value pair fromParametersand returns the value. Ifkeyis not found, returnsnil(or, with optional code block, yieldskeyand returns the result). This method is similar toextract!, which returns the correspondingActionController::Parametersobject.Source:show|on GitHub# File actionpack/lib/action_controller/metal/strong_parameters.rb, line 815defdelete(key,&block)convert_value_to_parameters(@parameters.delete(key,&block))enddelete_if(&block)LinkAlias for:reject!dig(*keys)LinkExtracts the nested parameter from the givenkeysby callingdigat each step. Returnsnilif any intermediate step isnil.params = ActionController::Parameters.new(foo: { bar: { baz: 1 } })
+params.dig(:foo, :bar, :baz) # => 1
+params.dig(:foo, :zot, :xyz) # => nil
+
+params2 = ActionController::Parameters.new(foo: [10, 11, 12])
+params2.dig(:foo, 1) # => 11Source:show|on GitHub# File actionpack/lib/action_controller/metal/strong_parameters.rb, line 714defdig(*keys)convert_hashes_to_parameters(keys.first,@parameters[keys.first])@parameters.dig(*keys)endeach(&block)LinkAlias for:each_paireach_key(█)LinkCalls block once for each key in the parameters, passing the key. If no block is given, an enumerator is returned instead.Source:on GitHub# File actionpack/lib/action_controller/metal/strong_parameters.rb, line 189each_pair(&block)LinkConvert all hashes in values into parameters, then yield each pair in the same way asHash#each_pair.Also aliased as:eachSource:show|on GitHub# File actionpack/lib/action_controller/metal/strong_parameters.rb, line 403defeach_pair(&block)returnto_enum(__callee__)unlessblock_given?@parameters.each_pairdo|key,value|yield[key,convert_hashes_to_parameters(key,value)]endselfendeach_value(&block)LinkConvert all hashes in values into parameters, then yield each value in the same way asHash#each_value.Source:show|on GitHub# File actionpack/lib/action_controller/metal/strong_parameters.rb, line 415defeach_value(&block)returnto_enum(:each_value)unlessblock_given?@parameters.each_pairdo|key,value|yieldconvert_hashes_to_parameters(key,value)endselfendempty?()LinkReturns true if the parameters have no key/value pairs.Source:on GitHub# File actionpack/lib/action_controller/metal/strong_parameters.rb, line 198eql?(other)LinkSource:show|on GitHub# File actionpack/lib/action_controller/metal/strong_parameters.rb, line 310defeql?(other)self.class==other.class&&permitted?==other.permitted?&&parameters.eql?(other.parameters)endexcept(*keys)LinkReturns a newActionController::Parametersinstance that filters out the givenkeys.params = ActionController::Parameters.new(a: 1, b: 2, c: 3)
+params.except(:a, :b) # => #<ActionController::Parameters {"c"=>3} permitted: false>
+params.except(:d)     # => #<ActionController::Parameters {"a"=>1, "b"=>2, "c"=>3} permitted: false>Also aliased as:withoutSource:show|on GitHub# File actionpack/lib/action_controller/metal/strong_parameters.rb, line 742defexcept(*keys)new_instance_with_inherited_permitted_status(@parameters.except(*keys))endexclude?(key)LinkReturns true if the given key is not present in the parameters.Source:on GitHub# File actionpack/lib/action_controller/metal/strong_parameters.rb, line 206extract!(*keys)LinkRemoves and returns the key/value pairs matching the given keys.params = ActionController::Parameters.new(a: 1, b: 2, c: 3)
+params.extract!(:a, :b) # => #<ActionController::Parameters {"a"=>1, "b"=>2} permitted: false>
+params                  # => #<ActionController::Parameters {"c"=>3} permitted: false>Source:show|on GitHub# File actionpack/lib/action_controller/metal/strong_parameters.rb, line 752defextract!(*keys)new_instance_with_inherited_permitted_status(@parameters.extract!(*keys))endextract_value(key, delimiter: "_")LinkReturns parameter value for the givenkeyseparated bydelimiter.params = ActionController::Parameters.new(id: "1_123", tags: "ruby,rails")
+params.extract_value(:id) # => ["1", "123"]
+params.extract_value(:tags, delimiter: ",") # => ["ruby", "rails"]
+params.extract_value(:non_existent_key) # => nilNote that if the givenkeyâs value contains blank elements, then the returned array will include empty strings.params = ActionController::Parameters.new(tags: "ruby,rails,,web")
+params.extract_value(:tags, delimiter: ",") # => ["ruby", "rails", "", "web"]Source:show|on GitHub# File actionpack/lib/action_controller/metal/strong_parameters.rb, line 983defextract_value(key,delimiter:"_")@parameters[key]&.split(delimiter,-1)endfetch(key, *args)LinkReturns a parameter for the givenkey. If thekeycanât be found, there are several options: With no other arguments, it will raise anActionController::ParameterMissingerror; if a second argument is given, then that is returned (converted to an instance ofActionController::Parametersif possible); if a block is given, then that will be run and its result returned.params = ActionController::Parameters.new(person: { name: "Francesco" })
+params.fetch(:person)               # => #<ActionController::Parameters {"name"=>"Francesco"} permitted: false>
+params.fetch(:none)                 # => ActionController::ParameterMissing: param is missing or the value is empty: none
+params.fetch(:none, {})             # => #<ActionController::Parameters {} permitted: false>
+params.fetch(:none, "Francesco")    # => "Francesco"
+params.fetch(:none) { "Francesco" } # => "Francesco"Source:show|on GitHub# File actionpack/lib/action_controller/metal/strong_parameters.rb, line 693deffetch(key,*args)convert_value_to_parameters(@parameters.fetch(key) {ifblock_given?yieldelseargs.fetch(0) {raiseActionController::ParameterMissing.new(key,@parameters.keys) }end}
+  )endhas_key?LinkAlias for:include?has_value?(value)LinkReturns true if the given value is present for some key in the parameters.Also aliased as:value?Source:show|on GitHub# File actionpack/lib/action_controller/metal/strong_parameters.rb, line 870defhas_value?(value)each_value.include?(convert_value_to_parameters(value))endhash()LinkSource:show|on GitHub# File actionpack/lib/action_controller/metal/strong_parameters.rb, line 316defhash[self.class,@parameters,@permitted].hashendinclude?(key)LinkReturns true if the given key is present in the parameters.Also aliased as:has_key?,key?,member?Source:on GitHub# File actionpack/lib/action_controller/metal/strong_parameters.rb, line 214inspect()LinkSource:show|on GitHub# File actionpack/lib/action_controller/metal/strong_parameters.rb, line 928definspect"#<#{self.class} #{@parameters} permitted: #{@permitted}>"endkeep_if(&block)LinkAlias for:select!key?LinkAlias for:include?keys()LinkReturns a new array of the keys of the parameters.Source:on GitHub# File actionpack/lib/action_controller/metal/strong_parameters.rb, line 222member?LinkAlias for:include?merge(other_hash)LinkReturns a newActionController::Parametersinstance with all keys fromother_hashmerged into current hash.Source:show|on GitHub# File actionpack/lib/action_controller/metal/strong_parameters.rb, line 884defmerge(other_hash)new_instance_with_inherited_permitted_status(@parameters.merge(other_hash.to_h)
+  )endmerge!(other_hash)LinkReturns the currentActionController::Parametersinstance withother_hashmerged into current hash.Source:show|on GitHub# File actionpack/lib/action_controller/metal/strong_parameters.rb, line 895defmerge!(other_hash,&block)@parameters.merge!(other_hash.to_h,&block)selfendpermit(*filters)LinkReturns a newActionController::Parametersinstance that includes only the givenfiltersand sets thepermittedattribute for the object totrue. This is useful for limiting which attributes should be allowed for mass updating.params = ActionController::Parameters.new(user: { name: "Francesco", age: 22, role: "admin" })
+permitted = params.require(:user).permit(:name, :age)
+permitted.permitted?      # => true
+permitted.has_key?(:name) # => true
+permitted.has_key?(:age)  # => true
+permitted.has_key?(:role) # => falseOnly permitted scalars pass the filter. For example, givenparams.permit(:name):namepasses if it is a key ofparamswhose associated value is of typeString,Symbol,NilClass,Numeric,TrueClass,FalseClass,Date,Time,DateTime,StringIO,IO,ActionDispatch::Http::UploadedFileorRack::Test::UploadedFile. Otherwise, the key:nameis filtered out.You may declare that the parameter should be an array of permitted scalars by mapping it to an empty array:params = ActionController::Parameters.new(tags: ["rails", "parameters"])
+params.permit(tags: [])Sometimes it is not possible or convenient to declare the valid keys of a hash parameter or its internal structure. Just map to an empty hash:params.permit(preferences: {})Be careful because this opens the door to arbitrary input. In this case,permitensures values in the returned structure are permitted scalars and filters out anything else.You can also usepermiton nested parameters, like:params = ActionController::Parameters.new({
+  person: {
+    name: "Francesco",
+    age:  22,
+    pets: [{
+      name: "Purplish",
+      category: "dogs"
+    }]
+  }
+})
+
+permitted = params.permit(person: [ :name, { pets: :name } ])
+permitted.permitted?                    # => true
+permitted[:person][:name]               # => "Francesco"
+permitted[:person][:age]                # => nil
+permitted[:person][:pets][0][:name]     # => "Purplish"
+permitted[:person][:pets][0][:category] # => nilNote that if you usepermitin a key that points to a hash, it wonât allow all the hash. You also need to specify which attributes inside the hash should be permitted.params = ActionController::Parameters.new({
+  person: {
+    contact: {
+      email: "none@test.com",
+      phone: "555-1234"
+    }
+  }
+})
+
+params.require(:person).permit(:contact)
+# => #<ActionController::Parameters {} permitted: true>
+
+params.require(:person).permit(contact: :phone)
+# => #<ActionController::Parameters {"contact"=>#<ActionController::Parameters {"phone"=>"555-1234"} permitted: true>} permitted: true>
+
+params.require(:person).permit(contact: [ :email, :phone ])
+# => #<ActionController::Parameters {"contact"=>#<ActionController::Parameters {"email"=>"none@test.com", "phone"=>"555-1234"} permitted: true>} permitted: true>If your parameters specify multiple parameters indexed by a number, you can permit each set of parameters under the numeric key to be the same using the same syntax as permitting a single item.params = ActionController::Parameters.new({
+  person: {
+    '0': {
+      email: "none@test.com",
+      phone: "555-1234"
+    },
+    '1': {
+      email: "nothing@test.com",
+      phone: "555-6789"
+    },
+  }
+})
+params.permit(person: [:email]).to_h
+# => {"person"=>{"0"=>{"email"=>"none@test.com"}, "1"=>{"email"=>"nothing@test.com"}}}If you want to specify what keys you want from each numeric key, you can instead specify each one individuallyparams = ActionController::Parameters.new({
+  person: {
+    '0': {
+      email: "none@test.com",
+      phone: "555-1234"
+    },
+    '1': {
+      email: "nothing@test.com",
+      phone: "555-6789"
+    },
+  }
+})
+params.permit(person: { '0': [:email], '1': [:phone]}).to_h
+# => {"person"=>{"0"=>{"email"=>"none@test.com"}, "1"=>{"phone"=>"555-6789"}}}Source:show|on GitHub# File actionpack/lib/action_controller/metal/strong_parameters.rb, line 648defpermit(*filters)params=self.class.newfilters.flatten.eachdo|filter|casefilterwhenSymbol,Stringpermitted_scalar_filter(params,filter)whenHashhash_filter(params,filter)endendunpermitted_parameters!(params)ifself.class.action_on_unpermitted_parametersparams.permit!endpermit!()LinkSets thepermittedattribute totrue. This can be used to pass mass assignment. Returnsself.class Person < ActiveRecord::Base
+end
+
+params = ActionController::Parameters.new(name: "Francesco")
+params.permitted?  # => false
+Person.new(params) # => ActiveModel::ForbiddenAttributesError
+params.permit!
+params.permitted?  # => true
+Person.new(params) # => #<Person id: nil, name: "Francesco">Source:show|on GitHub# File actionpack/lib/action_controller/metal/strong_parameters.rb, line 462defpermit!each_pairdo|key,value|Array.wrap(value).flatten.eachdo|v|v.permit!ifv.respond_to?:permit!endend@permitted=trueselfendpermitted?()LinkReturnstrueif the parameter is permitted,falseotherwise.params = ActionController::Parameters.new
+params.permitted? # => false
+params.permit!
+params.permitted? # => trueSource:show|on GitHub# File actionpack/lib/action_controller/metal/strong_parameters.rb, line 446defpermitted?@permittedendreject(&block)LinkReturns a newActionController::Parametersinstance with items that the block evaluates to true removed.Source:show|on GitHub# File actionpack/lib/action_controller/metal/strong_parameters.rb, line 834defreject(&block)new_instance_with_inherited_permitted_status(@parameters.reject(&block))endreject!(&block)LinkRemoves items that the block evaluates to true and returns self.Also aliased as:delete_ifSource:show|on GitHub# File actionpack/lib/action_controller/metal/strong_parameters.rb, line 839defreject!(&block)@parameters.reject!(&block)selfendrequire(key)LinkThis method accepts both a single key and an array of keys.When passed a single key, if it exists and its associated value is either present or the singletonfalse, returns said value:ActionController::Parameters.new(person: { name: "Francesco" }).require(:person)
+# => #<ActionController::Parameters {"name"=>"Francesco"} permitted: false>Otherwise raisesActionController::ParameterMissing:ActionController::Parameters.new.require(:person)
+# ActionController::ParameterMissing: param is missing or the value is empty: person
+
+ActionController::Parameters.new(person: nil).require(:person)
+# ActionController::ParameterMissing: param is missing or the value is empty: person
+
+ActionController::Parameters.new(person: "\t").require(:person)
+# ActionController::ParameterMissing: param is missing or the value is empty: person
+
+ActionController::Parameters.new(person: {}).require(:person)
+# ActionController::ParameterMissing: param is missing or the value is empty: personWhen given an array of keys, the method tries to require each one of them in order. If it succeeds, an array with the respective return values is returned:params = ActionController::Parameters.new(user: { ... }, profile: { ... })
+user_params, profile_params = params.require([:user, :profile])Otherwise, the method re-raises the first exception found:params = ActionController::Parameters.new(user: {}, profile: {})
+user_params, profile_params = params.require([:user, :profile])
+# ActionController::ParameterMissing: param is missing or the value is empty: userTechnically this method can be used to fetch terminal values:# CAREFUL
+params = ActionController::Parameters.new(person: { name: "Finn" })
+name = params.require(:person).require(:name) # CAREFULbut take into account that at some point those ones have to be permitted:def person_params
+  params.require(:person).permit(:name).tap do |person_params|
+    person_params.require(:name) # SAFER
+  end
+endfor example.Also aliased as:requiredSource:show|on GitHub# File actionpack/lib/action_controller/metal/strong_parameters.rb, line 522defrequire(key)returnkey.map{|k|require(k) }ifkey.is_a?(Array)value=self[key]ifvalue.present?||value==falsevalueelseraiseParameterMissing.new(key,@parameters.keys)endendrequired(key)LinkAlias for:requirereverse_merge(other_hash)LinkReturns a newActionController::Parametersinstance with all keys from current hash merged intoother_hash.Also aliased as:with_defaultsSource:show|on GitHub# File actionpack/lib/action_controller/metal/strong_parameters.rb, line 906defreverse_merge(other_hash)new_instance_with_inherited_permitted_status(other_hash.to_h.merge(@parameters)
+  )endreverse_merge!(other_hash)LinkReturns the currentActionController::Parametersinstance with current hash merged intoother_hash.Also aliased as:with_defaults!Source:show|on GitHub# File actionpack/lib/action_controller/metal/strong_parameters.rb, line 915defreverse_merge!(other_hash)@parameters.merge!(other_hash.to_h) {|key,left,right|left}selfendselect(&block)LinkReturns a newActionController::Parametersinstance with only items that the block evaluates to true.Source:show|on GitHub# File actionpack/lib/action_controller/metal/strong_parameters.rb, line 821defselect(&block)new_instance_with_inherited_permitted_status(@parameters.select(&block))endselect!(&block)LinkEquivalent to Hash#keep_if, but returnsnilif no changes were made.Also aliased as:keep_ifSource:show|on GitHub# File actionpack/lib/action_controller/metal/strong_parameters.rb, line 826defselect!(&block)@parameters.select!(&block)selfendslice(*keys)LinkReturns a newActionController::Parametersinstance that includes only the givenkeys. If the givenkeysdonât exist, returns an empty hash.params = ActionController::Parameters.new(a: 1, b: 2, c: 3)
+params.slice(:a, :b) # => #<ActionController::Parameters {"a"=>1, "b"=>2} permitted: false>
+params.slice(:d)     # => #<ActionController::Parameters {} permitted: false>Source:show|on GitHub# File actionpack/lib/action_controller/metal/strong_parameters.rb, line 725defslice(*keys)new_instance_with_inherited_permitted_status(@parameters.slice(*keys))endslice!(*keys)LinkReturns the currentActionController::Parametersinstance which contains only the givenkeys.Source:show|on GitHub# File actionpack/lib/action_controller/metal/strong_parameters.rb, line 731defslice!(*keys)@parameters.slice!(*keys)selfendto_h(&block)LinkReturns a safeActiveSupport::HashWithIndifferentAccessrepresentation of the parameters with all unpermitted keys removed.params = ActionController::Parameters.new({
+  name: "Senjougahara Hitagi",
+  oddity: "Heavy stone crab"
+})
+params.to_h
+# => ActionController::UnfilteredParameters: unable to convert unpermitted parameters to hash
+
+safe_params = params.permit(:name)
+safe_params.to_h # => {"name"=>"Senjougahara Hitagi"}Source:show|on GitHub# File actionpack/lib/action_controller/metal/strong_parameters.rb, line 332defto_h(&block)ifpermitted?convert_parameters_to_hashes(@parameters,:to_h,&block)elseraiseUnfilteredParametersendendto_hash()LinkReturns a safeHashrepresentation of the parameters with all unpermitted keys removed.params = ActionController::Parameters.new({
+  name: "Senjougahara Hitagi",
+  oddity: "Heavy stone crab"
+})
+params.to_hash
+# => ActionController::UnfilteredParameters: unable to convert unpermitted parameters to hash
+
+safe_params = params.permit(:name)
+safe_params.to_hash # => {"name"=>"Senjougahara Hitagi"}Source:show|on GitHub# File actionpack/lib/action_controller/metal/strong_parameters.rb, line 352defto_hashto_h.to_hashendto_param(*args)LinkAlias for:to_queryto_query(*args)LinkReturns a string representation of the receiver suitable for use as a URL query string:params = ActionController::Parameters.new({
+  name: "David",
+  nationality: "Danish"
+})
+params.to_query
+# => ActionController::UnfilteredParameters: unable to convert unpermitted parameters to hash
+
+safe_params = params.permit(:name, :nationality)
+safe_params.to_query
+# => "name=David&nationality=Danish"An optional namespace can be passed to enclose key names:params = ActionController::Parameters.new({
+  name: "David",
+  nationality: "Danish"
+})
+safe_params = params.permit(:name, :nationality)
+safe_params.to_query("user")
+# => "user%5Bname%5D=David&user%5Bnationality%5D=Danish"The string pairs"key=value"that conform the query string are sorted lexicographically in ascending order.Also aliased as:to_paramSource:show|on GitHub# File actionpack/lib/action_controller/metal/strong_parameters.rb, line 382defto_query(*args)to_h.to_query(*args)endto_s()LinkReturns the content of the parameters as a string.Source:show|on GitHub# File actionpack/lib/action_controller/metal/strong_parameters.rb, line 237delegate:keys,:empty?,:exclude?,:include?,:as_json,:to_s,:each_key,to::@parametersto_unsafe_h()LinkReturns an unsafe, unfilteredActiveSupport::HashWithIndifferentAccessrepresentation of the parameters.params = ActionController::Parameters.new({
+  name: "Senjougahara Hitagi",
+  oddity: "Heavy stone crab"
+})
+params.to_unsafe_h
+# => {"name"=>"Senjougahara Hitagi", "oddity" => "Heavy stone crab"}Also aliased as:to_unsafe_hashSource:show|on GitHub# File actionpack/lib/action_controller/metal/strong_parameters.rb, line 396defto_unsafe_hconvert_parameters_to_hashes(@parameters,:to_unsafe_h)endto_unsafe_hash()LinkAlias for:to_unsafe_htransform_keys(&block)LinkReturns a newActionController::Parametersinstance with the results of runningblockonce for every key. The values are unchanged.Source:show|on GitHub# File actionpack/lib/action_controller/metal/strong_parameters.rb, line 779deftransform_keys(&block)returnto_enum(:transform_keys)unlessblock_given?new_instance_with_inherited_permitted_status(@parameters.transform_keys(&block)
+  )endtransform_keys!(&block)LinkPerforms keys transformation and returns the alteredActionController::Parametersinstance.Source:show|on GitHub# File actionpack/lib/action_controller/metal/strong_parameters.rb, line 788deftransform_keys!(&block)returnto_enum(:transform_keys!)unlessblock_given?@parameters.transform_keys!(&block)selfendtransform_values()LinkReturns a newActionController::Parametersinstance with the results of runningblockonce for every value. The keys are unchanged.params = ActionController::Parameters.new(a: 1, b: 2, c: 3)
+params.transform_values { |x| x * 2 }
+# => #<ActionController::Parameters {"a"=>2, "b"=>4, "c"=>6} permitted: false>Source:show|on GitHub# File actionpack/lib/action_controller/metal/strong_parameters.rb, line 762deftransform_valuesreturnto_enum(:transform_values)unlessblock_given?new_instance_with_inherited_permitted_status(@parameters.transform_values{|v|yieldconvert_value_to_parameters(v) }
+  )endtransform_values!()LinkPerforms values transformation and returns the alteredActionController::Parametersinstance.Source:show|on GitHub# File actionpack/lib/action_controller/metal/strong_parameters.rb, line 771deftransform_values!returnto_enum(:transform_values!)unlessblock_given?@parameters.transform_values!{|v|yieldconvert_value_to_parameters(v) }selfendvalue?(value)LinkAlias for:has_value?values()LinkReturns a new array of the values of the parameters.Source:show|on GitHub# File actionpack/lib/action_controller/metal/strong_parameters.rb, line 425defvaluesto_enum(:each_value).to_aendvalues_at(*keys)LinkReturns values that were assigned to the givenkeys. Note that all theHashobjects will be converted toActionController::Parameters.Source:show|on GitHub# File actionpack/lib/action_controller/metal/strong_parameters.rb, line 878defvalues_at(*keys)convert_value_to_parameters(@parameters.values_at(*keys))endwith_defaults(other_hash)LinkAlias for:reverse_mergewith_defaults!(other_hash)LinkAlias for:reverse_merge!without(*keys)LinkAlias for:exceptInstance Protected methodseach_nested_attribute()LinkSource:show|on GitHub# File actionpack/lib/action_controller/metal/strong_parameters.rb, line 996defeach_nested_attributehash=self.class.newself.each{|k,v|hash[k] =yieldvifParameters.nested_attribute?(k,v) }hashendnested_attributes?()LinkSource:show|on GitHub# File actionpack/lib/action_controller/metal/strong_parameters.rb, line 992defnested_attributes?@parameters.any?{|k,v|Parameters.nested_attribute?(k,v) }end

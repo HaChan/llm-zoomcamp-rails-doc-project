@@ -1,0 +1,299 @@
+NamespaceCLASSActiveRecord::QueryMethods::WhereChainMethodsAand,annotate,async!Ccreate_withDdistinctEeager_load,excluding,extending,extract_associatedFfromGgroupHhavingIin_order_of,includes,invert_whereJjoinsLleft_joins,left_outer_joins,limit,lockNnoneOoffset,optimizer_hints,or,orderPpreloadRreadonly,references,regroup,reorder,reselect,reverse_order,rewhereSselect,strict_loading,structurally_compatible?Uuniq!,unscopeWwhere,with,with_recursive,withoutConstantsFROZEN_EMPTY_ARRAY=[].freezeFROZEN_EMPTY_HASH={}.freezeVALID_UNSCOPING_VALUES=Set.new([:where, :select, :group, :order, :lock,
+:limit, :offset, :joins, :left_outer_joins, :annotate,
+:includes, :eager_load, :preload, :from, :readonly,
+:having, :optimizer_hints, :with])Instance Public methodsand(other)LinkReturns a new relation, which is the logical intersection of this relation and the one passed as an argument.The two relations must be structurally compatible: they must be scoping the same model, and they must differ only bywhere(if nogrouphas been defined) orhaving(if agroupis present).Post.where(id: [1, 2]).and(Post.where(id: [2, 3]))
+# SELECT `posts`.* FROM `posts` WHERE `posts`.`id` IN (1, 2) AND `posts`.`id` IN (2, 3)Source:show|on GitHub# File activerecord/lib/active_record/relation/query_methods.rb, line 1113defand(other)ifother.is_a?(Relation)spawn.and!(other)elseraiseArgumentError,"You have passed #{other.class.name} object to #and. Pass an ActiveRecord::Relation object instead."endendannotate(*args)LinkAdds an SQL comment to queries generated from this relation. For example:User.annotate("selecting user names").select(:name)
+# SELECT "users"."name" FROM "users" /* selecting user names */
+
+User.annotate("selecting", "user", "names").select(:name)
+# SELECT "users"."name" FROM "users" /* selecting */ /* user */ /* names */The SQL block comment delimiters, â/*â and â*/â, will be added automatically.Some escaping is performed, however untrusted user input should not be used.Source:show|on GitHub# File activerecord/lib/active_record/relation/query_methods.rb, line 1507defannotate(*args)check_if_method_has_arguments!(__callee__,args)spawn.annotate!(*args)endcreate_with(value)LinkSets attributes to be used when creating new records from a relation object.users = User.where(name: 'Oscar')
+users.new.name # => 'Oscar'
+
+users = users.create_with(name: 'DHH')
+users.new.name # => 'DHH'You can passniltocreate_withto reset attributes:users = users.create_with(nil)
+users.new.name # => 'Oscar'Source:show|on GitHub# File activerecord/lib/active_record/relation/query_methods.rb, line 1324defcreate_with(value)spawn.create_with!(value)enddistinct(value = true)LinkSpecifies whether the records should be unique or not. For example:User.select(:name)
+# Might return two records with the same name
+
+User.select(:name).distinct
+# Returns 1 record per distinct name
+
+User.select(:name).distinct.distinct(false)
+# You can also remove the uniquenessSource:show|on GitHub# File activerecord/lib/active_record/relation/query_methods.rb, line 1388defdistinct(value=true)spawn.distinct!(value)endeager_load(*args)LinkSpecify associationsargsto be eager loaded using aLEFT OUTER JOIN. Performs a single query joining all specified associations. For example:users = User.eager_load(:address).limit(5)
+users.each do |user|
+  user.address.city
+end
+
+# SELECT "users"."id" AS t0_r0, "users"."name" AS t0_r1, ... FROM "users"
+#   LEFT OUTER JOIN "addresses" ON "addresses"."id" = "users"."address_id"
+#   LIMIT 5Instead of loading the 5 addresses with 5 separate queries, all addresses are loaded with a single joined query.Loading multiple and nested associations is possible using Hashes and Arrays, similar toincludes:User.eager_load(:address, friends: [:address, :followers])
+# SELECT "users"."id" AS t0_r0, "users"."name" AS t0_r1, ... FROM "users"
+#   LEFT OUTER JOIN "addresses" ON "addresses"."id" = "users"."address_id"
+#   LEFT OUTER JOIN "friends" ON "friends"."user_id" = "users"."id"
+#   ...NOTE: Loading the associations in a join can result in many rows that contain redundant data and it performs poorly at scale.Source:show|on GitHub# File activerecord/lib/active_record/relation/query_methods.rb, line 283defeager_load(*args)check_if_method_has_arguments!(__callee__,args)spawn.eager_load!(*args)endexcluding(*records)LinkExcludes the specified record (or collection of records) from the resulting relation. For example:Post.excluding(post)
+# SELECT "posts".* FROM "posts" WHERE "posts"."id" != 1
+
+Post.excluding(post_one, post_two)
+# SELECT "posts".* FROM "posts" WHERE "posts"."id" NOT IN (1, 2)
+
+Post.excluding(Post.drafts)
+# SELECT "posts".* FROM "posts" WHERE "posts"."id" NOT IN (3, 4, 5)This can also be called on associations. As with the above example, either a single record of collection thereof may be specified:post = Post.find(1)
+comment = Comment.find(2)
+post.comments.excluding(comment)
+# SELECT "comments".* FROM "comments" WHERE "comments"."post_id" = 1 AND "comments"."id" != 2This is short-hand for.where.not(id: post.id)and.where.not(id: [post_one.id, post_two.id]).AnArgumentErrorwill be raised if either no records are specified, or if any of the records in the collection (if a collection is passed in) are not instances of the same model that the relation is scoping.Also aliased as:withoutSource:show|on GitHub# File activerecord/lib/active_record/relation/query_methods.rb, line 1552defexcluding(*records)relations=records.extract!{|element|element.is_a?(Relation) }records.flatten!(1)records.compact!unlessrecords.all?(klass)&&relations.all?{|relation|relation.klass==klass}raiseArgumentError,"You must only pass a single or collection of #{klass.name} objects to ##{__callee__}."endspawn.excluding!(records+relations.flat_map(&:ids))endextending(*modules, &block)LinkUsed to extend a scope with additional methods, either through a module or through a block provided.The object returned is a relation, which can be further extended.Using a Modulemodule Pagination
+  def page(number)
+    # pagination code goes here
+  end
+end
+
+scope = Model.all.extending(Pagination)
+scope.page(params[:page])You can also pass a list of modules:scope = Model.all.extending(Pagination, SomethingElse)Using a Blockscope = Model.all.extending do
+  def page(number)
+    # pagination code goes here
+  end
+end
+scope.page(params[:page])You can also use a block and a module list:scope = Model.all.extending(Pagination) do
+  def per_page(number)
+    # pagination code goes here
+  end
+endSource:show|on GitHub# File activerecord/lib/active_record/relation/query_methods.rb, line 1434defextending(*modules,&block)ifmodules.any?||blockspawn.extending!(*modules,&block)elseselfendendextract_associated(association)LinkExtracts a namedassociationfrom the relation. The named association is first preloaded, then the individual association records are collected from the relation. Like so:account.memberships.extract_associated(:user)
+# => Returns collection of User recordsThis is short-hand for:account.memberships.preload(:user).collect(&:user)Source:show|on GitHub# File activerecord/lib/active_record/relation/query_methods.rb, line 334defextract_associated(association)preload(association).collect(&association)endfrom(value, subquery_name = nil)LinkSpecifies the table from which the records will be fetched. For example:Topic.select('title').from('posts')
+# SELECT title FROM postsCan accept other relation objects. For example:Topic.select('title').from(Topic.approved)
+# SELECT title FROM (SELECT * FROM topics WHERE approved = 't') subqueryPassing a second argument (string or symbol), creates the alias for the SQL from clause. Otherwise the alias âsubqueryâ is used:Topic.select('a.title').from(Topic.approved, :a)
+# SELECT a.title FROM (SELECT * FROM topics WHERE approved = 't') aIt does not add multiple arguments to the SQL from clause. The lastfromchained is the one used:Topic.select('title').from(Topic.approved).from(Topic.inactive)
+# SELECT title FROM (SELECT topics.* FROM topics WHERE topics.active = 'f') subqueryFor multiple arguments for the SQL from clause, you can pass a string with the exact elements in the SQL from list:color = "red"
+Color
+  .from("colors c, JSONB_ARRAY_ELEMENTS(colored_things) AS colorvalues(colorvalue)")
+  .where("colorvalue->>'color' = ?", color)
+  .select("c.*").to_a
+# SELECT c.*
+# FROM colors c, JSONB_ARRAY_ELEMENTS(colored_things) AS colorvalues(colorvalue)
+# WHERE (colorvalue->>'color' = 'red')Source:show|on GitHub# File activerecord/lib/active_record/relation/query_methods.rb, line 1369deffrom(value,subquery_name=nil)spawn.from!(value,subquery_name)endgroup(*args)LinkAllows to specify a group attribute:User.group(:name)
+# SELECT "users".* FROM "users" GROUP BY nameReturns an array with distinct records based on thegroupattribute:User.select([:id, :name])
+# => [#<User id: 1, name: "Oscar">, #<User id: 2, name: "Oscar">, #<User id: 3, name: "Foo">]
+
+User.group(:name)
+# => [#<User id: 3, name: "Foo", ...>, #<User id: 2, name: "Oscar", ...>]
+
+User.group('name AS grouped_name, age')
+# => [#<User id: 3, name: "Foo", age: 21, ...>, #<User id: 2, name: "Oscar", age: 21, ...>, #<User id: 5, name: "Foo", age: 23, ...>]Passing in an array of attributes to group by is also supported.User.select([:id, :first_name]).group(:id, :first_name).first(3)
+# => [#<User id: 1, first_name: "Bill">, #<User id: 2, first_name: "Earl">, #<User id: 3, first_name: "Beto">]Source:show|on GitHub# File activerecord/lib/active_record/relation/query_methods.rb, line 564defgroup(*args)check_if_method_has_arguments!(__callee__,args)spawn.group!(*args)endhaving(opts, *rest)LinkAllows to specify a HAVING clause. Note that you canât use HAVING without also specifying a GROUP clause.Order.having('SUM(price) > 30').group('user_id')Source:show|on GitHub# File activerecord/lib/active_record/relation/query_methods.rb, line 1175defhaving(opts,*rest)opts.blank??self:spawn.having!(opts,*rest)endin_order_of(column, values)LinkApplies anORDER BYclause based on a givencolumn, ordered and filtered by a specific set ofvalues.User.in_order_of(:id, [1, 5, 3])
+# SELECT "users".* FROM "users"
+#   WHERE "users"."id" IN (1, 5, 3)
+#   ORDER BY CASE
+#     WHEN "users"."id" = 1 THEN 1
+#     WHEN "users"."id" = 5 THEN 2
+#     WHEN "users"."id" = 3 THEN 3
+#   END ASCcolumncan point to an enum column; the actual query generated may be different depending on the database adapter and the column definition.class Conversation < ActiveRecord::Base
+  enum :status, [ :active, :archived ]
+end
+
+Conversation.in_order_of(:status, [:archived, :active])
+# SELECT "conversations".* FROM "conversations"
+#   WHERE "conversations"."status" IN (1, 0)
+#   ORDER BY CASE
+#     WHEN "conversations"."status" = 1 THEN 1
+#     WHEN "conversations"."status" = 0 THEN 2
+#   END ASCvaluescan also includenil.Conversation.in_order_of(:status, [nil, :archived, :active])
+# SELECT "conversations".* FROM "conversations"
+#   WHERE ("conversations"."status" IN (1, 0) OR "conversations"."status" IS NULL)
+#   ORDER BY CASE
+#     WHEN "conversations"."status" IS NULL THEN 1
+#     WHEN "conversations"."status" = 1 THEN 2
+#     WHEN "conversations"."status" = 0 THEN 3
+#   END ASCSource:show|on GitHub# File activerecord/lib/active_record/relation/query_methods.rb, line 699defin_order_of(column,values)klass.disallow_raw_sql!([column],permit:model.adapter_class.column_name_with_order_matcher)returnspawn.none!ifvalues.empty?references=column_references([column])self.references_values|=referencesunlessreferences.empty?values=values.map{|value|type_caster.type_cast_for_database(column,value) }arel_column=column.is_a?(Arel::Nodes::SqlLiteral)?column:order_column(column.to_s)where_clause=ifvalues.include?(nil)arel_column.in(values.compact).or(arel_column.eq(nil))elsearel_column.in(values)endspawn.order!(build_case_for_value_position(arel_column,values))
+    .where!(where_clause)endincludes(*args)LinkSpecify associationsargsto be eager loaded to prevent N + 1 queries. A separate query is performed for each association, unless a join is required by conditions.For example:users = User.includes(:address).limit(5)
+users.each do |user|
+  user.address.city
+end
+
+# SELECT "users".* FROM "users" LIMIT 5
+# SELECT "addresses".* FROM "addresses" WHERE "addresses"."id" IN (1,2,3,4,5)Instead of loading the 5 addresses with 5 separate queries, all addresses are loaded with a single query.Loading the associations in a separate query will often result in a performance improvement over a simple join, as a join can result in many rows that contain redundant data and it performs poorly at scale.You can also specify multiple associations. Each association will result in an additional query:User.includes(:address, :friends).to_a
+# SELECT "users".* FROM "users"
+# SELECT "addresses".* FROM "addresses" WHERE "addresses"."id" IN (1,2,3,4,5)
+# SELECT "friends".* FROM "friends" WHERE "friends"."user_id" IN (1,2,3,4,5)Loading nested associations is possible using a Hash:User.includes(:address, friends: [:address, :followers])ConditionsIf you want to add string conditions to your included models, youâll have to explicitly reference them. For example:User.includes(:posts).where('posts.name = ?', 'example').to_aWill throw an error, but this will work:User.includes(:posts).where('posts.name = ?', 'example').references(:posts).to_a
+# SELECT "users"."id" AS t0_r0, ... FROM "users"
+#   LEFT OUTER JOIN "posts" ON "posts"."user_id" = "users"."id"
+#   WHERE "posts"."name" = ?  [["name", "example"]]As theLEFT OUTER JOINalready contains the posts, the second query for the posts is no longer performed.Note thatincludesworks with association names whilereferencesneeds the actual table name.If you pass the conditions via aHash, you donât need to callreferencesexplicitly, aswherereferences the tables for you. For example, this will work correctly:User.includes(:posts).where(posts: { name: 'example' })NOTE: Conditions affect both sides of an association. For example, the above code will return only users that have a post named âexampleâ,and will only include posts named âexampleâ, even when a matching user has other additional posts.Source:show|on GitHub# File activerecord/lib/active_record/relation/query_methods.rb, line 247defincludes(*args)check_if_method_has_arguments!(__callee__,args)spawn.includes!(*args)endinvert_where()LinkAllows you to invert an entire where clause instead of manually applying conditions.class User
+  scope :active, -> { where(accepted: true, locked: false) }
+end
+
+User.where(accepted: true)
+# WHERE `accepted` = 1
+
+User.where(accepted: true).invert_where
+# WHERE `accepted` != 1
+
+User.active
+# WHERE `accepted` = 1 AND `locked` = 0
+
+User.active.invert_where
+# WHERE NOT (`accepted` = 1 AND `locked` = 0)Be careful because this inverts all conditions beforeinvert_wherecall.class User
+  scope :active, -> { where(accepted: true, locked: false) }
+  scope :inactive, -> { active.invert_where } # Do not attempt it
+end
+
+# It also inverts `where(role: 'admin')` unexpectedly.
+User.where(role: 'admin').inactive
+# WHERE NOT (`role` = 'admin' AND `accepted` = 1 AND `locked` = 0)Source:show|on GitHub# File activerecord/lib/active_record/relation/query_methods.rb, line 1079definvert_wherespawn.invert_where!endjoins(*args)LinkPerforms JOINs onargs. The given symbol(s) should match the name of the association(s).User.joins(:posts)
+# SELECT "users".*
+# FROM "users"
+# INNER JOIN "posts" ON "posts"."user_id" = "users"."id"Multiple joins:User.joins(:posts, :account)
+# SELECT "users".*
+# FROM "users"
+# INNER JOIN "posts" ON "posts"."user_id" = "users"."id"
+# INNER JOIN "accounts" ON "accounts"."id" = "users"."account_id"Nested joins:User.joins(posts: [:comments])
+# SELECT "users".*
+# FROM "users"
+# INNER JOIN "posts" ON "posts"."user_id" = "users"."id"
+# INNER JOIN "comments" ON "comments"."post_id" = "posts"."id"You can use strings in order to customize your joins:User.joins("LEFT JOIN bookmarks ON bookmarks.bookmarkable_type = 'Post' AND bookmarks.user_id = users.id")
+# SELECT "users".* FROM "users" LEFT JOIN bookmarks ON bookmarks.bookmarkable_type = 'Post' AND bookmarks.user_id = users.idSource:show|on GitHub# File activerecord/lib/active_record/relation/query_methods.rb, line 846defjoins(*args)check_if_method_has_arguments!(__callee__,args)spawn.joins!(*args)endleft_joins(*args)LinkAlias for:left_outer_joinsleft_outer_joins(*args)LinkPerforms LEFT OUTER JOINs onargs:User.left_outer_joins(:posts)
+# SELECT "users".* FROM "users" LEFT OUTER JOIN "posts" ON "posts"."user_id" = "users"."id"Also aliased as:left_joinsSource:show|on GitHub# File activerecord/lib/active_record/relation/query_methods.rb, line 861defleft_outer_joins(*args)check_if_method_has_arguments!(__callee__,args)spawn.left_outer_joins!(*args)endlimit(value)LinkSpecifies a limit for the number of records to retrieve.User.limit(10) # generated SQL has 'LIMIT 10'
+
+User.limit(10).limit(20) # generated SQL has 'LIMIT 20'Source:show|on GitHub# File activerecord/lib/active_record/relation/query_methods.rb, line 1189deflimit(value)spawn.limit!(value)endlock(locks = true)LinkSpecifies locking settings (default totrue). For more information on locking, please seeActiveRecord::Locking.Source:show|on GitHub# File activerecord/lib/active_record/relation/query_methods.rb, line 1216deflock(locks=true)spawn.lock!(locks)endnone()LinkReturns a chainable relation with zero records.The returned relation implements the NullObjectpattern. It is an object with defined null behavior and always returns an empty array of records without querying the database.Any subsequent condition chained to the returned relation will continue generating an empty relation and will not fire any query to the database.Used in cases where a method or scope could return zero records but the result needs to be chainable.For example:@posts = current_user.visible_posts.where(name: params[:name])
+# the visible_posts method is expected to return a chainable Relation
+
+def visible_posts
+  case role
+  when 'Country Manager'
+    Post.where(country: country)
+  when 'Reviewer'
+    Post.published
+  when 'Bad User'
+    Post.none # It can't be chained if [] is returned.
+  end
+endSource:show|on GitHub# File activerecord/lib/active_record/relation/query_methods.rb, line 1259defnonespawn.none!endoffset(value)LinkSpecifies the number of rows to skip before returning rows.User.offset(10) # generated SQL has "OFFSET 10"Should be used with order.User.offset(10).order("name ASC")Source:show|on GitHub# File activerecord/lib/active_record/relation/query_methods.rb, line 1205defoffset(value)spawn.offset!(value)endoptimizer_hints(*args)LinkSpecify optimizer hints to be used in the SELECT statement.Example (for MySQL):Topic.optimizer_hints("MAX_EXECUTION_TIME(50000)", "NO_INDEX_MERGE(topics)")
+# SELECT /*+ MAX_EXECUTION_TIME(50000) NO_INDEX_MERGE(topics) */ `topics`.* FROM `topics`Example (for PostgreSQL with pg_hint_plan):Topic.optimizer_hints("SeqScan(topics)", "Parallel(topics 8)")
+# SELECT /*+ SeqScan(topics) Parallel(topics 8) */ "topics".* FROM "topics"Source:show|on GitHub# File activerecord/lib/active_record/relation/query_methods.rb, line 1463defoptimizer_hints(*args)check_if_method_has_arguments!(__callee__,args)spawn.optimizer_hints!(*args)endor(other)LinkReturns a new relation, which is the logical union of this relation and the one passed as an argument.The two relations must be structurally compatible: they must be scoping the same model, and they must differ only bywhere(if nogrouphas been defined) orhaving(if agroupis present).Post.where("id = 1").or(Post.where("author_id = 3"))
+# SELECT `posts`.* FROM `posts` WHERE ((id = 1) OR (author_id = 3))Source:show|on GitHub# File activerecord/lib/active_record/relation/query_methods.rb, line 1145defor(other)ifother.is_a?(Relation)if@noneother.spawnelsespawn.or!(other)endelseraiseArgumentError,"You have passed #{other.class.name} object to #or. Pass an ActiveRecord::Relation object instead."endendorder(*args)LinkApplies anORDER BYclause to a query.orderaccepts arguments in one of several formats.symbolsThe symbol represents the name of the column you want to order the results by.User.order(:name)
+# SELECT "users".* FROM "users" ORDER BY "users"."name" ASCBy default, the order is ascending. If you want descending order, you can map the column name symbol to:desc.User.order(email: :desc)
+# SELECT "users".* FROM "users" ORDER BY "users"."email" DESCMultiple columns can be passed this way, and they will be applied in the order specified.User.order(:name, email: :desc)
+# SELECT "users".* FROM "users" ORDER BY "users"."name" ASC, "users"."email" DESCstringsStrings are passed directly to the database, allowing you to specify simple SQL expressions.This could be a source of SQL injection, so only strings composed of plain column names and simplefunction(column_name)expressions with optionalASC/DESCmodifiers are allowed.User.order('name')
+# SELECT "users".* FROM "users" ORDER BY name
+
+User.order('name DESC')
+# SELECT "users".* FROM "users" ORDER BY name DESC
+
+User.order('name DESC, email')
+# SELECT "users".* FROM "users" ORDER BY name DESC, emailArelIf you need to pass in complicated expressions that you have verified are safe for the database, you can useArel.User.order(Arel.sql('end_date - start_date'))
+# SELECT "users".* FROM "users" ORDER BY end_date - start_dateCustom query syntax, like JSON columns for PostgreSQL, is supported in this way.User.order(Arel.sql("payload->>'kind'"))
+# SELECT "users".* FROM "users" ORDER BY payload->>'kind'Source:show|on GitHub# File activerecord/lib/active_record/relation/query_methods.rb, line 647deforder(*args)check_if_method_has_arguments!(__callee__,args)dosanitize_order_arguments(args)endspawn.order!(*args)endpreload(*args)LinkSpecify associationsargsto be eager loaded using separate queries. A separate query is performed for each association.users = User.preload(:address).limit(5)
+users.each do |user|
+  user.address.city
+end
+
+# SELECT "users".* FROM "users" LIMIT 5
+# SELECT "addresses".* FROM "addresses" WHERE "addresses"."id" IN (1,2,3,4,5)Instead of loading the 5 addresses with 5 separate queries, all addresses are loaded with a separate query.Loading multiple and nested associations is possible using Hashes and Arrays, similar toincludes:User.preload(:address, friends: [:address, :followers])
+# SELECT "users".* FROM "users"
+# SELECT "addresses".* FROM "addresses" WHERE "addresses"."id" IN (1,2,3,4,5)
+# SELECT "friends".* FROM "friends" WHERE "friends"."user_id" IN (1,2,3,4,5)
+# SELECT ...Source:show|on GitHub# File activerecord/lib/active_record/relation/query_methods.rb, line 315defpreload(*args)check_if_method_has_arguments!(__callee__,args)spawn.preload!(*args)endreadonly(value = true)LinkMark a relation as readonly. Attempting to update a record will result in an error.users = User.readonly
+users.first.save
+=> ActiveRecord::ReadOnlyRecord: User is marked as readonlyTo make a readonly relation writable, passfalse.users.readonly(false)
+users.first.save
+=> trueSource:show|on GitHub# File activerecord/lib/active_record/relation/query_methods.rb, line 1287defreadonly(value=true)spawn.readonly!(value)endreferences(*table_names)LinkUse to indicate that the giventable_namesare referenced by an SQL string, and should therefore be +JOIN+ed in any query rather than loaded separately. This method only works in conjunction withincludes. Seeincludesfor more details.User.includes(:posts).where("posts.name = 'foo'")
+# Doesn't JOIN the posts table, resulting in an error.
+
+User.includes(:posts).where("posts.name = 'foo'").references(:posts)
+# Query now knows the string references posts, so adds a JOINSource:show|on GitHub# File activerecord/lib/active_record/relation/query_methods.rb, line 348defreferences(*table_names)check_if_method_has_arguments!(__callee__,table_names)spawn.references!(*table_names)endregroup(*args)LinkAllows you to change a previously set group statement.Post.group(:title, :body)
+# SELECT `posts`.`*` FROM `posts` GROUP BY `posts`.`title`, `posts`.`body`
+
+Post.group(:title, :body).regroup(:title)
+# SELECT `posts`.`*` FROM `posts` GROUP BY `posts`.`title`This is short-hand forunscope(:group).group(fields). Note that weâre unscoping the entire group statement.Source:show|on GitHub# File activerecord/lib/active_record/relation/query_methods.rb, line 584defregroup(*args)check_if_method_has_arguments!(__callee__,args)spawn.regroup!(*args)endreorder(*args)LinkReplaces any existing order defined on the relation with the specified order.User.order('email DESC').reorder('id ASC') # generated SQL has 'ORDER BY id ASC'Subsequent calls to order on the same relation will be appended. For example:User.order('email DESC').reorder('id ASC').order('name ASC')generates a query withORDER BY id ASC, name ASC.Source:show|on GitHub# File activerecord/lib/active_record/relation/query_methods.rb, line 730defreorder(*args)check_if_method_has_arguments!(__callee__,args)dosanitize_order_arguments(args)endspawn.reorder!(*args)endreselect(*args)LinkAllows you to change a previously set select statement.Post.select(:title, :body)
+# SELECT `posts`.`title`, `posts`.`body` FROM `posts`
+
+Post.select(:title, :body).reselect(:created_at)
+# SELECT `posts`.`created_at` FROM `posts`This is short-hand forunscope(:select).select(fields). Note that weâre unscoping the entire select statement.Source:show|on GitHub# File activerecord/lib/active_record/relation/query_methods.rb, line 532defreselect(*args)check_if_method_has_arguments!(__callee__,args)args=process_select_args(args)spawn.reselect!(*args)endreverse_order()LinkReverse the existing order clause on the relation.User.order('name ASC').reverse_order # generated SQL has 'ORDER BY name DESC'Source:show|on GitHub# File activerecord/lib/active_record/relation/query_methods.rb, line 1476defreverse_orderspawn.reverse_order!endrewhere(conditions)LinkAllows you to change a previously set where condition for a given attribute, instead of appending to that condition.Post.where(trashed: true).where(trashed: false)
+# WHERE `trashed` = 1 AND `trashed` = 0
+
+Post.where(trashed: true).rewhere(trashed: false)
+# WHERE `trashed` = 0
+
+Post.where(active: true).where(trashed: true).rewhere(trashed: false)
+# WHERE `active` = 1 AND `trashed` = 0This is short-hand forunscope(where: conditions.keys).where(conditions). Note that unlike reorder, weâre only unscoping the named conditions â not the entire where statement.Source:show|on GitHub# File activerecord/lib/active_record/relation/query_methods.rb, line 1039defrewhere(conditions)returnunscope(:where)ifconditions.nil?scope=spawnwhere_clause=scope.build_where_clause(conditions)scope.unscope!(where:where_clause.extract_attributes)scope.where_clause+=where_clausescopeendselect(*fields)LinkWorks in two unique ways.First: takes a block so it can be used just likeArray#select.Model.all.select { |m| m.field == value }This will build an array of objects from the database for the scope, converting them into an array and iterating through them usingArray#select.Second: Modifies the SELECT statement for the query so that only certain fields are retrieved:Model.select(:field)
+# => [#<Model id: nil, field: "value">]Although in the above example it looks as though this method returns an array, it actually returns a relation object and can have other query methods appended to it, such as the other methods inActiveRecord::QueryMethods.The argument to the method can also be an array of fields.Model.select(:field, :other_field, :and_one_more)
+# => [#<Model id: nil, field: "value", other_field: "value", and_one_more: "value">]The argument also can be a hash of fields and aliases.Model.select(models: { field: :alias, other_field: :other_alias })
+# => [#<Model id: nil, alias: "value", other_alias: "value">]
+
+Model.select(models: [:field, :other_field])
+# => [#<Model id: nil, field: "value", other_field: "value">]You can also use one or more strings, which will be used unchanged as SELECT fields.Model.select('field AS field_one', 'other_field AS field_two')
+# => [#<Model id: nil, field_one: "value", field_two: "value">]If an alias was specified, it will be accessible from the resulting objects:Model.select('field AS field_one').first.field_one
+# => "value"Accessing attributes of an object that do not have fields retrieved by a select exceptidwill throwActiveModel::MissingAttributeError:Model.select(:field).first.other_field
+# => ActiveModel::MissingAttributeError: missing attribute 'other_field' for ModelSource:show|on GitHub# File activerecord/lib/active_record/relation/query_methods.rb, line 406defselect(*fields)ifblock_given?iffields.any?raiseArgumentError,"`select' with block doesn't take arguments."endreturnsuper()endcheck_if_method_has_arguments!(__callee__,fields,"Call `select' with at least one field.")fields=process_select_args(fields)spawn._select!(*fields)endstrict_loading(value = true)LinkSets the returned relation tostrict_loadingmode. This will raise an error if the record tries to lazily load an association.user = User.strict_loading.first
+user.comments.to_a
+=> ActiveRecord::StrictLoadingViolationErrorSource:show|on GitHub# File activerecord/lib/active_record/relation/query_methods.rb, line 1302defstrict_loading(value=true)spawn.strict_loading!(value)endstructurally_compatible?(other)LinkChecks whether the given relation is structurally compatible with this relation, to determine if itâs possible to use theandandormethods without raising an error. Structurally compatible is defined as: they must be scoping the same model, and they must differ only bywhere(if nogrouphas been defined) orhaving(if agroupis present).Post.where("id = 1").structurally_compatible?(Post.where("author_id = 3"))
+# => true
+
+Post.joins(:comments).structurally_compatible?(Post.where("id = 1"))
+# => falseSource:show|on GitHub# File activerecord/lib/active_record/relation/query_methods.rb, line 1099defstructurally_compatible?(other)structurally_incompatible_values_for(other).empty?enduniq!(name)LinkDeduplicate multiple values.Source:show|on GitHub# File activerecord/lib/active_record/relation/query_methods.rb, line 1519defuniq!(name)ifvalues=@values[name]values.uniq!ifvalues.is_a?(Array)&&!values.empty?endselfendunscope(*args)LinkRemoves an unwanted relation that is already defined on a chain of relations. This is useful when passing around chains of relations and would like to modify the relations without reconstructing the entire chain.User.order('email DESC').unscope(:order) == User.allThe method arguments are symbols which correspond to the names of the methods which should be unscoped. The valid arguments are given inVALID_UNSCOPING_VALUES. The method can also be called with multiple arguments. For example:User.order('email DESC').select('id').where(name: "John")
+    .unscope(:order, :select, :where) == User.allOne can additionally pass a hash as an argument to unscope specific:wherevalues. This is done by passing a hash with a single key-value pair. The key should be:whereand the value should be the where value to unscope. For example:User.where(name: "John", active: true).unscope(where: :name)
+    == User.where(active: true)This method is similar to except, but unlike except, it persists across merges:User.order('email').merge(User.except(:order))
+    == User.order('email')
+
+User.order('email').merge(User.unscope(:order))
+    == User.allThis means it can be used in association definitions:has_many :comments, -> { unscope(where: :trashed) }Source:show|on GitHub# File activerecord/lib/active_record/relation/query_methods.rb, line 784defunscope(*args)check_if_method_has_arguments!(__callee__,args)spawn.unscope!(*args)endwhere(*args)LinkReturns a new relation, which is the result of filtering the current relation according to the conditions in the arguments.whereaccepts conditions in one of several formats. In the examples below, the resulting SQL is given as an illustration; the actual query generated may be different depending on the database adapter.StringA single string, without additional arguments, is passed to the query constructor as an SQL fragment, and used in the where clause of the query.Client.where("orders_count = '2'")
+# SELECT * from clients where orders_count = '2';Note that building your own string from user input may expose your application to injection attacks if not done properly. As an alternative, it is recommended to use one of the following methods.ArrayIf an array is passed, then the first element of the array is treated as a template, and the remaining elements are inserted into the template to generate the condition. Active Record takes care of building the query to avoid injection attacks, and will convert from the ruby type to the database type where needed. Elements are inserted into the string in the order in which they appear.User.where(["name = ? and email = ?", "Joe", "joe@example.com"])
+# SELECT * FROM users WHERE name = 'Joe' AND email = 'joe@example.com';Alternatively, you can use named placeholders in the template, and pass a hash as the second element of the array. The names in the template are replaced with the corresponding values from the hash.User.where(["name = :name and email = :email", { name: "Joe", email: "joe@example.com" }])
+# SELECT * FROM users WHERE name = 'Joe' AND email = 'joe@example.com';This can make for more readable code in complex queries.Lastly, you can use sprintf-style % escapes in the template. This works slightly differently than the previous methods; you are responsible for ensuring that the values in the template are properly quoted. The values are passed to the connector for quoting, but the caller is responsible for ensuring they are enclosed in quotes in the resulting SQL. After quoting, the values are inserted using the same escapes as the Ruby core methodKernel::sprintf.User.where(["name = '%s' and email = '%s'", "Joe", "joe@example.com"])
+# SELECT * FROM users WHERE name = 'Joe' AND email = 'joe@example.com';Ifwhereis called with multiple arguments, these are treated as if they were passed as the elements of a single array.User.where("name = :name and email = :email", { name: "Joe", email: "joe@example.com" })
+# SELECT * FROM users WHERE name = 'Joe' AND email = 'joe@example.com';When using strings to specify conditions, you can use any operator available from the database. While this provides the most flexibility, you can also unintentionally introduce dependencies on the underlying database. If your code is intended for general consumption, test with multiple database backends.Hashwherewill also accept a hash condition, in which the keys are fields and the values are values to be searched for.Fields can be symbols or strings. Values can be single values, arrays, or ranges.User.where(name: "Joe", email: "joe@example.com")
+# SELECT * FROM users WHERE name = 'Joe' AND email = 'joe@example.com'
+
+User.where(name: ["Alice", "Bob"])
+# SELECT * FROM users WHERE name IN ('Alice', 'Bob')
+
+User.where(created_at: (Time.now.midnight - 1.day)..Time.now.midnight)
+# SELECT * FROM users WHERE (created_at BETWEEN '2012-06-09 07:00:00.000000' AND '2012-06-10 07:00:00.000000')In the case of a belongs_to relationship, an association key can be used to specify the model if anActiveRecordobject is used as the value.author = Author.find(1)
+
+# The following queries will be equivalent:
+Post.where(author: author)
+Post.where(author_id: author)This also works with polymorphic belongs_to relationships:treasure = Treasure.create(name: 'gold coins')
+treasure.price_estimates << PriceEstimate.create(price: 125)
+
+# The following queries will be equivalent:
+PriceEstimate.where(estimate_of: treasure)
+PriceEstimate.where(estimate_of_type: 'Treasure', estimate_of_id: treasure)Hashconditions may also be specified in a tuple-like syntax.Hashkeys may be an array of columns with an array of tuples as values.Article.where([:author_id, :id] => [[15, 1], [15, 2]])
+# SELECT * FROM articles WHERE author_id = 15 AND id = 1 OR author_id = 15 AND id = 2JoinsIf the relation is the result of a join, you may create a condition which uses any of the tables in the join. For string and array conditions, use the table name in the condition.User.joins(:posts).where("posts.created_at < ?", Time.now)For hash conditions, you can either use the table name in the key, or use a sub-hash.User.joins(:posts).where("posts.published" => true)
+User.joins(:posts).where(posts: { published: true })No ArgumentIf no argument is passed,wherereturns a new instance ofWhereChain, that can be chained withWhereChain#not,WhereChain#missing, orWhereChain#associated.Chaining withWhereChain#not:User.where.not(name: "Jon")
+# SELECT * FROM users WHERE name != 'Jon'Chaining withWhereChain#associated:Post.where.associated(:author)
+# SELECT "posts".* FROM "posts"
+# INNER JOIN "authors" ON "authors"."id" = "posts"."author_id"
+# WHERE "authors"."id" IS NOT NULLChaining withWhereChain#missing:Post.where.missing(:author)
+# SELECT "posts".* FROM "posts"
+# LEFT OUTER JOIN "authors" ON "authors"."id" = "posts"."author_id"
+# WHERE "authors"."id" IS NULLBlank ConditionIf the condition is any blank-ish object, thenwhereis a no-op and returns the current relation.Source:show|on GitHub# File activerecord/lib/active_record/relation/query_methods.rb, line 1011defwhere(*args)ifargs.empty?WhereChain.new(spawn)elsifargs.length==1&&args.first.blank?selfelsespawn.where!(*args)endendwith(*args)LinkAdd a Common Table Expression (CTE) that you can then reference within another SELECT statement.Note: CTEâs are only supported in MySQL for versions 8.0 and above. You will not be able to use CTEâs with MySQL 5.7.Post.with(posts_with_tags: Post.where("tags_count > ?", 0))
+# => ActiveRecord::Relation
+# WITH posts_with_tags AS (
+#   SELECT * FROM posts WHERE (tags_count > 0)
+# )
+# SELECT * FROM postsYou can also pass an array of sub-queries to be joined in a +UNION ALL+.Post.with(posts_with_tags_or_comments: [Post.where("tags_count > ?", 0), Post.where("comments_count > ?", 0)])
+# => ActiveRecord::Relation
+# WITH posts_with_tags_or_comments AS (
+#  (SELECT * FROM posts WHERE (tags_count > 0))
+#  UNION ALL
+#  (SELECT * FROM posts WHERE (comments_count > 0))
+# )
+# SELECT * FROM postsOnce you define Common Table Expression you can use customFROMvalue orJOINto reference it.Post.with(posts_with_tags: Post.where("tags_count > ?", 0)).from("posts_with_tags AS posts")
+# => ActiveRecord::Relation
+# WITH posts_with_tags AS (
+#  SELECT * FROM posts WHERE (tags_count > 0)
+# )
+# SELECT * FROM posts_with_tags AS posts
+
+Post.with(posts_with_tags: Post.where("tags_count > ?", 0)).joins("JOIN posts_with_tags ON posts_with_tags.id = posts.id")
+# => ActiveRecord::Relation
+# WITH posts_with_tags AS (
+#   SELECT * FROM posts WHERE (tags_count > 0)
+# )
+# SELECT * FROM posts JOIN posts_with_tags ON posts_with_tags.id = posts.idIt is recommended to pass a query asActiveRecord::Relation. If that is not possible and you have verified it is safe for the database, you can pass it as SQL literal usingArel.Post.with(popular_posts: Arel.sql("... complex sql to calculate posts popularity ..."))Great caution should be taken to avoid SQL injection vulnerabilities. This method should not be used with unsafe values that include unsanitized input.To add multiple CTEs just pass multiple key-value pairsPost.with(
+  posts_with_comments: Post.where("comments_count > ?", 0),
+  posts_with_tags: Post.where("tags_count > ?", 0)
+)or chain multiple.withcallsPost
+  .with(posts_with_comments: Post.where("comments_count > ?", 0))
+  .with(posts_with_tags: Post.where("tags_count > ?", 0))Source:show|on GitHub# File activerecord/lib/active_record/relation/query_methods.rb, line 486defwith(*args)raiseArgumentError,"ActiveRecord::Relation#with does not accept a block"ifblock_given?check_if_method_has_arguments!(__callee__,args)spawn.with!(*args)endwith_recursive(*args)LinkAdd a recursive Common Table Expression (CTE) that you can then reference within another SELECT statement.Post.with_recursive(post_and_replies: [Post.where(id: 42), Post.joins('JOIN post_and_replies ON posts.in_reply_to_id = post_and_replies.id')])
+# => ActiveRecord::Relation
+# WITH post_and_replies AS (
+#   (SELECT * FROM posts WHERE id = 42)
+#   UNION ALL
+#   (SELECT * FROM posts JOIN posts_and_replies ON posts.in_reply_to_id = posts_and_replies.id)
+# )
+# SELECT * FROM postsSee â#with` for more information.Source:show|on GitHub# File activerecord/lib/active_record/relation/query_methods.rb, line 510defwith_recursive(*args)check_if_method_has_arguments!(__callee__,args)spawn.with_recursive!(*args)endwithout(*records)LinkAlias for:excludingInstance Protected methodsasync!()LinkSource:show|on GitHub# File activerecord/lib/active_record/relation/query_methods.rb, line 1634defasync!@async=trueselfend

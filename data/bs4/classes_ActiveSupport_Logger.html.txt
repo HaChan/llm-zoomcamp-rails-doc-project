@@ -1,0 +1,7 @@
+NamespaceCLASSActiveSupport::Logger::SimpleFormatterMethodsLlogger_outputs_to?Nnew,normalize_sourcesIncluded ModulesActiveSupport::LoggerSilenceClass Public methodslogger_outputs_to?(logger, *sources)LinkReturns true if the logger destination matches one of the sourceslogger = Logger.new(STDOUT)
+ActiveSupport::Logger.logger_outputs_to?(logger, STDOUT)
+# => true
+
+logger = Logger.new('/var/log/rails.log')
+ActiveSupport::Logger.logger_outputs_to?(logger, '/var/log/rails.log')
+# => trueSource:show|on GitHub# File activesupport/lib/active_support/logger.rb, line 20defself.logger_outputs_to?(logger,*sources)loggers=iflogger.is_a?(BroadcastLogger)logger.broadcastselse[logger]endlogdevs=loggers.map{|logger|logger.instance_variable_get(:@logdev) }logger_sources=logdevs.filter_map{|logdev|logdev.try(:filename)||logdev.try(:dev) }normalize_sources(sources).intersect?(normalize_sources(logger_sources))endnew(*args, **kwargs)LinkSource:show|on GitHub# File activesupport/lib/active_support/logger.rb, line 33definitialize(*args,**kwargs)super@formatter||=SimpleFormatter.newendnormalize_sources(sources)LinkSource:show|on GitHub# File activesupport/lib/active_support/logger.rb, line 47defself.normalize_sources(sources)sources.mapdo|source|source=source.pathifsource.respond_to?(:path)source=File.realpath(source)ifsource.is_a?(String)&&File.exist?(source)sourceendend

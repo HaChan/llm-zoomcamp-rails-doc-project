@@ -1,0 +1,3 @@
+Raised when a supplied parameter is not expected and ActionController::Parameters.action_on_unpermitted_parameters is set to:raise.params = ActionController::Parameters.new(a: "123", b: "456")
+params.permit(:c)
+# => ActionController::UnpermittedParameters: found unpermitted parameters: :a, :b

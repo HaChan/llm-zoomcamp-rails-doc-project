@@ -1,0 +1,47 @@
+MethodsUurl_forInstance Public methodsurl_for(options = nil)LinkReturns the URL for the set ofoptionsprovided. This takes the same options asurl_forin Action Controller (see the documentation forActionDispatch::Routing::UrlFor#url_for). Note that by default:only_pathistrueso youâll get the relative"/controller/action"instead of the fully qualified URL like"http://example.com/controller/action".Options:anchor- Specifies the anchor name to be appended to the path.:only_path- If true, returns the relative URL (omitting the protocol, host name, and port) (trueby default unless:hostis specified).:trailing_slash- If true, adds a trailing slash, as in"/archive/2005/". Note that this is currently not recommended since it breaks caching.:host- Overrides the default (current) host if provided.:protocol- Overrides the default (current) protocol if provided.:user- Inline HTTP authentication (only plucked out if:passwordis also present).:password- Inline HTTP authentication (only plucked out if:useris also present).Relying on named routesPassing a record (like an Active Record) instead of a hash as the options parameter will trigger the named route for that record. The lookup will happen on the name of the class. So passing a Workshop object will attempt to use theworkshop_pathroute. If you have a nested route, such asadmin_workshop_pathyouâll have to call that explicitly (itâs impossible forurl_forto guess that route).Implicit Controller NamespacingControllers passed in using the:controlleroption will retain their namespace unless it is an absolute one.Examples<%= url_for(action: 'index') %>
+# => /blogs/
+
+<%= url_for(action: 'find', controller: 'books') %>
+# => /books/find
+
+<%= url_for(action: 'login', controller: 'members', only_path: false, protocol: 'https') %>
+# => https://www.example.com/members/login/
+
+<%= url_for(action: 'play', anchor: 'player') %>
+# => /messages/play/#player
+
+<%= url_for(action: 'jump', anchor: 'tax&ship') %>
+# => /testing/jump/#tax&ship
+
+<%= url_for(Workshop) %>
+# => /workshops
+
+<%= url_for(Workshop.new) %>
+# relies on Workshop answering a persisted? call (and in this case returning false)
+# => /workshops
+
+<%= url_for(@workshop) %>
+# calls @workshop.to_param which by default returns the id
+# => /workshops/5
+
+# to_param can be re-defined in a model to provide different URL names:
+# => /workshops/1-workshop-name
+
+<%= url_for("http://www.example.com") %>
+# => http://www.example.com
+
+<%= url_for(:back) %>
+# if request.env["HTTP_REFERER"] is set to "http://www.example.com"
+# => http://www.example.com
+
+<%= url_for(:back) %>
+# if request.env["HTTP_REFERER"] is not set or is blank
+# => javascript:history.back()
+
+<%= url_for(action: 'index', controller: 'users') %>
+# Assuming an "admin" namespace
+# => /admin/users
+
+<%= url_for(action: 'index', controller: '/users') %>
+# Specify absolute path with beginning slash
+# => /usersSource:show|on GitHub# File actionview/lib/action_view/routing_url_for.rb, line 82defurl_for(options=nil)caseoptionswhenStringoptionswhennilsuper(only_path:_generate_paths_by_default)whenHashoptions=options.symbolize_keysensure_only_path_option(options)super(options)whenActionController::Parametersensure_only_path_option(options)super(options)when:back_back_urlwhenArraycomponents=options.dupoptions=components.extract_options!ensure_only_path_option(options)ifoptions[:only_path]polymorphic_path(components,options)elsepolymorphic_url(components,options)endelsemethod=_generate_paths_by_default?:path::urlbuilder=ActionDispatch::Routing::PolymorphicRoutes::HelperMethodBuilder.public_send(method)caseoptionswhenSymbolbuilder.handle_string_call(self,options)whenClassbuilder.handle_class_call(self,options)elsebuilder.handle_model_call(self,options)endendend

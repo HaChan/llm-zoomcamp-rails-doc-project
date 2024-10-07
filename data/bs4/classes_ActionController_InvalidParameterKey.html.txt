@@ -1,0 +1,2 @@
+Raised when initializingParameterswith keys that arenât strings or symbols.ActionController::Parameters.new(123 => 456)
+# => ActionController::InvalidParameterKey: all keys must be Strings or Symbols, got: Integer

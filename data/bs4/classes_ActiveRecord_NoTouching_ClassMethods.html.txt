@@ -1,0 +1,9 @@
+MethodsNno_touchingInstance Public methodsno_touching(&block)LinkLets you selectively disable calls totouchfor the duration of a block.ExamplesActiveRecord::Base.no_touching do
+  Project.first.touch  # does nothing
+  Message.first.touch  # does nothing
+end
+
+Project.no_touching do
+  Project.first.touch  # does nothing
+  Message.first.touch  # works, but does not touch the associated project
+endSource:show|on GitHub# File activerecord/lib/active_record/no_touching.rb, line 23defno_touching(&block)NoTouching.apply_to(self,&block)end

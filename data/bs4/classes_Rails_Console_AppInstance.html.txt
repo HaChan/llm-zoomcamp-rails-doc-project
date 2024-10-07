@@ -1,0 +1,1 @@
+MethodsEexecuteInstance Public methodsexecute(create = false)LinkSource:show|on GitHub# File railties/lib/rails/commands/console/irb_console.rb, line 48defexecute(create=false)@app_integration_instance=nilifcreate@app_integration_instance||=superend

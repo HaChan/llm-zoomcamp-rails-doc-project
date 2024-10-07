@@ -1,0 +1,1 @@
+Required Filesactive_support/core_ext/hash/sliceactive_support/core_ext/object/deep_dupNamespaceMODULEActiveRecordMODULEActiveRecord::EnumMODULEActiveSupport

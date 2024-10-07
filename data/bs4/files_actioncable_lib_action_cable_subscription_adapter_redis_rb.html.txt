@@ -1,0 +1,1 @@
+Required Filesredisactive_support/core_ext/hash/exceptNamespaceMODULEActionCableMODULEActionCable::SubscriptionAdapterCLASSActionCable::SubscriptionAdapter::RedisCLASSActionCable::SubscriptionAdapter::Redis::ListenerCLASSActionCable::SubscriptionAdapter::Redis::Listener::SubscribedClient

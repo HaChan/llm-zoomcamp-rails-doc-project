@@ -1,0 +1,1 @@
+NamespaceCLASSActionView::Helpers::Tags::ActionText

@@ -1,0 +1,1 @@
+Required Filesrails/commands/routes/routes_commandaction_dispatch/routing/inspectorNamespaceMODULEActionDispatchMODULEActionDispatch::JourneyMODULEActionDispatch::RoutingMODULEActionDispatch::Routing::ConsoleFormatterMODULERailsMODULERails::CommandCLASSRails::Command::UnusedRoutesCommandCLASSRails::Command::UnusedRoutesCommand::RouteInfo

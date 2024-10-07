@@ -1,0 +1,11 @@
+MethodsMmissing_name,missing_name?Instance Public methodsmissing_name()LinkExtract the name of the missing constant from the exception message.begin
+  HelloWorld
+rescue NameError => e
+  e.missing_name
+end
+# => "HelloWorld"Source:show|on GitHub# File activesupport/lib/active_support/core_ext/name_error.rb, line 12defmissing_name# Since ruby v2.3.0 `did_you_mean` gem is loaded by default.# It extends NameError#message with spell corrections which are SLOW.# We should use original_message message instead.message=respond_to?(:original_message)?original_message:self.messagereturnunlessmessage.start_with?("uninitialized constant ")receiver=beginself.receiverrescueArgumentErrornilendifreceiver==Objectname.to_selsifreceiver"#{real_mod_name(receiver)}::#{self.name}"elseifmatch=message.match(/((::)?([A-Z]\w*)(::[A-Z]\w*)*)$/)match[1]endendendmissing_name?(name)LinkWas this exception raised because the given name was missing?begin
+  HelloWorld
+rescue NameError => e
+  e.missing_name?("HelloWorld")
+end
+# => trueSource:show|on GitHub# File activesupport/lib/active_support/core_ext/name_error.rb, line 44defmissing_name?(name)ifname.is_a?Symbolself.name==nameelsemissing_name==name.to_sendend

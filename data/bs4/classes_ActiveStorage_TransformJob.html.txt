@@ -1,0 +1,1 @@
+MethodsPperformInstance Public methodsperform(blob, transformations)LinkSource:show|on GitHub# File activestorage/app/jobs/active_storage/transform_job.rb, line 9defperform(blob,transformations)blob.representation(transformations).processedend

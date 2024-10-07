@@ -1,0 +1,8 @@
+MethodsSstub_constInstance Public methodsstub_const(mod, constant, new_value, exists: true)LinkChanges the value of a constant for the duration of a block. Example:# World::List::Import::LARGE_IMPORT_THRESHOLD = 5000
+stub_const(World::List::Import, :LARGE_IMPORT_THRESHOLD, 1) do
+  assert_equal 1, World::List::Import::LARGE_IMPORT_THRESHOLD
+end
+
+assert_equal 5000, World::List::Import::LARGE_IMPORT_THRESHOLDUsing this method rather than forcingWorld::List::Import::LARGE_IMPORT_THRESHOLD = 5000prevents warnings from being thrown, and ensures that the old value is returned after the test has completed.If the constant doesnât already exists, but you need it set for the duration of the block you can do so by passing âexists: false`.stub_const(object, :SOME_CONST, 1, exists: false) do
+  assert_equal 1, SOME_CONST
+endNote: Stubbing a const will stub it across all threads. So if you have concurrent threads (like separate test suites running in parallel) that all depend on the same constant, itâs possible divergent stubbing will trample on each other.Source:show|on GitHub# File activesupport/lib/active_support/testing/constant_stubbing.rb, line 28defstub_const(mod,constant,new_value,exists:true)ifexistsbeginold_value=mod.const_get(constant,false)mod.send(:remove_const,constant)mod.const_set(constant,new_value)yieldensuremod.send(:remove_const,constant)mod.const_set(constant,old_value)endelseifmod.const_defined?(constant)raiseNameError,"already defined constant #{constant} in #{mod.name}"endbeginmod.const_set(constant,new_value)yieldensuremod.send(:remove_const,constant)endendend

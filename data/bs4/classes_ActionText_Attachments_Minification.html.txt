@@ -1,0 +1,1 @@
+MethodsFfragment_by_minifying_attachmentsInstance Public methodsfragment_by_minifying_attachments(content)LinkSource:show|on GitHub# File actiontext/lib/action_text/attachments/minification.rb, line 11deffragment_by_minifying_attachments(content)Fragment.wrap(content).replace(ActionText::Attachment.tag_name)do|node|node.tap{|n|n.inner_html=""}endend

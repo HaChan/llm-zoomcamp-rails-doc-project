@@ -1,0 +1,1 @@
+Included ModulesActiveSupport::Messages::SerializerWithFallback::MessagePackWithFallbackActiveSupport::Messages::SerializerWithFallback::AllowMarshal

@@ -1,0 +1,1 @@
+Required FilessneakersmonitorNamespaceMODULEActiveJobMODULEActiveJob::QueueAdaptersMODULEActiveSupportCLASSActiveJob::QueueAdapters::SneakersAdapter

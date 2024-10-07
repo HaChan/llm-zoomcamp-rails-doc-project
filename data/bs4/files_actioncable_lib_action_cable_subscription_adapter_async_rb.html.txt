@@ -1,0 +1,1 @@
+NamespaceMODULEActionCableMODULEActionCable::SubscriptionAdapterCLASSActionCable::SubscriptionAdapter::AsyncCLASSActionCable::SubscriptionAdapter::Async::AsyncSubscriberMap

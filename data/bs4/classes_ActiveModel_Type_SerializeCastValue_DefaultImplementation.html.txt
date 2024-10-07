@@ -1,0 +1,1 @@
+MethodsSserialize_cast_valueInstance Public methodsserialize_cast_value(value)LinkSource:show|on GitHub# File activemodel/lib/active_model/type/serialize_cast_value.rb, line 16defserialize_cast_value(value)valueend

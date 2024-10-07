@@ -1,0 +1,1 @@
+Raised when Active Record finds multiple records but only expected one.MethodsNnewAttributes[R]recordClass Public methodsnew(record = nil)LinkSource:show|on GitHub# File activerecord/lib/active_record/errors.rb, line 182definitialize(record=nil)@record=recordsuper"Wanted only one #{record&.name || "record"}"end

@@ -1,0 +1,3 @@
+MethodsCchannel_nameInstance Public methodschannel_name()LinkReturns the name of the channel, underscored, without theChannelending. If the channel is in a namespace, then the namespaces are represented by single colon separators in the channel name.ChatChannel.channel_name # => 'chat'
+Chats::AppearancesChannel.channel_name # => 'chats:appearances'
+FooChats::BarAppearancesChannel.channel_name # => 'foo_chats:bar_appearances'Source:show|on GitHub# File actioncable/lib/action_cable/channel/naming.rb, line 18defchannel_name@channel_name||=name.delete_suffix("Channel").gsub("::",":").underscoreend

@@ -1,0 +1,1 @@
+Active Job Inline adapterWhen enqueuing jobs with the Inline adapter the job will be executed immediately.To use the Inline set the queue_adapter config to:inline.Rails.application.config.active_job.queue_adapter = :inline

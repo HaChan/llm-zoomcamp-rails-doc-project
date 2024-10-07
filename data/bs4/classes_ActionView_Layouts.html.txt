@@ -1,0 +1,71 @@
+Action View LayoutsLayoutsreverse the common pattern of including shared headers and footers in many templates to isolate changes in repeated setups. The inclusion pattern has pages that look like this:<%= render "application/header" %>
+Hello World
+<%= render "application/footer" %>This approach is a decent way of keeping common structures isolated from the changing content, but itâs verbose and if you ever want to change the structure of these two includes, youâll have to change all the templates.With layouts, you can flip it around and have the common structure know where to insert changing content. This means that the header and footer are only mentioned in one place, like this:// The header part of this layout
+<%= yield %>
+// The footer part of this layoutAnd then you have content pages that look like this:hello worldAt rendering time, the content page is computed and then inserted in the layout, like this:// The header part of this layout
+hello world
+// The footer part of this layoutAccessing shared variablesLayoutshave access to variables specified in the content pages and vice versa. This allows you to have layouts with references that wonât materialize before rendering time:<h1><%= @page_title %></h1>
+<%= yield %>â¦and content pages that fulfill these referencesatrendering time:<% @page_title = "Welcome" %>
+Off-world colonies offers you a chance to start a new lifeThe result after rendering is:<h1>Welcome</h1>
+Off-world colonies offers you a chance to start a new lifeLayout assignmentYou can either specify a layout declaratively (using the layout class method) or give it the same name as your controller, and place it inapp/views/layouts. If a subclass does not have a layout specified, it inherits its layout using normal Ruby inheritance.For instance, if you have PostsController and a template namedapp/views/layouts/posts.html.erb, that template will be used for all actions in PostsController and controllers inheriting from PostsController.If you use a module, for instance Weblog::PostsController, you will need a template namedapp/views/layouts/weblog/posts.html.erb.Since all your controllers inherit from ApplicationController, they will useapp/views/layouts/application.html.erbif no other layout is specified or provided.Inheritance Examplesclass BankController < ActionController::Base
+  # bank.html.erb exists
+
+class ExchangeController < BankController
+  # exchange.html.erb exists
+
+class CurrencyController < BankController
+
+class InformationController < BankController
+  layout "information"
+
+class TellerController < InformationController
+  # teller.html.erb exists
+
+class EmployeeController < InformationController
+  # employee.html.erb exists
+  layout nil
+
+class VaultController < BankController
+  layout :access_level_layout
+
+class TillController < BankController
+  layout falseIn these examples, we have three implicit lookup scenarios:TheBankControlleruses the âbankâ layout.TheExchangeControlleruses the âexchangeâ layout.TheCurrencyControllerinherits the layout from BankController.However, when a layout is explicitly set, the explicitly set layout wins:TheInformationControlleruses the âinformationâ layout, explicitly set.TheTellerControlleralso uses the âinformationâ layout, because the parent explicitly set it.TheEmployeeControlleruses the âemployeeâ layout, because it set the layout tonil, resetting the parent configuration.TheVaultControllerchooses a layout dynamically by calling theaccess_level_layoutmethod.TheTillControllerdoes not use a layout at all.Types of layoutsLayoutsare basically just regular templates, but the name of this template needs not be specified statically. Sometimes you want to alternate layouts depending on runtime information, such as whether someone is logged in or not. This can be done either by specifying a method reference as a symbol or using an inline method (as a proc).The method reference is the preferred approach to variable layouts and is used like this:class WeblogController < ActionController::Base
+  layout :writers_and_readers
+
+  def index
+    # fetching posts
+  end
+
+  private
+    def writers_and_readers
+      logged_in? ? "writer_layout" : "reader_layout"
+    end
+endNow when a new request for the index action is processed, the layout will vary depending on whether the person accessing is logged in or not.If you want to use an inline method, such as a proc, do something like this:class WeblogController < ActionController::Base
+  layout proc { |controller| controller.logged_in? ? "writer_layout" : "reader_layout" }
+endIf an argument isnât given to the proc, itâs evaluated in the context of the current controller anyway.class WeblogController < ActionController::Base
+  layout proc { logged_in? ? "writer_layout" : "reader_layout" }
+endOf course, the most common way of specifying a layout is still just as a plain template name:class WeblogController < ActionController::Base
+  layout "weblog_standard"
+endThe template will be looked always inapp/views/layouts/folder. But you can pointlayoutsfolder direct also.layout "layouts/demo"is the same aslayout "demo".Setting the layout tonilforces it to be looked up in the filesystem and falls back to the parent behavior if none exists. Setting it tonilis useful to re-enable template lookup overriding a previous configuration set in the parent:class ApplicationController < ActionController::Base
+  layout "application"
+end
+
+class PostsController < ApplicationController
+  # Will use "application" layout
+end
+
+class CommentsController < ApplicationController
+  # Will search for "comments" layout and fall back to "application" layout
+  layout nil
+endConditional layoutsIf you have a layout that by default is applied to all the actions of a controller, you still have the option of rendering a given action or set of actions without a layout, or restricting a layout to only a single action or a set of actions. The:onlyand:exceptoptions can be passed to the layout call. For example:class WeblogController < ActionController::Base
+  layout "weblog_standard", except: :rss
+
+  # ...
+
+endThis will assign âweblog_standardâ as the WeblogControllerâs layout for all actions except for therssaction, which will be rendered directly, without wrapping a layout around the rendered view.Both the:onlyand:exceptcondition can accept an arbitrary number of method references, soexcept: [ :rss, :text_only ]is valid, as isexcept: :rss.Using a different layout in the action render callIf most of your actions use the same layout, it makes perfect sense to define a controller-wide layout as described above. Sometimes youâll have exceptions where one action wants to use a different layout than the rest of the controller. You can do this by passing a:layoutoption to therendercall. For example:class WeblogController < ActionController::Base
+  layout "weblog_standard"
+
+  def help
+    render action: "help", layout: "help"
+  end
+endThis will override the controller-wide âweblog_standardâ layout, and will render the help action with the âhelpâ layout instead.NamespaceMODULEActionView::Layouts::ClassMethodsMethodsAaction_has_layout?Included ModulesActionView::RenderingInstance Public methodsaction_has_layout?()LinkControls whether an action should be rendered using a layout. If you want to disable anylayoutsettings for the current action so that it is rendered without a layout then either override this method in your controller to return false for that action or set theaction_has_layoutattribute to false before rendering.Source:show|on GitHub# File actionview/lib/action_view/layouts.rb, line 372defaction_has_layout?@_action_has_layoutend

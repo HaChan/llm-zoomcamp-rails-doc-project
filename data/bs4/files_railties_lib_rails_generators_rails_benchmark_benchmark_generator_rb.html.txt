@@ -1,0 +1,1 @@
+Required Filesrails/generators/named_baseNamespaceMODULERailsMODULERails::GeneratorsCLASSRails::Generators::BenchmarkGenerator

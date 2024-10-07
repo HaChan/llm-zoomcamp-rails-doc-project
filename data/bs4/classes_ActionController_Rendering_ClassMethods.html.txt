@@ -1,0 +1,1 @@
+MethodsIinheritedAttributes[R]rendererReturns a renderer instance (inherited fromActionController::Renderer) for the controller.Instance Public methodsinherited(klass)LinkSource:show|on GitHub# File actionpack/lib/action_controller/metal/rendering.rb, line 23definherited(klass)klass.setup_renderer!superend

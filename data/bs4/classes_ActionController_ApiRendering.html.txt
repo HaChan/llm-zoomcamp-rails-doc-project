@@ -1,0 +1,1 @@
+MethodsRrender_to_bodyIncluded ModulesActionController::RenderingInstance Public methodsrender_to_body(options = {})LinkSource:show|on GitHub# File actionpack/lib/action_controller/api/api_rendering.rb, line 13defrender_to_body(options= {})_process_options(options)superend

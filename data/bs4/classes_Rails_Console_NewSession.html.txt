@@ -1,0 +1,1 @@
+MethodsEexecuteInstance Public methodsexecute(*)LinkSource:show|on GitHub# File railties/lib/rails/commands/console/irb_console.rb, line 33defexecute(*)app=Rails.applicationsession=ActionDispatch::Integration::Session.new(app)# This makes app.url_for and app.foo_path available in the consolesession.extend(app.routes.url_helpers)session.extend(app.routes.mounted_helpers)sessionend

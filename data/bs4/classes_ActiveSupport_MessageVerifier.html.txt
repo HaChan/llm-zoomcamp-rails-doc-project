@@ -1,0 +1,59 @@
+Active Support Message VerifierMessageVerifiermakes it easy to generate and verify messages which are signed to prevent tampering.In a Rails application, you can useRails.application.message_verifierto manage unique instances of verifiers for each use case.Learn more.This is useful for cases like remember-me tokens and auto-unsubscribe links where the session store isnât suitable or available.First, generate a signed message:cookies[:remember_me] = Rails.application.message_verifier(:remember_me).generate([@user.id, 2.weeks.from_now])Later verify that message:id, time = Rails.application.message_verifier(:remember_me).verify(cookies[:remember_me])
+if time.future?
+  self.current_user = User.find(id)
+endSigning is not encryptionThe signed messages are not encrypted. The payload is merely encoded (Base64 by default) and can be decoded by anyone. The signature is just assuring that the message wasnât tampered with. For example:message = Rails.application.message_verifier('my_purpose').generate('never put secrets here')
+# => "BAhJIhtuZXZlciBwdXQgc2VjcmV0cyBoZXJlBjoGRVQ=--a0c1c0827919da5e949e989c971249355735e140"
+Base64.decode64(message.split("--").first) # no key needed
+# => 'never put secrets here'If you also need to encrypt the contents, you must useActiveSupport::MessageEncryptorinstead.Confine messages to a specific purposeItâs not recommended to use the same verifier for different purposes in your application. Doing so could allow a malicious actor to re-use a signed message to perform an unauthorized action. You can reduce this risk by confining signed messages to a specific:purpose.token = @verifier.generate("signed message", purpose: :login)Then that same purpose must be passed when verifying to get the data back out:@verifier.verified(token, purpose: :login)    # => "signed message"
+@verifier.verified(token, purpose: :shipping) # => nil
+@verifier.verified(token)                     # => nil
+
+@verifier.verify(token, purpose: :login)      # => "signed message"
+@verifier.verify(token, purpose: :shipping)   # => raises ActiveSupport::MessageVerifier::InvalidSignature
+@verifier.verify(token)                       # => raises ActiveSupport::MessageVerifier::InvalidSignatureLikewise, if a message has no purpose it wonât be returned when verifying with a specific purpose.token = @verifier.generate("signed message")
+@verifier.verified(token, purpose: :redirect) # => nil
+@verifier.verified(token)                     # => "signed message"
+
+@verifier.verify(token, purpose: :redirect)   # => raises ActiveSupport::MessageVerifier::InvalidSignature
+@verifier.verify(token)                       # => "signed message"Expiring messagesBy default messages last forever and verifying one year from now will still return the original value. But messages can be set to expire at a given time with:expires_inor:expires_at.@verifier.generate("signed message", expires_in: 1.month)
+@verifier.generate("signed message", expires_at: Time.now.end_of_year)Messagescan then be verified and returned until expiry. Thereafter, theverifiedmethod returnsnilwhileverifyraisesActiveSupport::MessageVerifier::InvalidSignature.Rotating keysMessageVerifieralso supports rotating out old configurations by falling back to a stack of verifiers. Callrotateto build and add a verifier so eitherverifiedorverifywill also try verifying with the fallback.By default any rotated verifiers use the values of the primary verifier unless specified otherwise.Youâd give your verifier the new defaults:verifier = ActiveSupport::MessageVerifier.new(@secret, digest: "SHA512", serializer: JSON)Then gradually rotate the old values out by adding them as fallbacks. Any message generated with the old values will then work until the rotation is removed.verifier.rotate(old_secret)          # Fallback to an old secret instead of @secret.
+verifier.rotate(digest: "SHA256")    # Fallback to an old digest instead of SHA512.
+verifier.rotate(serializer: Marshal) # Fallback to an old serializer instead of JSON.Though the above would most likely be combined into one rotation:verifier.rotate(old_secret, digest: "SHA256", serializer: Marshal)NamespaceCLASSActiveSupport::MessageVerifier::InvalidSignatureMethodsGgenerateNnewVvalid_message?,verified,verifyClass Public methodsnew(secret, **options)LinkInitialize a newMessageVerifierwith a secret for the signature.Options:digestDigestused for signing. The default is"SHA1". SeeOpenSSL::Digestfor alternatives.:serializerThe serializer used to serialize message data. You can specify any object that responds todumpandload, or you can choose from several preconfigured serializers::marshal,:json_allow_marshal,:json,:message_pack_allow_marshal,:message_pack.The preconfigured serializers include a fallback mechanism to support multiple deserialization formats. For example, the:marshalserializer will serialize usingMarshal, but can deserialize usingMarshal,ActiveSupport::JSON, orActiveSupport::MessagePack. This makes it easy to migrate between serializers.The:marshal,:json_allow_marshal, and:message_pack_allow_marshalserializers support deserializing usingMarshal, but the others do not. Beware thatMarshalis a potential vector for deserialization attacks in cases where a message signing secret has been leaked.If possible, choose a serializer that does not supportMarshal.The:message_packand:message_pack_allow_marshalserializers useActiveSupport::MessagePack, which can roundtrip some Ruby types that are not supported byJSON, and may provide improved performance. However, these require themsgpackgem.When using Rails, the default depends onconfig.active_support.message_serializer. Otherwise, the default is:marshal.:url_safeBy default,MessageVerifiergenerates RFC 4648 compliant strings which are not URL-safe. In other words, they can contain â+â and â/â. If you want to generate URL-safe strings (in compliance with âBase 64 Encoding with URL and Filename Safe Alphabetâ in RFC 4648), you can passtrue.:force_legacy_metadata_serializerWhether to use the legacy metadata serializer, which serializes the message first, then wraps it in an envelope which is also serialized. This was the default in Rails 7.0 and below.If you donât pass a truthy value, the default is set usingconfig.active_support.use_message_serializer_for_metadata.Source:show|on GitHub# File activesupport/lib/active_support/message_verifier.rb, line 165definitialize(secret,**options)raiseArgumentError,"Secret should not be nil."unlesssecretsuper(**options)@secret=secret@digest=options[:digest]&.to_s||"SHA1"endInstance Public methodsgenerate(value, **options)LinkGenerates a signed message for the provided value.The message is signed with theMessageVerifierâs secret. Returns Base64-encoded message joined with the generated signature.verifier = ActiveSupport::MessageVerifier.new("secret")
+verifier.generate("signed message") # => "BAhJIhNzaWduZWQgbWVzc2FnZQY6BkVU--f67d5f27c3ee0b8483cebf2103757455e947493b"Options:expires_atThe datetime at which the message expires. After this datetime, verification of the message will fail.message = verifier.generate("hello", expires_at: Time.now.tomorrow)
+verifier.verified(message) # => "hello"
+# 24 hours later...
+verifier.verified(message) # => nil
+verifier.verify(message)   # => raises ActiveSupport::MessageVerifier::InvalidSignature:expires_inThe duration for which the message is valid. After this duration has elapsed, verification of the message will fail.message = verifier.generate("hello", expires_in: 24.hours)
+verifier.verified(message) # => "hello"
+# 24 hours later...
+verifier.verified(message) # => nil
+verifier.verify(message)   # => raises ActiveSupport::MessageVerifier::InvalidSignature:purposeThe purpose of the message. If specified, the same purpose must be specified when verifying the message; otherwise, verification will fail. (Seeverifiedandverify.)Source:show|on GitHub# File activesupport/lib/active_support/message_verifier.rb, line 304defgenerate(value,**options)create_message(value,**options)endvalid_message?(message)LinkChecks if a signed message could have been generated by signing an object with theMessageVerifierâs secret.verifier = ActiveSupport::MessageVerifier.new("secret")
+signed_message = verifier.generate("signed message")
+verifier.valid_message?(signed_message) # => true
+
+tampered_message = signed_message.chop # editing the message invalidates the signature
+verifier.valid_message?(tampered_message) # => falseSource:show|on GitHub# File activesupport/lib/active_support/message_verifier.rb, line 181defvalid_message?(message)!!catch_and_ignore(:invalid_message_format) {extract_encoded(message) }endverified(message, **options)LinkDecodes the signed message using theMessageVerifierâs secret.verifier = ActiveSupport::MessageVerifier.new("secret")
+
+signed_message = verifier.generate("signed message")
+verifier.verified(signed_message) # => "signed message"Returnsnilif the message was not signed with the same secret.other_verifier = ActiveSupport::MessageVerifier.new("different_secret")
+other_verifier.verified(signed_message) # => nilReturnsnilif the message is not Base64-encoded.invalid_message = "f--46a0120593880c733a53b6dad75b42ddc1c8996d"
+verifier.verified(invalid_message) # => nilRaises any error raised while decoding the signed message.incompatible_message = "test--dad7b06c94abba8d46a15fafaef56c327665d5ff"
+verifier.verified(incompatible_message) # => TypeError: incompatible marshal file formatOptions:purposeThe purpose that the message was generated with. If the purpose does not match,verifiedwill returnnil.message = verifier.generate("hello", purpose: "greeting")
+verifier.verified(message, purpose: "greeting") # => "hello"
+verifier.verified(message, purpose: "chatting") # => nil
+verifier.verified(message)                      # => nil
+
+message = verifier.generate("bye")
+verifier.verified(message)                      # => "bye"
+verifier.verified(message, purpose: "greeting") # => nilSource:show|on GitHub# File activesupport/lib/active_support/message_verifier.rb, line 222defverified(message,**options)catch_and_ignore:invalid_message_formatdocatch_and_raise:invalid_message_serializationdocatch_and_ignore:invalid_message_contentdoread_message(message,**options)endendendendverify(message, **options)LinkDecodes the signed message using theMessageVerifierâs secret.verifier = ActiveSupport::MessageVerifier.new("secret")
+signed_message = verifier.generate("signed message")
+
+verifier.verify(signed_message) # => "signed message"RaisesInvalidSignatureif the message was not signed with the same secret or was not Base64-encoded.other_verifier = ActiveSupport::MessageVerifier.new("different_secret")
+other_verifier.verify(signed_message) # => ActiveSupport::MessageVerifier::InvalidSignatureOptions:purposeThe purpose that the message was generated with. If the purpose does not match,verifywill raiseActiveSupport::MessageVerifier::InvalidSignature.message = verifier.generate("hello", purpose: "greeting")
+verifier.verify(message, purpose: "greeting") # => "hello"
+verifier.verify(message, purpose: "chatting") # => raises InvalidSignature
+verifier.verify(message)                      # => raises InvalidSignature
+
+message = verifier.generate("bye")
+verifier.verify(message)                      # => "bye"
+verifier.verify(message, purpose: "greeting") # => raises InvalidSignatureSource:show|on GitHub# File activesupport/lib/active_support/message_verifier.rb, line 260defverify(message,**options)catch_and_raise:invalid_message_format,as:InvalidSignaturedocatch_and_raise:invalid_message_serializationdocatch_and_raise:invalid_message_content,as:InvalidSignaturedoread_message(message,**options)endendendend

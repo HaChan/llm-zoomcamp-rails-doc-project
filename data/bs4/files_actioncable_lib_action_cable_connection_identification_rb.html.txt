@@ -1,0 +1,1 @@
+Required FilessetNamespaceMODULEActionCableMODULEActionCable::ConnectionMODULEActionCable::Connection::IdentificationMODULEActionCable::Connection::Identification::ClassMethods

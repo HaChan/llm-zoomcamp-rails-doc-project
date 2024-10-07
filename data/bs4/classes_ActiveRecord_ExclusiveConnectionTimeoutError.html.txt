@@ -1,0 +1,1 @@
+Raised when a pool was unable to get ahold of all its connections to perform a âgroupâ action such asActiveRecord::Base.connection_pool.disconnect!orActiveRecord::Base.connection_handler.clear_reloadable_connections!.

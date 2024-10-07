@@ -1,0 +1,1 @@
+Action View Test CaseRead more aboutActionView::TestCaseinTesting Rails Applicationsin the guides.NamespaceMODULEActionView::TestCase::BehaviorCLASSActionView::TestCase::TestControllerIncluded ModulesActionView::TestCase::Behavior

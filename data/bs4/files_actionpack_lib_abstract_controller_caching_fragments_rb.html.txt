@@ -1,0 +1,1 @@
+NamespaceMODULEAbstractControllerMODULEAbstractController::CachingMODULEAbstractController::Caching::FragmentsMODULEAbstractController::Caching::Fragments::ClassMethodsMODULEActiveSupport

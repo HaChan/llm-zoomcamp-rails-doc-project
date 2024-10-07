@@ -1,0 +1,3 @@
+Configuration API forActiveRecord::EncryptionMethodsOon_encrypted_attribute_declaredInstance Public methodson_encrypted_attribute_declared(&block)LinkRegister callback to be invoked when an encrypted attribute is declared.ExampleActiveRecord::Encryption.on_encrypted_attribute_declared do |klass, attribute_name|
+  ...
+endSource:show|on GitHub# File activerecord/lib/active_record/encryption/configurable.rb, line 47defon_encrypted_attribute_declared(&block)self.encrypted_attribute_declaration_listeners||=Concurrent::Array.newself.encrypted_attribute_declaration_listeners<<blockend

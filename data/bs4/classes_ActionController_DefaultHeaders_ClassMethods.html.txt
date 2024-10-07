@@ -1,0 +1,1 @@
+MethodsMmake_response!Instance Public methodsmake_response!(request)LinkSource:show|on GitHub# File actionpack/lib/action_controller/metal/default_headers.rb, line 14defmake_response!(request)ActionDispatch::Response.create.tapdo|res|res.request=requestendend

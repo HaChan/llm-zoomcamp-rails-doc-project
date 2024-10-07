@@ -1,0 +1,1 @@
+NamespaceMODULEActiveModelMODULEActiveModel::TypeMODULEActiveRecordMODULEActiveRecord::MessagePackMODULEActiveRecord::MessagePack::ExtensionsMODULEActiveSupportCLASSActiveModel::Type::BinaryCLASSActiveRecord::MessagePack::DecoderCLASSActiveRecord::MessagePack::Encoder

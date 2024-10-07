@@ -1,0 +1,1 @@
+MethodsSsuppressInstance Public methodssuppress(&block)LinkSource:show|on GitHub# File activerecord/lib/active_record/suppressor.rb, line 42defsuppress(&block)previous_state=Suppressor.registry[name]Suppressor.registry[name] =trueyieldensureSuppressor.registry[name] =previous_stateend

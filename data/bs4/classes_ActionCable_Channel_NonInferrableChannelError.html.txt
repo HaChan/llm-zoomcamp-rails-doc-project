@@ -1,0 +1,1 @@
+MethodsNnewClass Public methodsnew(name)LinkSource:show|on GitHub# File actioncable/lib/action_cable/channel/test_case.rb, line 13definitialize(name)super"Unable to determine the channel to test from #{name}. "+"You'll need to specify it using `tests YourChannel` in your "+"test case definition."end

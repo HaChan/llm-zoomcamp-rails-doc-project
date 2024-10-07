@@ -1,0 +1,1 @@
+Raised on attempt to lazily load records that are marked as strict loading.You can resolve this error by eager loading marked records before accessing them. TheEager Loading Associationsguide covers solutions, such as usingActiveRecord::Base.includes.

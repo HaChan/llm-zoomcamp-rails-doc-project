@@ -1,0 +1,1 @@
+HTTPBasic,Digest, andTokenauthentication.NamespaceMODULEActionController::HttpAuthentication::BasicMODULEActionController::HttpAuthentication::DigestMODULEActionController::HttpAuthentication::Token

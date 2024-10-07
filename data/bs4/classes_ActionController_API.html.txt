@@ -1,0 +1,59 @@
+Action ControllerAPIAPIController is a lightweight version ofActionController::Base, created for applications that donât require all functionalities that a completeRailscontroller provides, allowing you to create controllers with just the features that you need forAPIonly applications.AnAPIController is different from a normal controller in the sense that by default it doesnât include a number of features that are usually required by browser access only: layouts and templates rendering, flash, assets, and so on. This makes the entire controller stack thinner, suitable forAPIapplications. It doesnât mean you wonât have such features if you need them: theyâre all available for you to include in your application, theyâre just not part of the defaultAPIcontroller stack.Normally,ApplicationControlleris the only controller that inherits fromActionController::API. All other controllers in turn inherit fromApplicationController.A sample controller could look like this:class PostsController < ApplicationController
+  def index
+    posts = Post.all
+    render json: posts
+  end
+endRequest, response, and parameters objects all work the exact same way asActionController::Base.RendersThe defaultAPIController stack includes all renderers, which means you can userender :jsonand siblings freely in your controllers. Keep in mind that templates are not going to be rendered, so you need to ensure your controller is calling eitherrenderorredirect_toin all actions, otherwise it will return204 No Content.def show
+  post = Post.find(params[:id])
+  render json: post
+endRedirectsRedirects are used to move from one action to another. You can use theredirect_tomethod in your controllers in the same way as inActionController::Base. For example:def create
+  redirect_to root_url and return if not_authorized?
+  # do stuff here
+endAdding New BehaviorIn some scenarios you may want to add back some functionality provided byActionController::Basethat is not present by default inActionController::API, for instanceMimeResponds. This module gives you therespond_tomethod. Adding it is quite simple, you just need to include the module in a specific controller or inApplicationControllerin case you want it available in your entire application:class ApplicationController < ActionController::API
+  include ActionController::MimeResponds
+end
+
+class PostsController < ApplicationController
+  def index
+    posts = Post.all
+
+    respond_to do |format|
+      format.json { render json: posts }
+      format.xml  { render xml: posts }
+    end
+  end
+endMake sure to check the modules included inActionController::Baseif you want to use any other functionality that is not provided byActionController::APIout of the box.MethodsWwithout_modulesConstantsMODULES=[
+AbstractController::Rendering,
+
+UrlFor,
+Redirecting,
+ApiRendering,
+Renderers::All,
+ConditionalGet,
+BasicImplicitRender,
+StrongParameters,
+RateLimiting,
+
+DataStreaming,
+DefaultHeaders,
+Logging,
+
+# Before callbacks should also be executed as early as possible, so also include
+# them at the bottom.
+AbstractController::Callbacks,
+
+# Append rescue at the bottom to wrap as much as possible.
+Rescue,
+
+# Add instrumentations hooks at the bottom, to ensure they instrument all the
+# methods properly.
+Instrumentation,
+
+# Params wrapper should come before instrumentation so they are properly showed
+# in logs
+ParamsWrapper
+]Class Public methodswithout_modules(*modules)LinkShortcut helper that returns all theActionController::APImodules except the ones passed as arguments:class MyAPIBaseController < ActionController::Metal
+  ActionController::API.without_modules(:UrlFor).each do |left|
+    include left
+  end
+endThis gives better control over what you want to exclude and makes it easier to create anAPIcontroller class, instead of listing the modules required manually.Source:show|on GitHub# File actionpack/lib/action_controller/api.rb, line 107defself.without_modules(*modules)modules=modules.mapdo|m|m.is_a?(Symbol)?ActionController.const_get(m):mendMODULES-modulesend

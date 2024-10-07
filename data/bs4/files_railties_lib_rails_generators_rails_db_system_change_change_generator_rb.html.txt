@@ -1,0 +1,1 @@
+Required Filesrails/generators/baseyamljsonNamespaceMODULERailsMODULERails::GeneratorsMODULERails::Generators::DbMODULERails::Generators::Db::SystemCLASSRails::Generators::Database

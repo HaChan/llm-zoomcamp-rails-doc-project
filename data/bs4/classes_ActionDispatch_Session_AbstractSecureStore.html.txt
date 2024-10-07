@@ -1,0 +1,1 @@
+MethodsGgenerate_sidIncluded ModulesActionDispatch::Session::CompatibilityActionDispatch::Session::StaleSessionCheckInstance Public methodsgenerate_sid()LinkSource:show|on GitHub# File actionpack/lib/action_dispatch/middleware/session/abstract_store.rb, line 102defgenerate_sidRack::Session::SessionId.new(super)end

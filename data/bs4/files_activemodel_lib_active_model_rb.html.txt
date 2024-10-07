@@ -1,0 +1,1 @@
+Required Filesactive_supportactive_support/railsactive_model/versionactive_model/deprecatorNamespaceMODULEActiveModelMODULEActiveModel::Serializers

@@ -1,0 +1,10 @@
+MethodsAadd_flash_typesInstance Public methodsadd_flash_types(*types)LinkCreates new flash types. You can pass as many types as you want to create flash types other than the defaultalertandnoticein your controllers and views. For instance:# in application_controller.rb
+class ApplicationController < ActionController::Base
+  add_flash_types :warning
+end
+
+# in your controller
+redirect_to user_path(@user), warning: "Incomplete profile"
+
+# in your view
+<%= warning %>This method will automatically define a new method for each of the given names, and it will be available in your views.Source:show|on GitHub# File actionpack/lib/action_controller/metal/flash.rb, line 34defadd_flash_types(*types)types.eachdo|type|nextif_flash_types.include?(type)define_method(type)dorequest.flash[type]endhelper_method(type)ifrespond_to?(:helper_method)self._flash_types+=[type]endend

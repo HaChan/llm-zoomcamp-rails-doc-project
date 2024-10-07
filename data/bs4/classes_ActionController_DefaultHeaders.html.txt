@@ -1,0 +1,1 @@
+Action Controller Default HeadersAllows configuring default headers that will be automatically merged into each response.NamespaceMODULEActionController::DefaultHeaders::ClassMethods

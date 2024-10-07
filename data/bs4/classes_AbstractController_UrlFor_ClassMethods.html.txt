@@ -1,0 +1,1 @@
+Methods#_routesAaction_methodsInstance Public methods_routes()LinkSource:show|on GitHub# File actionpack/lib/abstract_controller/url_for.rb, line 24def_routesnilendaction_methods()LinkSource:show|on GitHub# File actionpack/lib/abstract_controller/url_for.rb, line 28defaction_methods@action_methods||=if_routessuper-_routes.named_routes.helper_nameselsesuperendend

@@ -1,0 +1,1 @@
+Provides asynchronous analysis ofActiveStorage::Blobrecords viaActiveStorage::Blob#analyze_later.MethodsPperformInstance Public methodsperform(blob)LinkSource:show|on GitHub# File activestorage/app/jobs/active_storage/analyze_job.rb, line 10defperform(blob)blob.analyzeend

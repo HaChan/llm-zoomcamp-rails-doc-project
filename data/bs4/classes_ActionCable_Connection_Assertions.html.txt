@@ -1,0 +1,2 @@
+MethodsAassert_reject_connectionInstance Public methodsassert_reject_connection(&block)LinkAsserts that the connection is rejected (viareject_unauthorized_connection).# Asserts that connection without user_id fails
+assert_reject_connection { connect params: { user_id: '' } }Source:show|on GitHub# File actioncable/lib/action_cable/connection/test_case.rb, line 28defassert_reject_connection(&block)assert_raises(Authorization::UnauthorizedError,"Expected to reject connection but no rejection was made",&block)end

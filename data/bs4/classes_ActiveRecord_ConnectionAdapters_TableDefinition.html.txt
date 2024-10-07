@@ -1,0 +1,38 @@
+Active Record Connection Adapters Table DefinitionRepresents the schema of an SQL table in an abstract way. This class provides methods for manipulating the schema representation.Inside migration files, thetobject increate_tableis actually of this type:class SomeMigration < ActiveRecord::Migration[7.2]
+  def up
+    create_table :foo do |t|
+      puts t.class  # => "ActiveRecord::ConnectionAdapters::TableDefinition"
+    end
+  end
+
+  def down
+    ...
+  end
+endMethods#[]Bbelongs_toCcheck_constraint,column,columnsFforeign_keyIindexNnewRreferences,remove_columnSset_primary_keyTtimestampsIncluded ModulesActiveRecord::ConnectionAdapters::ColumnMethodsAttributes[R]as[R]check_constraints[R]comment[R]foreign_keys[R]if_not_exists[R]indexes[R]name[R]options[R]temporaryClass Public methodsnew( conn, name, temporary: false, if_not_exists: false, options: nil, as: nil, comment: nil, ** )LinkSource:show|on GitHub# File activerecord/lib/active_record/connection_adapters/abstract/schema_definitions.rb, line 368definitialize(conn,name,temporary:false,if_not_exists:false,options:nil,as:nil,comment:nil,**)@conn=conn@columns_hash= {}@indexes= []@foreign_keys= []@primary_keys=nil@check_constraints= []@temporary=temporary@if_not_exists=if_not_exists@options=options@as=as@name=name@comment=commentendInstance Public methods[](name)LinkReturns a ColumnDefinition for the column with namename.Source:show|on GitHub# File activerecord/lib/active_record/connection_adapters/abstract/schema_definitions.rb, line 418def[](name)@columns_hash[name.to_s]endbelongs_to(*args, **options)LinkAlias for:referencescheck_constraint(expression, **options)LinkSource:show|on GitHub# File activerecord/lib/active_record/connection_adapters/abstract/schema_definitions.rb, line 522defcheck_constraint(expression,**options)check_constraints<<new_check_constraint_definition(expression,options)endcolumn(name, type, index: nil, **options)LinkInstantiates a new column for the table. Seeconnection.add_columnfor available options.Additional options are::index- Create an index for the column. Can be eithertrueor an options hash.This method returnsself.Examples# Assuming +td+ is an instance of TableDefinition
+td.column(:granted, :boolean, index: true)Short-hand examplesInstead of callingcolumndirectly, you can also work with the short-hand definitions for the default types. They use the type as the method name instead of as a parameter and allow for multiple columns to be defined in a single statement.What can be written like this with the regular calls to column:create_table :products do |t|
+  t.column :shop_id,     :integer
+  t.column :creator_id,  :integer
+  t.column :item_number, :string
+  t.column :name,        :string, default: "Untitled"
+  t.column :value,       :string, default: "Untitled"
+  t.column :created_at,  :datetime
+  t.column :updated_at,  :datetime
+end
+add_index :products, :item_numbercan also be written as follows using the short-hand:create_table :products do |t|
+  t.integer :shop_id, :creator_id
+  t.string  :item_number, index: true
+  t.string  :name, :value, default: "Untitled"
+  t.timestamps null: false
+endThereâs a short-hand method for each of the type values declared at the top. And then thereâsTableDefinition#timestampsthatâll addcreated_atandupdated_atas datetimes.TableDefinition#referenceswill add an appropriately-named _id column, plus a corresponding _type column if the:polymorphicoption is supplied. If:polymorphicis a hash of options, these will be used when creating the_typecolumn. The:indexoption will also create an index, similar to callingadd_index. So what can be written like this:create_table :taggings do |t|
+  t.integer :tag_id, :tagger_id, :taggable_id
+  t.string  :tagger_type
+  t.string  :taggable_type, default: 'Photo'
+end
+add_index :taggings, :tag_id, name: 'index_taggings_on_tag_id'
+add_index :taggings, [:tagger_id, :tagger_type]Can also be written as follows using references:create_table :taggings do |t|
+  t.references :tag, index: { name: 'index_taggings_on_tag_id' }
+  t.references :tagger, polymorphic: true
+  t.references :taggable, polymorphic: { default: 'Photo' }, index: false
+endSource:show|on GitHub# File activerecord/lib/active_record/connection_adapters/abstract/schema_definitions.rb, line 489defcolumn(name,type,index:nil,**options)name=name.to_stype=type.to_symiftyperaise_on_duplicate_column(name)@columns_hash[name] =new_column_definition(name,type,**options)ifindexindex_options=index.is_a?(Hash)?index:{}index(name,**index_options)endselfendcolumns()LinkReturns an array of ColumnDefinition objects for the columns of the table.Source:show|on GitHub# File activerecord/lib/active_record/connection_adapters/abstract/schema_definitions.rb, line 415defcolumns;@columns_hash.values;endforeign_key(to_table, **options)LinkSource:show|on GitHub# File activerecord/lib/active_record/connection_adapters/abstract/schema_definitions.rb, line 518defforeign_key(to_table,**options)foreign_keys<<new_foreign_key_definition(to_table,options)endindex(column_name, **options)LinkAdds index options to the indexes hash, keyed by column name This is primarily used to track indexes that need to be created after the tableindex(:account_id, name: 'index_projects_on_account_id')Source:show|on GitHub# File activerecord/lib/active_record/connection_adapters/abstract/schema_definitions.rb, line 514defindex(column_name,**options)indexes<<[column_name,options]endreferences(*args, **options)LinkAdds a reference.t.references(:user)
+t.belongs_to(:supplier, foreign_key: true)
+t.belongs_to(:supplier, foreign_key: true, type: :integer)Seeconnection.add_referencefor details of the options you can use.Also aliased as:belongs_toSource:show|on GitHub# File activerecord/lib/active_record/connection_adapters/abstract/schema_definitions.rb, line 548defreferences(*args,**options)args.eachdo|ref_name|ReferenceDefinition.new(ref_name,**options).add_to(self)endendremove_column(name)Linkremove the columnnamefrom the table.remove_column(:account_id)Source:show|on GitHub# File activerecord/lib/active_record/connection_adapters/abstract/schema_definitions.rb, line 506defremove_column(name)@columns_hash.deletename.to_sendset_primary_key(table_name, id, primary_key, **options)LinkSource:show|on GitHub# File activerecord/lib/active_record/connection_adapters/abstract/schema_definitions.rb, line 392defset_primary_key(table_name,id,primary_key,**options)ifid&&!aspk=primary_key||Base.get_primary_key(table_name.to_s.singularize)ifid.is_a?(Hash)options.merge!(id.except(:type))id=id.fetch(:type,:primary_key)endifpk.is_a?(Array)primary_keys(pk)elseprimary_key(pk,id,**options)endendendtimestamps(**options)LinkAppends:datetimecolumns:created_atand:updated_atto the table. Seeconnection.add_timestampst.timestamps null: falseSource:show|on GitHub# File activerecord/lib/active_record/connection_adapters/abstract/schema_definitions.rb, line 530deftimestamps(**options)options[:null] =falseifoptions[:null].nil?if!options.key?(:precision)&&@conn.supports_datetime_with_precision?options[:precision] =6endcolumn(:created_at,:datetime,**options)column(:updated_at,:datetime,**options)end

@@ -1,0 +1,1 @@
+Required FilesipaddrNamespaceMODULEActiveRecordMODULEActiveRecord::ConnectionAdaptersMODULEActiveRecord::ConnectionAdapters::PostgreSQLMODULEActiveRecord::ConnectionAdapters::PostgreSQL::OID

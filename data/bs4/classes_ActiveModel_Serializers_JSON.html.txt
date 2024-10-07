@@ -1,0 +1,65 @@
+Active Model JSON SerializerMethodsAas_jsonFfrom_jsonIncluded ModulesActiveModel::SerializationInstance Public methodsas_json(options = nil)LinkReturns a hash representing the model. Some configuration can be passed throughoptions.The optioninclude_root_in_jsoncontrols the top-level behavior ofas_json. Iftrue,as_jsonwill emit a single root node named after the objectâs type. The default value forinclude_root_in_jsonoption isfalse.user = User.find(1)
+user.as_json
+# => { "id" => 1, "name" => "Konata Izumi", "age" => 16,
+#     "created_at" => "2006-08-01T17:27:133.000Z", "awesome" => true}
+
+ActiveRecord::Base.include_root_in_json = true
+
+user.as_json
+# => { "user" => { "id" => 1, "name" => "Konata Izumi", "age" => 16,
+#                  "created_at" => "2006-08-01T17:27:13.000Z", "awesome" => true } }This behavior can also be achieved by setting the:rootoption totrueas in:user = User.find(1)
+user.as_json(root: true)
+# => { "user" => { "id" => 1, "name" => "Konata Izumi", "age" => 16,
+#                  "created_at" => "2006-08-01T17:27:13.000Z", "awesome" => true } }If you prefer,:rootmay also be set to a custom string key instead as in:user = User.find(1)
+user.as_json(root: "author")
+# => { "author" => { "id" => 1, "name" => "Konata Izumi", "age" => 16,
+#                  "created_at" => "2006-08-01T17:27:13.000Z", "awesome" => true } }Without anyoptions, the returnedHashwill include all the modelâs attributes.user = User.find(1)
+user.as_json
+# => { "id" => 1, "name" => "Konata Izumi", "age" => 16,
+#      "created_at" => "2006-08-01T17:27:13.000Z", "awesome" => true}The:onlyand:exceptoptions can be used to limit the attributes included, and work similar to theattributesmethod.user.as_json(only: [:id, :name])
+# => { "id" => 1, "name" => "Konata Izumi" }
+
+user.as_json(except: [:id, :created_at, :age])
+# => { "name" => "Konata Izumi", "awesome" => true }To include the result of some method calls on the model use:methods:user.as_json(methods: :permalink)
+# => { "id" => 1, "name" => "Konata Izumi", "age" => 16,
+#      "created_at" => "2006-08-01T17:27:13.000Z", "awesome" => true,
+#      "permalink" => "1-konata-izumi" }To include associations use:include:user.as_json(include: :posts)
+# => { "id" => 1, "name" => "Konata Izumi", "age" => 16,
+#      "created_at" => "2006-08-01T17:27:13.000Z", "awesome" => true,
+#      "posts" => [ { "id" => 1, "author_id" => 1, "title" => "Welcome to the weblog" },
+#                   { "id" => 2, "author_id" => 1, "title" => "So I was thinking" } ] }Second level and higher order associations work as well:user.as_json(include: { posts: {
+                           include: { comments: {
+                                          only: :body } },
+                           only: :title } })
+# => { "id" => 1, "name" => "Konata Izumi", "age" => 16,
+#      "created_at" => "2006-08-01T17:27:13.000Z", "awesome" => true,
+#      "posts" => [ { "comments" => [ { "body" => "1st post!" }, { "body" => "Second!" } ],
+#                     "title" => "Welcome to the weblog" },
+#                   { "comments" => [ { "body" => "Don't think too hard" } ],
+#                     "title" => "So I was thinking" } ] }Source:show|on GitHub# File activemodel/lib/active_model/serializers/json.rb, line 96defas_json(options=nil)root=ifoptions&&options.key?(:root)options[:root]elseinclude_root_in_jsonendhash=serializable_hash(options).as_jsonifrootroot=model_name.elementifroot==true{root=>hash}elsehashendendfrom_json(json, include_root = include_root_in_json)LinkSets the modelattributesfrom aJSONstring. Returnsself.class Person
+  include ActiveModel::Serializers::JSON
+
+  attr_accessor :name, :age, :awesome
+
+  def attributes=(hash)
+    hash.each do |key, value|
+      send("#{key}=", value)
+    end
+  end
+
+  def attributes
+    instance_values
+  end
+end
+
+json = { name: 'bob', age: 22, awesome:true }.to_json
+person = Person.new
+person.from_json(json) # => #<Person:0x007fec5e7a0088 @age=22, @awesome=true, @name="bob">
+person.name            # => "bob"
+person.age             # => 22
+person.awesome         # => trueThe default value forinclude_rootisfalse. You can change it totrueif the givenJSONstring includes a single root node.json = { person: { name: 'bob', age: 22, awesome:true } }.to_json
+person = Person.new
+person.from_json(json, true) # => #<Person:0x007fec5e7a0088 @age=22, @awesome=true, @name="bob">
+person.name                  # => "bob"
+person.age                   # => 22
+person.awesome               # => trueSource:show|on GitHub# File activemodel/lib/active_model/serializers/json.rb, line 146deffrom_json(json,include_root=include_root_in_json)hash=ActiveSupport::JSON.decode(json)hash=hash.values.firstifinclude_rootself.attributes=hashselfend

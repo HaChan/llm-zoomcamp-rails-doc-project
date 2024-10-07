@@ -1,0 +1,1 @@
+NamespaceMODULEActionDispatchMODULEActiveRecordMODULEActiveRecord::MiddlewareCLASSActiveRecord::Middleware::ShardSelector

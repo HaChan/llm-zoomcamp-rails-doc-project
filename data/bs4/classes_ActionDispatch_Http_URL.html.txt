@@ -1,0 +1,51 @@
+MethodsDdomainEextract_domain,extract_subdomain,extract_subdomainsFfull_url_forHhost,host_with_portNnewOoptional_portPpath_for,port,port_string,protocolRraw_host_with_portSserver_port,standard_port,standard_port?,subdomain,subdomainsUurl,url_forConstantsHOST_REGEXP=/(^[^:]+:\/\/)?(\[[^\]]+\]|[^:]+)(?::(\d+$))?/IP_HOST_REGEXP=/\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/PROTOCOL_REGEXP=/^([^:]+)(:)?(\/\/)?$/Class Public methodsextract_domain(host, tld_length)LinkReturns the domain part of a host given the domain level.# Top-level domain example
+extract_domain('www.example.com', 1) # => "example.com"
+# Second-level domain example
+extract_domain('dev.www.example.co.uk', 2) # => "example.co.uk"Source:show|on GitHub# File actionpack/lib/action_dispatch/http/url.rb, line 24defextract_domain(host,tld_length)extract_domain_from(host,tld_length)ifnamed_host?(host)endextract_subdomain(host, tld_length)LinkReturns the subdomains of a host as aStringgiven the domain level.# Top-level domain example
+extract_subdomain('www.example.com', 1) # => "www"
+# Second-level domain example
+extract_subdomain('dev.www.example.co.uk', 2) # => "dev.www"Source:show|on GitHub# File actionpack/lib/action_dispatch/http/url.rb, line 48defextract_subdomain(host,tld_length)extract_subdomains(host,tld_length).join(".")endextract_subdomains(host, tld_length)LinkReturns the subdomains of a host as anArraygiven the domain level.# Top-level domain example
+extract_subdomains('www.example.com', 1) # => ["www"]
+# Second-level domain example
+extract_subdomains('dev.www.example.co.uk', 2) # => ["dev", "www"]Source:show|on GitHub# File actionpack/lib/action_dispatch/http/url.rb, line 34defextract_subdomains(host,tld_length)ifnamed_host?(host)extract_subdomains_from(host,tld_length)else[]endendfull_url_for(options)LinkSource:show|on GitHub# File actionpack/lib/action_dispatch/http/url.rb, line 60deffull_url_for(options)host=options[:host]protocol=options[:protocol]port=options[:port]unlesshostraiseArgumentError,"Missing host to link to! Please provide the :host parameter, set default_url_options[:host], or set :only_path to true"endbuild_host_url(host,port,protocol,options,path_for(options))endnew()LinkSource:show|on GitHub# File actionpack/lib/action_dispatch/http/url.rb, line 181definitializesuper@protocol=nil@port=nilendpath_for(options)LinkSource:show|on GitHub# File actionpack/lib/action_dispatch/http/url.rb, line 72defpath_for(options)path=options[:script_name].to_s.chomp("/")path<<options[:path]ifoptions.key?(:path)path="/"ifoptions[:trailing_slash]&&path.blank?add_params(path,options[:params])ifoptions.key?(:params)add_anchor(path,options[:anchor])ifoptions.key?(:anchor)pathendurl_for(options)LinkSource:show|on GitHub# File actionpack/lib/action_dispatch/http/url.rb, line 52defurl_for(options)ifoptions[:only_path]path_foroptionselsefull_url_foroptionsendendInstance Public methodsdomain(tld_length = @@tld_length)LinkReturns the domain part of a host, such as ârubyonrails.orgâ in âwww.rubyonrails.orgâ. You can specify a differenttld_length, such as 2 to catch rubyonrails.co.uk in âwww.rubyonrails.co.ukâ.Source:show|on GitHub# File actionpack/lib/action_dispatch/http/url.rb, line 324defdomain(tld_length=@@tld_length)ActionDispatch::Http::URL.extract_domain(host,tld_length)endhost()LinkReturns the host for this request, such as âexample.comâ.req = ActionDispatch::Request.new 'HTTP_HOST' => 'example.com:8080'
+req.host # => "example.com"Source:show|on GitHub# File actionpack/lib/action_dispatch/http/url.rb, line 228defhostraw_host_with_port.sub(/:\d+$/,"")endhost_with_port()LinkReturns a host:port string for this request, such as âexample.comâ or âexample.com:8080â. Port is only included if it is not a default port (80 or 443)req = ActionDispatch::Request.new 'HTTP_HOST' => 'example.com'
+req.host_with_port # => "example.com"
+
+req = ActionDispatch::Request.new 'HTTP_HOST' => 'example.com:80'
+req.host_with_port # => "example.com"
+
+req = ActionDispatch::Request.new 'HTTP_HOST' => 'example.com:8080'
+req.host_with_port # => "example.com:8080"Source:show|on GitHub# File actionpack/lib/action_dispatch/http/url.rb, line 244defhost_with_port"#{host}#{port_string}"endoptional_port()LinkReturns a number port suffix like 8080 if the port number of this request is not the default HTTP port 80 or HTTPS port 443.req = ActionDispatch::Request.new 'HTTP_HOST' => 'example.com:80'
+req.optional_port # => nil
+
+req = ActionDispatch::Request.new 'HTTP_HOST' => 'example.com:8080'
+req.optional_port # => 8080Source:show|on GitHub# File actionpack/lib/action_dispatch/http/url.rb, line 294defoptional_portstandard_port??nil:portendport()LinkReturns the port number of this request as an integer.req = ActionDispatch::Request.new 'HTTP_HOST' => 'example.com'
+req.port # => 80
+
+req = ActionDispatch::Request.new 'HTTP_HOST' => 'example.com:8080'
+req.port # => 8080Source:show|on GitHub# File actionpack/lib/action_dispatch/http/url.rb, line 255defport@port||=ifraw_host_with_port=~/:(\d+)$/$1.to_ielsestandard_portendendport_string()LinkReturns a string port suffix, including colon, like â:8080â if the port number of this request is not the default HTTP port 80 or HTTPS port 443.req = ActionDispatch::Request.new 'HTTP_HOST' => 'example.com:80'
+req.port_string # => ""
+
+req = ActionDispatch::Request.new 'HTTP_HOST' => 'example.com:8080'
+req.port_string # => ":8080"Source:show|on GitHub# File actionpack/lib/action_dispatch/http/url.rb, line 306defport_stringstandard_port??"":":#{port}"endprotocol()LinkReturns âhttps://â if this is anSSLrequest and âhttp://â otherwise.req = ActionDispatch::Request.new 'HTTP_HOST' => 'example.com'
+req.protocol # => "http://"
+
+req = ActionDispatch::Request.new 'HTTP_HOST' => 'example.com', 'HTTPS' => 'on'
+req.protocol # => "https://"Source:show|on GitHub# File actionpack/lib/action_dispatch/http/url.rb, line 202defprotocol@protocol||=ssl??"https://":"http://"endraw_host_with_port()LinkReturns the host and port for this request, such as âexample.com:8080â.req = ActionDispatch::Request.new 'HTTP_HOST' => 'example.com'
+req.raw_host_with_port # => "example.com"
+
+req = ActionDispatch::Request.new 'HTTP_HOST' => 'example.com:80'
+req.raw_host_with_port # => "example.com:80"
+
+req = ActionDispatch::Request.new 'HTTP_HOST' => 'example.com:8080'
+req.raw_host_with_port # => "example.com:8080"Source:show|on GitHub# File actionpack/lib/action_dispatch/http/url.rb, line 216defraw_host_with_portifforwarded=x_forwarded_host.presenceforwarded.split(/,\s?/).lastelseget_header("HTTP_HOST")||"#{server_name}:#{get_header('SERVER_PORT')}"endendserver_port()LinkReturns the requested port, such as 8080, based on SERVER_PORTreq = ActionDispatch::Request.new 'SERVER_PORT' => '80'
+req.server_port # => 80
+
+req = ActionDispatch::Request.new 'SERVER_PORT' => '8080'
+req.server_port # => 8080Source:show|on GitHub# File actionpack/lib/action_dispatch/http/url.rb, line 317defserver_portget_header("SERVER_PORT").to_iendstandard_port()LinkReturns the standard port number for this requestâs protocol.req = ActionDispatch::Request.new 'HTTP_HOST' => 'example.com:8080'
+req.standard_port # => 80Source:show|on GitHub# File actionpack/lib/action_dispatch/http/url.rb, line 267defstandard_portif"https://"==protocol443else80endendstandard_port?()LinkReturns whether this request is using the standard portreq = ActionDispatch::Request.new 'HTTP_HOST' => 'example.com:80'
+req.standard_port? # => true
+
+req = ActionDispatch::Request.new 'HTTP_HOST' => 'example.com:8080'
+req.standard_port? # => falseSource:show|on GitHub# File actionpack/lib/action_dispatch/http/url.rb, line 282defstandard_port?port==standard_portendsubdomain(tld_length = @@tld_length)LinkReturns all the subdomains as a string, so"dev.www"would be returned for âdev.www.rubyonrails.orgâ. You can specify a differenttld_length, such as 2 to catch"www"instead of"www.rubyonrails"in âwww.rubyonrails.co.ukâ.Source:show|on GitHub# File actionpack/lib/action_dispatch/http/url.rb, line 339defsubdomain(tld_length=@@tld_length)ActionDispatch::Http::URL.extract_subdomain(host,tld_length)endsubdomains(tld_length = @@tld_length)LinkReturns all the subdomains as an array, so["dev", "www"]would be returned for âdev.www.rubyonrails.orgâ. You can specify a differenttld_length, such as 2 to catch["www"]instead of["www", "rubyonrails"]in âwww.rubyonrails.co.ukâ.Source:show|on GitHub# File actionpack/lib/action_dispatch/http/url.rb, line 332defsubdomains(tld_length=@@tld_length)ActionDispatch::Http::URL.extract_subdomains(host,tld_length)endurl()LinkReturns the completeURLused for this request.req = ActionDispatch::Request.new 'HTTP_HOST' => 'example.com'
+req.url # => "http://example.com"Source:show|on GitHub# File actionpack/lib/action_dispatch/http/url.rb, line 191defurlprotocol+host_with_port+fullpathend

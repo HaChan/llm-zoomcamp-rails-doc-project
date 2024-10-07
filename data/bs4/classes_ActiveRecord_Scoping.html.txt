@@ -1,0 +1,1 @@
+Active Record Named ScopesNamespaceMODULEActiveRecord::Scoping::DefaultMODULEActiveRecord::Scoping::NamedIncluded ModulesActiveRecord::Scoping::DefaultActiveRecord::Scoping::Named

@@ -1,0 +1,1 @@
+MethodsWwriteInstance Public methodswrite(*)LinkSource:show|on GitHub# File actionpack/lib/action_controller/metal/request_forgery_protection.rb, line 288defwrite(*)# nothingend

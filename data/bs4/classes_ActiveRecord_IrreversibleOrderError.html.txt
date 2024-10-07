@@ -1,0 +1,1 @@
+IrreversibleOrderErroris raised when a relationâs order is too complex forreverse_orderto automatically reverse.

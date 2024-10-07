@@ -1,0 +1,1 @@
+MethodsSserializeInstance Public methodsserialize(data)LinkSource:show|on GitHub# File activerecord/lib/active_record/encryption/extended_deterministic_queries.rb, line 147defserialize(data)ifdata.is_a?(AdditionalValue)data.valueelsesuperendend

@@ -1,0 +1,1 @@
+MethodsCcookie_jarInstance Public methodscookie_jar()LinkSource:show|on GitHub# File actionpack/lib/action_dispatch/middleware/cookies.rb, line 13defcookie_jarfetch_header("action_dispatch.cookies")doself.cookie_jar=Cookies::CookieJar.build(self,cookies)endend

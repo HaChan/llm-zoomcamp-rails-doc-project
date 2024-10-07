@@ -1,0 +1,1 @@
+MethodsGgenerate_layoutConstantsIPS_GEM_NAME="benchmark-ips"IPS_GEM_USED_REGEXP=/gem.*\b#{IPS_GEM_NAME}\b.*/Instance Public methodsgenerate_layout()LinkSource:show|on GitHub# File railties/lib/rails/generators/rails/benchmark/benchmark_generator.rb, line 13defgenerate_layoutadd_ips_to_gemfileunlessips_installed?template("benchmark.rb.tt","script/benchmarks/#{file_name}.rb")end

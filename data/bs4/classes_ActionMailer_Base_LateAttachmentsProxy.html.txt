@@ -1,0 +1,1 @@
+Methods#[]=IinlineInstance Public methods[]=(_name, _content)LinkSource:show|on GitHub# File actionmailer/lib/action_mailer/base.rb, line 770def[]=(_name,_content);_raise_errorendinline()LinkSource:show|on GitHub# File actionmailer/lib/action_mailer/base.rb, line 769definline;selfend

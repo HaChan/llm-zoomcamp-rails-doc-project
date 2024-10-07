@@ -1,0 +1,33 @@
+Active Record Attribute Methods Before Type CastActiveRecord::AttributeMethods::BeforeTypeCastprovides a way to read the value of the attributes before typecasting and deserialization.class Task < ActiveRecord::Base
+end
+
+task = Task.new(id: '1', completed_on: '2012-10-21')
+task.id           # => 1
+task.completed_on # => Sun, 21 Oct 2012
+
+task.attributes_before_type_cast
+# => {"id"=>"1", "completed_on"=>"2012-10-21", ... }
+task.read_attribute_before_type_cast('id')           # => "1"
+task.read_attribute_before_type_cast('completed_on') # => "2012-10-21"In addition toread_attribute_before_type_castandattributes_before_type_cast, it declares a method for all attributes with the*_before_type_castsuffix.task.id_before_type_cast           # => "1"
+task.completed_on_before_type_cast # => "2012-10-21"MethodsAattributes_before_type_cast,attributes_for_databaseRread_attribute_before_type_cast,read_attribute_for_databaseInstance Public methodsattributes_before_type_cast()LinkReturns a hash of attributes before typecasting and deserialization.class Task < ActiveRecord::Base
+end
+
+task = Task.new(title: nil, is_done: true, completed_on: '2012-10-21')
+task.attributes
+# => {"id"=>nil, "title"=>nil, "is_done"=>true, "completed_on"=>Sun, 21 Oct 2012, "created_at"=>nil, "updated_at"=>nil}
+task.attributes_before_type_cast
+# => {"id"=>nil, "title"=>nil, "is_done"=>true, "completed_on"=>"2012-10-21", "created_at"=>nil, "updated_at"=>nil}Source:show|on GitHub# File activerecord/lib/active_record/attribute_methods/before_type_cast.rb, line 82defattributes_before_type_cast@attributes.values_before_type_castendattributes_for_database()LinkReturns a hash of attributes for assignment to the database.Source:show|on GitHub# File activerecord/lib/active_record/attribute_methods/before_type_cast.rb, line 87defattributes_for_database@attributes.values_for_databaseendread_attribute_before_type_cast(attr_name)LinkReturns the value of the attribute identified byattr_namebefore typecasting and deserialization.class Task < ActiveRecord::Base
+end
+
+task = Task.new(id: '1', completed_on: '2012-10-21')
+task.read_attribute('id')                            # => 1
+task.read_attribute_before_type_cast('id')           # => '1'
+task.read_attribute('completed_on')                  # => Sun, 21 Oct 2012
+task.read_attribute_before_type_cast('completed_on') # => "2012-10-21"
+task.read_attribute_before_type_cast(:completed_on)  # => "2012-10-21"Source:show|on GitHub# File activerecord/lib/active_record/attribute_methods/before_type_cast.rb, line 48defread_attribute_before_type_cast(attr_name)name=attr_name.to_sname=self.class.attribute_aliases[name]||nameattribute_before_type_cast(name)endread_attribute_for_database(attr_name)LinkReturns the value of the attribute identified byattr_nameafter serialization.class Book < ActiveRecord::Base
+  enum :status, { draft: 1, published: 2 }
+end
+
+book = Book.new(status: "published")
+book.read_attribute(:status)              # => "published"
+book.read_attribute_for_database(:status) # => 2Source:show|on GitHub# File activerecord/lib/active_record/attribute_methods/before_type_cast.rb, line 65defread_attribute_for_database(attr_name)name=attr_name.to_sname=self.class.attribute_aliases[name]||nameattribute_for_database(name)end

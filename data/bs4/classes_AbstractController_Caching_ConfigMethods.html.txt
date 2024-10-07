@@ -1,0 +1,1 @@
+MethodsCcache_store,cache_store=Instance Public methodscache_store()LinkSource:show|on GitHub# File actionpack/lib/abstract_controller/caching.rb, line 15defcache_storeconfig.cache_storeendcache_store=(store)LinkSource:show|on GitHub# File actionpack/lib/abstract_controller/caching.rb, line 19defcache_store=(store)config.cache_store=ActiveSupport::Cache.lookup_store(*store)end

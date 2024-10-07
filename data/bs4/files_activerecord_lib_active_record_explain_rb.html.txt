@@ -1,0 +1,1 @@
+Required Filesactive_record/explain_registryNamespaceMODULEActiveModelMODULEActiveRecordMODULEActiveRecord::Explain

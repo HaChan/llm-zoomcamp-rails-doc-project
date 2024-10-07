@@ -1,0 +1,1 @@
+Raised when a model makes a query but it has not specified an associated table.

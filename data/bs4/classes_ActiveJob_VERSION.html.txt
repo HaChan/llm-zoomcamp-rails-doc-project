@@ -1,0 +1,1 @@
+ConstantsMAJOR=7MINOR=2PRE=nilSTRING=[MAJOR, MINOR, TINY, PRE].compact.join(".")TINY=1

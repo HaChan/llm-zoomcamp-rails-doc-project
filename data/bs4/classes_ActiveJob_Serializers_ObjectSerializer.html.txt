@@ -1,0 +1,16 @@
+Baseclass for serializing and deserializing custom objects.Example:class MoneySerializer < ActiveJob::Serializers::ObjectSerializer
+  def serialize(money)
+    super("amount" => money.amount, "currency" => money.currency)
+  end
+
+  def deserialize(hash)
+    Money.new(hash["amount"], hash["currency"])
+  end
+
+  private
+
+    def klass
+      Money
+    end
+endMethodsDdeserializeKklassSserialize,serialize?Included ModulesSingletonInstance Public methodsdeserialize(json)LinkDeserializes an argument from a JSON primitive type.Source:show|on GitHub# File activejob/lib/active_job/serializers/object_serializer.rb, line 44defdeserialize(json)raiseNotImplementedErrorendserialize(hash)LinkSerializes an argument to a JSON primitive type.Source:show|on GitHub# File activejob/lib/active_job/serializers/object_serializer.rb, line 39defserialize(hash)
+  {Arguments::OBJECT_SERIALIZER_KEY=>self.class.name}.merge!(hash)endserialize?(argument)LinkDetermines if an argument should be serialized by a serializer.Source:show|on GitHub# File activejob/lib/active_job/serializers/object_serializer.rb, line 34defserialize?(argument)argument.is_a?(klass)endInstance Private methodsklass()LinkThe class of the object that will be serialized.Source:show|on GitHub# File activejob/lib/active_job/serializers/object_serializer.rb, line 50defklass# :doc:raiseNotImplementedErrorend

@@ -1,0 +1,90 @@
+Active Support ConcernA typical module looks like this:module M
+  def self.included(base)
+    base.extend ClassMethods
+    base.class_eval do
+      scope :disabled, -> { where(disabled: true) }
+    end
+  end
+
+  module ClassMethods
+    ...
+  end
+endBy usingActiveSupport::Concernthe above module could instead be written as:require "active_support/concern"
+
+module M
+  extend ActiveSupport::Concern
+
+  included do
+    scope :disabled, -> { where(disabled: true) }
+  end
+
+  class_methods do
+    ...
+  end
+endMoreover, it gracefully handles module dependencies. Given aFoomodule and aBarmodule which depends on the former, we would typically write the following:module Foo
+  def self.included(base)
+    base.class_eval do
+      def self.method_injected_by_foo
+        ...
+      end
+    end
+  end
+end
+
+module Bar
+  def self.included(base)
+    base.method_injected_by_foo
+  end
+end
+
+class Host
+  include Foo # We need to include this dependency for Bar
+  include Bar # Bar is the module that Host really needs
+endBut why shouldHostcare aboutBarâs dependencies, namelyFoo? We could try to hide these fromHostdirectly includingFooinBar:module Bar
+  include Foo
+  def self.included(base)
+    base.method_injected_by_foo
+  end
+end
+
+class Host
+  include Bar
+endUnfortunately this wonât work, since whenFoois included, itsbaseis theBarmodule, not theHostclass. WithActiveSupport::Concern, module dependencies are properly resolved:require "active_support/concern"
+
+module Foo
+  extend ActiveSupport::Concern
+  included do
+    def self.method_injected_by_foo
+      ...
+    end
+  end
+end
+
+module Bar
+  extend ActiveSupport::Concern
+  include Foo
+
+  included do
+    self.method_injected_by_foo
+  end
+end
+
+class Host
+  include Bar # It works, now Bar takes care of its dependencies
+endPrepending concernsJust likeinclude, concerns also supportprependwith a correspondingprepended docallback.module ClassMethodsorclass_methods doare prepended as well.prependis also used for any dependencies.MethodsCclass_methodsIincludedPprependedInstance Public methodsclass_methods(&class_methods_module_definition)LinkDefine class methods from given block. You can define private class methods as well.module Example
+  extend ActiveSupport::Concern
+
+  class_methods do
+    def foo; puts 'foo'; end
+
+    private
+      def bar; puts 'bar'; end
+  end
+end
+
+class Buzz
+  include Example
+end
+
+Buzz.foo # => "foo"
+Buzz.bar # => private method 'bar' called for Buzz:Class(NoMethodError)Source:show|on GitHub# File activesupport/lib/active_support/concern.rb, line 209defclass_methods(&class_methods_module_definition)mod=const_defined?(:ClassMethods,false)?const_get(:ClassMethods):const_set(:ClassMethods,Module.new)mod.module_eval(&class_methods_module_definition)endincluded(base = nil, &block)LinkEvaluate given block in context of base class, so that you can write class macros here. When you define more than oneincludedblock, it raises an exception.Source:show|on GitHub# File activesupport/lib/active_support/concern.rb, line 158defincluded(base=nil,&block)ifbase.nil?ifinstance_variable_defined?(:@_included_block)if@_included_block.source_location!=block.source_locationraiseMultipleIncludedBlocksendelse@_included_block=blockendelsesuperendendprepended(base = nil, &block)LinkEvaluate given block in context of base class, so that you can write class macros here. When you define more than oneprependedblock, it raises an exception.Source:show|on GitHub# File activesupport/lib/active_support/concern.rb, line 175defprepended(base=nil,&block)ifbase.nil?ifinstance_variable_defined?(:@_prepended_block)if@_prepended_block.source_location!=block.source_locationraiseMultiplePrependBlocksendelse@_prepended_block=blockendelsesuperendend

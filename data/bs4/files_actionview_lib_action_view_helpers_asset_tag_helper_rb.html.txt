@@ -1,0 +1,1 @@
+Required Filesactive_support/core_ext/array/extract_optionsactive_support/core_ext/hash/keysactive_support/core_ext/object/inclusionaction_view/helpers/asset_url_helperaction_view/helpers/tag_helperNamespaceMODULEActionViewMODULEActionView::HelpersMODULEActionView::Helpers::AssetTagHelper

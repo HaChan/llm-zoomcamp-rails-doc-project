@@ -1,0 +1,383 @@
+Action View Form Tag HelpersProvides a number of methods for creating form tags that donât rely on an Active Record object assigned to the template likeFormHelperdoes. Instead, you provide the names and values manually.NOTE: The HTML optionsdisabled,readonly, andmultiplecan all be treated as booleans. So specifyingdisabled: truewill givedisabled="disabled".MethodsBbutton_tagCcheck_box_tag,color_field_tagDdate_field_tag,datetime_field_tag,datetime_local_field_tagEemail_field_tagFfield_id,field_name,field_set_tag,fieldset_tag,file_field_tag,form_tagHhidden_field_tagIimage_submit_tagLlabel_tagMmonth_field_tagNnumber_field_tagPpassword_field_tag,phone_field_tagRradio_button_tag,range_field_tagSsearch_field_tag,select_tag,submit_tagTtelephone_field_tag,text_area_tag,text_field_tag,time_field_tagUurl_field_tag,utf8_enforcer_tagWweek_field_tagIncluded ModulesActionView::Helpers::UrlHelperActionView::Helpers::TextHelperActionView::Helpers::ContentExfiltrationPreventionHelperInstance Public methodsbutton_tag(content_or_options = nil, options = nil, &block)LinkCreates a button element that defines asubmitbutton,resetbutton or a generic button which can be used in JavaScript, for example. You can use the button tag as a regular submit tag but it isnât supported in legacy browsers. However, the button tag does allow for richer labels such as images and emphasis, so this helper will also accept a block. By default, it will create a button tag with typesubmit, if type is not given.Options:data- This option can be used to add custom data attributes.:disabled- If true, the user will not be able to use this input.Any other key creates standard HTML options for the tag.Examplesbutton_tag
+# => <button name="button" type="submit">Button</button>
+
+button_tag 'Reset', type: 'reset'
+# => <button name="button" type="reset">Reset</button>
+
+button_tag 'Button', type: 'button'
+# => <button name="button" type="button">Button</button>
+
+button_tag 'Reset', type: 'reset', disabled: true
+# => <button name="button" type="reset" disabled="disabled">Reset</button>
+
+button_tag(type: 'button') do
+  content_tag(:strong, 'Ask me!')
+end
+# => <button name="button" type="button">
+#     <strong>Ask me!</strong>
+#    </button>Source:show|on GitHub# File actionview/lib/action_view/helpers/form_tag_helper.rb, line 566defbutton_tag(content_or_options=nil,options=nil,&block)ifcontent_or_options.is_a?Hashoptions=content_or_optionselseoptions||={}endoptions= {"name"=>"button","type"=>"submit"}.merge!(options.stringify_keys)ifblock_given?content_tag:button,options,&blockelsecontent_tag:button,content_or_options||"Button",optionsendendcheck_box_tag(name, options = {})check_box_tag(name, value, options = {})check_box_tag(name, value, checked, options = {})LinkCreates a check box form input tag.Options:value- The value of the input. Defaults to"1".:checked- If set to true, the checkbox will be checked by default.:disabled- If set to true, the user will not be able to use this input.Any other key creates standard HTML options for the tag.Examplescheck_box_tag 'accept'
+# => <input id="accept" name="accept" type="checkbox" value="1" />
+
+check_box_tag 'rock', 'rock music'
+# => <input id="rock" name="rock" type="checkbox" value="rock music" />
+
+check_box_tag 'receive_email', 'yes', true
+# => <input checked="checked" id="receive_email" name="receive_email" type="checkbox" value="yes" />
+
+check_box_tag 'tos', 'yes', false, class: 'accept_tos'
+# => <input class="accept_tos" id="tos" name="tos" type="checkbox" value="yes" />
+
+check_box_tag 'eula', 'accepted', false, disabled: true
+# => <input disabled="disabled" id="eula" name="eula" type="checkbox" value="accepted" />Source:show|on GitHub# File actionview/lib/action_view/helpers/form_tag_helper.rb, line 455defcheck_box_tag(name,*args)ifargs.length>=4raiseArgumentError,"wrong number of arguments (given #{args.length + 1}, expected 1..4)"endoptions=args.extract_options!value,checked=args.empty??["1",false]:[*args,false]html_options= {"type"=>"checkbox","name"=>name,"id"=>sanitize_to_id(name),"value"=>value}.update(options.stringify_keys)html_options["checked"] ="checked"ifcheckedtag:input,html_optionsendcolor_field_tag(name, value = nil, options = {})LinkCreates a text field of type âcolorâ.OptionsSupports the same options astext_field_tag.Examplescolor_field_tag 'name'
+# => <input id="name" name="name" type="color" />
+
+color_field_tag 'color', '#DEF726'
+# => <input id="color" name="color" type="color" value="#DEF726" />
+
+color_field_tag 'color', nil, class: 'special_input'
+# => <input class="special_input" id="color" name="color" type="color" />
+
+color_field_tag 'color', '#DEF726', class: 'special_input', disabled: true
+# => <input disabled="disabled" class="special_input" id="color" name="color" type="color" value="#DEF726" />Source:show|on GitHub# File actionview/lib/action_view/helpers/form_tag_helper.rb, line 666defcolor_field_tag(name,value=nil,options= {})text_field_tag(name,value,options.merge(type::color))enddate_field_tag(name, value = nil, options = {})LinkCreates a text field of type âdateâ.OptionsSupports the same options astext_field_tag.Examplesdate_field_tag 'name'
+# => <input id="name" name="name" type="date" />
+
+date_field_tag 'date', '2014-12-31'
+# => <input id="date" name="date" type="date" value="2014-12-31" />
+
+date_field_tag 'date', nil, class: 'special_input'
+# => <input class="special_input" id="date" name="date" type="date" />
+
+date_field_tag 'date', '2014-12-31', class: 'special_input', disabled: true
+# => <input disabled="disabled" class="special_input" id="date" name="date" type="date" value="2014-12-31" />Source:show|on GitHub# File actionview/lib/action_view/helpers/form_tag_helper.rb, line 736defdate_field_tag(name,value=nil,options= {})text_field_tag(name,value,options.merge(type::date))enddatetime_field_tag(name, value = nil, options = {})LinkCreates a text field of type âdatetime-localâ.OptionsSupports the same options astext_field_tag. Additionally, supports::min- The minimum acceptable value.:max- The maximum acceptable value.:step- The acceptable value granularity.:include_seconds- Include seconds in the output timestamp format (true by default).Examplesdatetime_field_tag 'name'
+# => <input id="name" name="name" type="datetime-local" />
+
+datetime_field_tag 'datetime', '2014-01-01T01:01'
+# => <input id="datetime" name="datetime" type="datetime-local" value="2014-01-01T01:01" />
+
+datetime_field_tag 'datetime', nil, class: 'special_input'
+# => <input class="special_input" id="datetime" name="datetime" type="datetime-local" />
+
+datetime_field_tag 'datetime', '2014-01-01T01:01', class: 'special_input', disabled: true
+# => <input disabled="disabled" class="special_input" id="datetime" name="datetime" type="datetime-local" value="2014-01-01T01:01" />Also aliased as:datetime_local_field_tagSource:show|on GitHub# File actionview/lib/action_view/helpers/form_tag_helper.rb, line 795defdatetime_field_tag(name,value=nil,options= {})text_field_tag(name,value,options.merge(type:"datetime-local"))enddatetime_local_field_tag(name, value = nil, options = {})LinkAlias for:datetime_field_tagemail_field_tag(name, value = nil, options = {})LinkCreates a text field of type âemailâ.OptionsSupports the same options astext_field_tag.Examplesemail_field_tag 'name'
+# => <input id="name" name="name" type="email" />
+
+email_field_tag 'email', 'email@example.com'
+# => <input id="email" name="email" type="email" value="email@example.com" />
+
+email_field_tag 'email', nil, class: 'special_input'
+# => <input class="special_input" id="email" name="email" type="email" />
+
+email_field_tag 'email', 'email@example.com', class: 'special_input', disabled: true
+# => <input disabled="disabled" class="special_input" id="email" name="email" type="email" value="email@example.com" />Source:show|on GitHub# File actionview/lib/action_view/helpers/form_tag_helper.rb, line 897defemail_field_tag(name,value=nil,options= {})text_field_tag(name,value,options.merge(type::email))endfield_id(object_name, method_name, *suffixes, index: nil, namespace: nil)LinkGenerate an HTMLidattribute value for the given name and field combinationReturn the value generated by theFormBuilderfor the given attribute name.<%= label_tag :post, :title %>
+<%= text_field :post, :title, aria: { describedby: field_id(:post, :title, :error) } %>
+<%= tag.span("is blank", id: field_id(:post, :title, :error) %>In the example above, the<input type="text">element built by the call totext_fielddeclares anaria-describedbyattribute referencing the<span>element, sharing a commonidroot (post_title, in this case).Source:show|on GitHub# File actionview/lib/action_view/helpers/form_tag_helper.rb, line 102deffield_id(object_name,method_name,*suffixes,index:nil,namespace:nil)ifobject_name.respond_to?(:model_name)object_name=object_name.model_name.singularendsanitized_object_name=object_name.to_s.gsub(/\]\[|[^-a-zA-Z0-9:.]/,"_").delete_suffix("_")sanitized_method_name=method_name.to_s.delete_suffix("?")
+
+  [namespace,sanitized_object_name.presence,
+    (indexunlesssanitized_object_name.empty?),sanitized_method_name,*suffixes,
+  ].tap(&:compact!).join("_")endfield_name(object_name, method_name, *method_names, multiple: false, index: nil)LinkGenerate an HTMLnameattribute value for the given name and field combinationReturn the value generated by theFormBuilderfor the given attribute name.<%= text_field :post, :title, name: field_name(:post, :title, :subtitle) %>
+<%# => <input type="text" name="post[title][subtitle]"> %>
+
+<%= text_field :post, :tag, name: field_name(:post, :tag, multiple: true) %>
+<%# => <input type="text" name="post[tag][]"> %>Source:show|on GitHub# File actionview/lib/action_view/helpers/form_tag_helper.rb, line 132deffield_name(object_name,method_name,*method_names,multiple:false,index:nil)names=method_names.map!{|name|"[#{name}]"}.join# a little duplication to construct fewer stringscasewhenobject_name.blank?"#{method_name}#{names}#{multiple ? "[]" : ""}"whenindex"#{object_name}[#{index}][#{method_name}]#{names}#{multiple ? "[]" : ""}"else"#{object_name}[#{method_name}]#{names}#{multiple ? "[]" : ""}"endendfield_set_tag(legend = nil, options = nil, &block)LinkCreates a field set for grouping HTML form elements.legendwill become the fieldsetâs title (optional as per W3C).optionsaccept the same values as tag.Examples<%= field_set_tag do %>
+  <p><%= text_field_tag 'name' %></p>
+<% end %>
+# => <fieldset><p><input id="name" name="name" type="text" /></p></fieldset>
+
+<%= field_set_tag 'Your details' do %>
+  <p><%= text_field_tag 'name' %></p>
+<% end %>
+# => <fieldset><legend>Your details</legend><p><input id="name" name="name" type="text" /></p></fieldset>
+
+<%= field_set_tag nil, class: 'format' do %>
+  <p><%= text_field_tag 'name' %></p>
+<% end %>
+# => <fieldset class="format"><p><input id="name" name="name" type="text" /></p></fieldset>Also aliased as:fieldset_tagSource:show|on GitHub# File actionview/lib/action_view/helpers/form_tag_helper.rb, line 638deffield_set_tag(legend=nil,options=nil,&block)content= []content<<content_tag("legend",legend)unlesslegend.blank?content<<capture(&block)ifblock_given?content_tag(:fieldset,safe_join(content),options)endfieldset_tag(legend = nil, options = nil, &block)LinkAlias for:field_set_tagfile_field_tag(name, options = {})LinkCreates a file upload field. If you are using file uploads then you will also need to set the multipart option for the form tag:<%= form_tag '/upload', multipart: true do %>
+  <label for="file">File to Upload</label> <%= file_field_tag "file" %>
+  <%= submit_tag %>
+<% end %>The specified URL will then be passed aFileobject containing the selected file, or if the field was left blank, a StringIO object.OptionsCreates standard HTML attributes for the tag.:disabled- If set to true, the user will not be able to use this input.:multiple- If set to true, *in most updated browsers* the user will be allowed to select multiple files.:accept- If set to one or multiple mime-types, the user will be suggested a filter when choosing a file. You still need to set up model validations.Examplesfile_field_tag 'attachment'
+# => <input id="attachment" name="attachment" type="file" />
+
+file_field_tag 'avatar', class: 'profile_input'
+# => <input class="profile_input" id="avatar" name="avatar" type="file" />
+
+file_field_tag 'picture', disabled: true
+# => <input disabled="disabled" id="picture" name="picture" type="file" />
+
+file_field_tag 'resume', value: '~/resume.doc'
+# => <input id="resume" name="resume" type="file" value="~/resume.doc" />
+
+file_field_tag 'user_pic', accept: 'image/png,image/gif,image/jpeg'
+# => <input accept="image/png,image/gif,image/jpeg" id="user_pic" name="user_pic" type="file" />
+
+file_field_tag 'file', accept: 'text/html', class: 'upload', value: 'index.html'
+# => <input accept="text/html" class="upload" id="file" name="file" type="file" value="index.html" />Source:show|on GitHub# File actionview/lib/action_view/helpers/form_tag_helper.rb, line 347deffile_field_tag(name,options= {})text_field_tag(name,nil,convert_direct_upload_option_to_url(options.merge(type::file)))endform_tag(url_for_options = {}, options = {}, &block)LinkStarts a form tag that points the action to a URL configured withurl_for_optionsjust like ActionController::Base#url_for. The method for the form defaults to POST.Options:multipart- If set to true, the enctype is set to âmultipart/form-dataâ.:method- The method to use when submitting the form, usually either âgetâ or âpostâ. If âpatchâ, âputâ, âdeleteâ, or another verb is used, a hidden input with name_methodis added to simulate the verb over post.:authenticity_token- Authenticity token to use in the form. Use only if you need to pass custom authenticity token string, or to not add authenticity_token field at all (by passingfalse).  Remote forms may omit the embedded authenticity token by settingconfig.action_view.embed_authenticity_token_in_remote_forms = false. This is helpful when youâre fragment-caching the form. Remote forms get the authenticity token from themetatag, so embedding is unnecessary unless you support browsers without JavaScript.:remote- If set to true, will allow the Unobtrusive JavaScript drivers to control the submit behavior. By default this behavior is an ajax submit.:enforce_utf8- If set to false, a hidden input with name utf8 is not output.Any other key creates standard HTML attributes for the tag.Examplesform_tag('/posts')
+# => <form action="/posts" method="post">
+
+form_tag('/posts/1', method: :put)
+# => <form action="/posts/1" method="post"> ... <input name="_method" type="hidden" value="put" /> ...
+
+form_tag('/upload', multipart: true)
+# => <form action="/upload" method="post" enctype="multipart/form-data">
+
+<%= form_tag('/posts') do -%>
+  <div><%= submit_tag 'Save' %></div>
+<% end -%>
+# => <form action="/posts" method="post"><div><input type="submit" name="commit" value="Save" /></div></form>
+
+<%= form_tag('/posts', remote: true) %>
+# => <form action="/posts" method="post" data-remote="true">
+
+form_tag(false, method: :get)
+# => <form method="get">
+
+form_tag('http://far.away.com/form', authenticity_token: false)
+# form without authenticity token
+
+form_tag('http://far.away.com/form', authenticity_token: "cf50faa3fe97702ca1ae")
+# form with custom authenticity tokenSource:show|on GitHub# File actionview/lib/action_view/helpers/form_tag_helper.rb, line 78defform_tag(url_for_options= {},options= {},&block)html_options=html_options_for_form(url_for_options,options)ifblock_given?form_tag_with_body(html_options,capture(&block))elseform_tag_html(html_options)endendhidden_field_tag(name, value = nil, options = {})LinkCreates a hidden form input field used to transmit data that would be lost due to HTTPâs statelessness or data that should be hidden from the user.OptionsCreates standard HTML attributes for the tag.Exampleshidden_field_tag 'tags_list'
+# => <input type="hidden" name="tags_list" id="tags_list" autocomplete="off" />
+
+hidden_field_tag 'token', 'VUBJKB23UIVI1UU1VOBVI@'
+# => <input type="hidden" name="token" id="token" value="VUBJKB23UIVI1UU1VOBVI@" autocomplete="off" />
+
+hidden_field_tag 'collected_input', '', onchange: "alert('Input collected!')"
+# => <input type="hidden" name="collected_input" id="collected_input"
+     value="" onchange="alert(&#39;Input collected!&#39;)" autocomplete="off" />Source:show|on GitHub# File actionview/lib/action_view/helpers/form_tag_helper.rb, line 308defhidden_field_tag(name,value=nil,options= {})text_field_tag(name,value,options.merge(type::hidden,autocomplete:"off"))endimage_submit_tag(source, options = {})LinkDisplays an image which when clicked will submit the form.sourceis passed toAssetTagHelper#path_to_imageOptions:data- This option can be used to add custom data attributes.:disabled- If set to true, the user will not be able to use this input.Any other key creates standard HTML options for the tag.Data attributesconfirm: 'question?'- This will add a JavaScript confirm prompt with the question specified. If the user accepts, the form is processed normally, otherwise no action is taken.Examplesimage_submit_tag("login.png")
+# => <input src="/assets/login.png" type="image" />
+
+image_submit_tag("purchase.png", disabled: true)
+# => <input disabled="disabled" src="/assets/purchase.png" type="image" />
+
+image_submit_tag("search.png", class: 'search_button', alt: 'Find')
+# => <input class="search_button" src="/assets/search.png" type="image" />
+
+image_submit_tag("agree.png", disabled: true, class: "agree_disagree_button")
+# => <input class="agree_disagree_button" disabled="disabled" src="/assets/agree.png" type="image" />
+
+image_submit_tag("save.png", data: { confirm: "Are you sure?" })
+# => <input src="/assets/save.png" data-confirm="Are you sure?" type="image" />Source:show|on GitHub# File actionview/lib/action_view/helpers/form_tag_helper.rb, line 612defimage_submit_tag(source,options= {})options=options.stringify_keyssrc=path_to_image(source,skip_pipeline:options.delete("skip_pipeline"))tag:input, {"type"=>"image","src"=>src}.update(options)endlabel_tag(name = nil, content_or_options = nil, options = nil, &block)LinkCreates a label element. Accepts a block.OptionsCreates standard HTML attributes for the tag.Exampleslabel_tag 'name'
+# => <label for="name">Name</label>
+
+label_tag 'name', 'Your name'
+# => <label for="name">Your name</label>
+
+label_tag 'name', nil, class: 'small_label'
+# => <label for="name" class="small_label">Name</label>Source:show|on GitHub# File actionview/lib/action_view/helpers/form_tag_helper.rb, line 281deflabel_tag(name=nil,content_or_options=nil,options=nil,&block)ifblock_given?&&content_or_options.is_a?(Hash)options=content_or_options=content_or_options.stringify_keyselseoptions||={}options=options.stringify_keysendoptions["for"] =sanitize_to_id(name)unlessname.blank?||options.has_key?("for")content_tag:label,content_or_options||name.to_s.humanize,options,&blockendmonth_field_tag(name, value = nil, options = {})LinkCreates a text field of type âmonthâ.OptionsSupports the same options astext_field_tag. Additionally, supports::min- The minimum acceptable value.:max- The maximum acceptable value.:step- The acceptable value granularity.Examplesmonth_field_tag 'name'
+# => <input id="name" name="name" type="month" />
+
+month_field_tag 'month', '2014-01'
+# => <input id="month" name="month" type="month" value="2014-01" />
+
+month_field_tag 'month', nil, class: 'special_input'
+# => <input class="special_input" id="month" name="month" type="month" />
+
+month_field_tag 'month', '2014-01', class: 'special_input', disabled: true
+# => <input disabled="disabled" class="special_input" id="month" name="month" type="month" value="2014-01" />Source:show|on GitHub# File actionview/lib/action_view/helpers/form_tag_helper.rb, line 824defmonth_field_tag(name,value=nil,options= {})text_field_tag(name,value,options.merge(type::month))endnumber_field_tag(name, value = nil, options = {})LinkCreates a number field.OptionsSupports the same options astext_field_tag. Additionally, supports::min- The minimum acceptable value.:max- The maximum acceptable value.:in- A range specifying the:minand:maxvalues.:within- Same as:in.:step- The acceptable value granularity.Examplesnumber_field_tag 'quantity'
+# => <input id="quantity" name="quantity" type="number" />
+
+number_field_tag 'quantity', '1'
+# => <input id="quantity" name="quantity" type="number" value="1" />
+
+number_field_tag 'quantity', nil, class: 'special_input'
+# => <input class="special_input" id="quantity" name="quantity" type="number" />
+
+number_field_tag 'quantity', nil, min: 1
+# => <input id="quantity" name="quantity" min="1" type="number" />
+
+number_field_tag 'quantity', nil, max: 9
+# => <input id="quantity" name="quantity" max="9" type="number" />
+
+number_field_tag 'quantity', nil, in: 1...10
+# => <input id="quantity" name="quantity" min="1" max="9" type="number" />
+
+number_field_tag 'quantity', nil, within: 1...10
+# => <input id="quantity" name="quantity" min="1" max="9" type="number" />
+
+number_field_tag 'quantity', nil, min: 1, max: 10
+# => <input id="quantity" name="quantity" min="1" max="10" type="number" />
+
+number_field_tag 'quantity', nil, min: 1, max: 10, step: 2
+# => <input id="quantity" name="quantity" min="1" max="10" step="2" type="number" />
+
+number_field_tag 'quantity', '1', class: 'special_input', disabled: true
+# => <input disabled="disabled" class="special_input" id="quantity" name="quantity" type="number" value="1" />Source:show|on GitHub# File actionview/lib/action_view/helpers/form_tag_helper.rb, line 945defnumber_field_tag(name,value=nil,options= {})options=options.stringify_keysoptions["type"]||="number"ifrange=options.delete("in")||options.delete("within")options.update("min"=>range.min,"max"=>range.max)endtext_field_tag(name,value,options)endpassword_field_tag(name = "password", value = nil, options = {})LinkCreates a password field, a masked text field that will hide the users input behind a mask character.Options:disabled- If set to true, the user will not be able to use this input.:size- The number of visible characters that will fit in the input.:maxlength- The maximum number of characters that the browser will allow the user to enter.Any other key creates standard HTML attributes for the tag.Examplespassword_field_tag 'pass'
+# => <input id="pass" name="pass" type="password" />
+
+password_field_tag 'secret', 'Your secret here'
+# => <input id="secret" name="secret" type="password" value="Your secret here" />
+
+password_field_tag 'masked', nil, class: 'masked_input_field'
+# => <input class="masked_input_field" id="masked" name="masked" type="password" />
+
+password_field_tag 'token', '', size: 15
+# => <input id="token" name="token" size="15" type="password" value="" />
+
+password_field_tag 'key', nil, maxlength: 16
+# => <input id="key" maxlength="16" name="key" type="password" />
+
+password_field_tag 'confirm_pass', nil, disabled: true
+# => <input disabled="disabled" id="confirm_pass" name="confirm_pass" type="password" />
+
+password_field_tag 'pin', '1234', maxlength: 4, size: 6, class: "pin_input"
+# => <input class="pin_input" id="pin" maxlength="4" name="pin" size="6" type="password" value="1234" />Source:show|on GitHub# File actionview/lib/action_view/helpers/form_tag_helper.rb, line 380defpassword_field_tag(name="password",value=nil,options= {})text_field_tag(name,value,options.merge(type::password))endphone_field_tag(name, value = nil, options = {})LinkAlias for:telephone_field_tagradio_button_tag(name, value, options = {})radio_button_tag(name, value, checked, options = {})LinkCreates a radio button; use groups of radio buttons named the same to allow users to select from a group of options.Options:checked- If set to true, the radio button will be selected by default.:disabled- If set to true, the user will not be able to use this input.Any other key creates standard HTML options for the tag.Examplesradio_button_tag 'favorite_color', 'maroon'
+# => <input id="favorite_color_maroon" name="favorite_color" type="radio" value="maroon" />
+
+radio_button_tag 'receive_updates', 'no', true
+# => <input checked="checked" id="receive_updates_no" name="receive_updates" type="radio" value="no" />
+
+radio_button_tag 'time_slot', "3:00 p.m.", false, disabled: true
+# => <input disabled="disabled" id="time_slot_3:00_p.m." name="time_slot" type="radio" value="3:00 p.m." />
+
+radio_button_tag 'color', "green", true, class: "color_input"
+# => <input checked="checked" class="color_input" id="color_green" name="color" type="radio" value="green" />Source:show|on GitHub# File actionview/lib/action_view/helpers/form_tag_helper.rb, line 491defradio_button_tag(name,value,*args)ifargs.length>=3raiseArgumentError,"wrong number of arguments (given #{args.length + 2}, expected 2..4)"endoptions=args.extract_options!checked=args.empty??false:args.firsthtml_options= {"type"=>"radio","name"=>name,"id"=>"#{sanitize_to_id(name)}_#{sanitize_to_id(value)}","value"=>value}.update(options.stringify_keys)html_options["checked"] ="checked"ifcheckedtag:input,html_optionsendrange_field_tag(name, value = nil, options = {})LinkCreates a range form element.OptionsSupports the same options asnumber_field_tag.Examplesrange_field_tag 'quantity', '1'
+# => <input id="quantity" name="quantity" type="range" value="1" />
+
+range_field_tag 'quantity', in: 1...10
+# => <input id="quantity" name="quantity" min="1" max="9" type="range" />
+
+range_field_tag 'quantity', min: 1, max: 10, step: 2
+# => <input id="quantity" name="quantity" min="1" max="10" step="2" type="range"Source:show|on GitHub# File actionview/lib/action_view/helpers/form_tag_helper.rb, line 970defrange_field_tag(name,value=nil,options= {})number_field_tag(name,value,options.merge(type::range))endsearch_field_tag(name, value = nil, options = {})LinkCreates a text field of type âsearchâ.OptionsSupports the same options astext_field_tag.Examplessearch_field_tag 'name'
+# => <input id="name" name="name" type="search" />
+
+search_field_tag 'search', 'Enter your search query here'
+# => <input id="search" name="search" type="search" value="Enter your search query here" />
+
+search_field_tag 'search', nil, class: 'special_input'
+# => <input class="special_input" id="search" name="search" type="search" />
+
+search_field_tag 'search', 'Enter your search query here', class: 'special_input', disabled: true
+# => <input disabled="disabled" class="special_input" id="search" name="search" type="search" value="Enter your search query here" />Source:show|on GitHub# File actionview/lib/action_view/helpers/form_tag_helper.rb, line 689defsearch_field_tag(name,value=nil,options= {})text_field_tag(name,value,options.merge(type::search))endselect_tag(name, option_tags = nil, options = {})LinkCreates a dropdown selection box, or if the:multipleoption is set to true, a multiple choice selection box.Helpers::FormOptions can be used to create common select boxes such as countries, time zones, or associated records.option_tagsis a string containing the option tags for the select box.Options:multiple- If set to true, the selection will allow multiple choices.:disabled- If set to true, the user will not be able to use this input.:include_blank- If set to true, an empty option will be created. If set to a string, the string will be used as the optionâs content and the value will be empty.:prompt- Create a prompt option with blank value and the text asking user to select something.Any other key creates standard HTML attributes for the tag.Examplesselect_tag "people", options_from_collection_for_select(@people, "id", "name")
+# <select id="people" name="people"><option value="1">David</option></select>
+
+select_tag "people", options_from_collection_for_select(@people, "id", "name", "1")
+# <select id="people" name="people"><option value="1" selected="selected">David</option></select>
+
+select_tag "people", raw("<option>David</option>")
+# => <select id="people" name="people"><option>David</option></select>
+
+select_tag "count", raw("<option>1</option><option>2</option><option>3</option><option>4</option>")
+# => <select id="count" name="count"><option>1</option><option>2</option>
+#    <option>3</option><option>4</option></select>
+
+select_tag "colors", raw("<option>Red</option><option>Green</option><option>Blue</option>"), multiple: true
+# => <select id="colors" multiple="multiple" name="colors[]"><option>Red</option>
+#    <option>Green</option><option>Blue</option></select>
+
+select_tag "locations", raw("<option>Home</option><option selected='selected'>Work</option><option>Out</option>")
+# => <select id="locations" name="locations"><option>Home</option><option selected='selected'>Work</option>
+#    <option>Out</option></select>
+
+select_tag "access", raw("<option>Read</option><option>Write</option>"), multiple: true, class: 'form_input', id: 'unique_id'
+# => <select class="form_input" id="unique_id" multiple="multiple" name="access[]"><option>Read</option>
+#    <option>Write</option></select>
+
+select_tag "people", options_from_collection_for_select(@people, "id", "name"), include_blank: true
+# => <select id="people" name="people"><option value="" label=" "></option><option value="1">David</option></select>
+
+select_tag "people", options_from_collection_for_select(@people, "id", "name"), include_blank: "All"
+# => <select id="people" name="people"><option value="">All</option><option value="1">David</option></select>
+
+select_tag "people", options_from_collection_for_select(@people, "id", "name"), prompt: "Select something"
+# => <select id="people" name="people"><option value="">Select something</option><option value="1">David</option></select>
+
+select_tag "destination", raw("<option>NYC</option><option>Paris</option><option>Rome</option>"), disabled: true
+# => <select disabled="disabled" id="destination" name="destination"><option>NYC</option>
+#    <option>Paris</option><option>Rome</option></select>
+
+select_tag "credit_card", options_for_select([ "VISA", "MasterCard" ], "MasterCard")
+# => <select id="credit_card" name="credit_card"><option>VISA</option>
+#    <option selected="selected">MasterCard</option></select>Source:show|on GitHub# File actionview/lib/action_view/helpers/form_tag_helper.rb, line 201defselect_tag(name,option_tags=nil,options= {})option_tags||=""html_name= (options[:multiple]==true&&!name.end_with?("[]"))?"#{name}[]":nameifoptions.include?(:include_blank)include_blank=options[:include_blank]options=options.except(:include_blank)options_for_blank_options_tag= {value:""}ifinclude_blank==trueinclude_blank=""options_for_blank_options_tag[:label] =" "endifinclude_blankoption_tags=content_tag("option",include_blank,options_for_blank_options_tag).safe_concat(option_tags)endendifprompt=options.delete(:prompt)option_tags=content_tag("option",prompt,value:"").safe_concat(option_tags)endcontent_tag"select",option_tags, {"name"=>html_name,"id"=>sanitize_to_id(name) }.update(options.stringify_keys)endsubmit_tag(value = "Save changes", options = {})LinkCreates a submit button with the textvalueas the caption.Options:data- This option can be used to add custom data attributes.:disabled- If true, the user will not be able to use this input.Any other key creates standard HTML options for the tag.Examplessubmit_tag
+# => <input name="commit" data-disable-with="Save changes" type="submit" value="Save changes" />
+
+submit_tag "Edit this article"
+# => <input name="commit" data-disable-with="Edit this article" type="submit" value="Edit this article" />
+
+submit_tag "Save edits", disabled: true
+# => <input disabled="disabled" name="commit" data-disable-with="Save edits" type="submit" value="Save edits" />
+
+submit_tag nil, class: "form_submit"
+# => <input class="form_submit" name="commit" type="submit" />
+
+submit_tag "Edit", class: "edit_button"
+# => <input class="edit_button" data-disable-with="Edit" name="commit" type="submit" value="Edit" />Source:show|on GitHub# File actionview/lib/action_view/helpers/form_tag_helper.rb, line 525defsubmit_tag(value="Save changes",options= {})options=options.deep_stringify_keystag_options= {"type"=>"submit","name"=>"commit","value"=>value}.update(options)set_default_disable_withvalue,tag_optionstag:input,tag_optionsendtelephone_field_tag(name, value = nil, options = {})LinkCreates a text field of type âtelâ.OptionsSupports the same options astext_field_tag.Examplestelephone_field_tag 'name'
+# => <input id="name" name="name" type="tel" />
+
+telephone_field_tag 'tel', '0123456789'
+# => <input id="tel" name="tel" type="tel" value="0123456789" />
+
+telephone_field_tag 'tel', nil, class: 'special_input'
+# => <input class="special_input" id="tel" name="tel" type="tel" />
+
+telephone_field_tag 'tel', '0123456789', class: 'special_input', disabled: true
+# => <input disabled="disabled" class="special_input" id="tel" name="tel" type="tel" value="0123456789" />Also aliased as:phone_field_tagSource:show|on GitHub# File actionview/lib/action_view/helpers/form_tag_helper.rb, line 712deftelephone_field_tag(name,value=nil,options= {})text_field_tag(name,value,options.merge(type::tel))endtext_area_tag(name, content = nil, options = {})LinkCreates a text input area; use a textarea for longer text inputs such as blog posts or descriptions.Options:size- A string specifying the dimensions (columns by rows) of the textarea (e.g., â25x10â).:rows- Specify the number of rows in the textarea:cols- Specify the number of columns in the textarea:disabled- If set to true, the user will not be able to use this input.:escape- By default, the contents of the text input are HTML escaped. If you need unescaped contents, set this to false.Any other key creates standard HTML attributes for the tag.Examplestext_area_tag 'post'
+# => <textarea id="post" name="post"></textarea>
+
+text_area_tag 'bio', @user.bio
+# => <textarea id="bio" name="bio">This is my biography.</textarea>
+
+text_area_tag 'body', nil, rows: 10, cols: 25
+# => <textarea cols="25" id="body" name="body" rows="10"></textarea>
+
+text_area_tag 'body', nil, size: "25x10"
+# => <textarea name="body" id="body" cols="25" rows="10"></textarea>
+
+text_area_tag 'description', "Description goes here.", disabled: true
+# => <textarea disabled="disabled" id="description" name="description">Description goes here.</textarea>
+
+text_area_tag 'comment', nil, class: 'comment_input'
+# => <textarea class="comment_input" id="comment" name="comment"></textarea>Source:show|on GitHub# File actionview/lib/action_view/helpers/form_tag_helper.rb, line 413deftext_area_tag(name,content=nil,options= {})options=options.stringify_keysifsize=options.delete("size")options["cols"],options["rows"] =size.split("x")ifsize.respond_to?(:split)endescape=options.delete("escape") {true}content=ERB::Util.html_escape(content)ifescapecontent_tag:textarea,content.to_s.html_safe, {"name"=>name,"id"=>sanitize_to_id(name) }.update(options)endtext_field_tag(name, value = nil, options = {})LinkCreates a standard text field; use these text fields to input smaller chunks of text like a username or a search query.Options:disabled- If set to true, the user will not be able to use this input.:size- The number of visible characters that will fit in the input.:maxlength- The maximum number of characters that the browser will allow the user to enter.:placeholder- The text contained in the field by default which is removed when the field receives focus. If set to true, use the translation found in the current I18n locale (through helpers.placeholder.<modelname>.<attribute>).Any other key creates standard HTML attributes for the tag.Examplestext_field_tag 'name'
+# => <input id="name" name="name" type="text" />
+
+text_field_tag 'query', 'Enter your search query here'
+# => <input id="query" name="query" type="text" value="Enter your search query here" />
+
+text_field_tag 'search', nil, placeholder: 'Enter search term...'
+# => <input id="search" name="search" placeholder="Enter search term..." type="text" />
+
+text_field_tag 'request', nil, class: 'special_input'
+# => <input class="special_input" id="request" name="request" type="text" />
+
+text_field_tag 'address', '', size: 75
+# => <input id="address" name="address" size="75" type="text" value="" />
+
+text_field_tag 'zip', nil, maxlength: 5
+# => <input id="zip" maxlength="5" name="zip" type="text" />
+
+text_field_tag 'payment_amount', '$0.00', disabled: true
+# => <input disabled="disabled" id="payment_amount" name="payment_amount" type="text" value="$0.00" />
+
+text_field_tag 'ip', '0.0.0.0', maxlength: 15, size: 20, class: "ip-input"
+# => <input class="ip-input" id="ip" maxlength="15" name="ip" size="20" type="text" value="0.0.0.0" />Source:show|on GitHub# File actionview/lib/action_view/helpers/form_tag_helper.rb, line 263deftext_field_tag(name,value=nil,options= {})tag:input, {"type"=>"text","name"=>name,"id"=>sanitize_to_id(name),"value"=>value}.update(options.stringify_keys)endtime_field_tag(name, value = nil, options = {})LinkCreates a text field of type âtimeâ.OptionsSupports the same options astext_field_tag. Additionally, supports::min- The minimum acceptable value.:max- The maximum acceptable value.:step- The acceptable value granularity.:include_seconds- Include seconds and ms in the output timestamp format (true by default).Examplestime_field_tag 'name'
+# => <input id="name" name="name" type="time" />
+
+time_field_tag 'time', '01:01'
+# => <input id="time" name="time" type="time" value="01:01" />
+
+time_field_tag 'time', nil, class: 'special_input'
+# => <input class="special_input" id="time" name="time" type="time" />
+
+time_field_tag 'time', '01:01', include_seconds: true
+# => <input id="time" name="time" type="time" value="01:01:00.000" />
+
+time_field_tag 'time', '01:01', min: '00:00', max: '23:59', step: 1
+# => <input id="time" max="23:59" min="00:00" name="time" step="1" type="time" value="01:01" />Source:show|on GitHub# File actionview/lib/action_view/helpers/form_tag_helper.rb, line 767deftime_field_tag(name,value=nil,options= {})text_field_tag(name,value,options.merge(type::time))endurl_field_tag(name, value = nil, options = {})LinkCreates a text field of type âurlâ.OptionsSupports the same options astext_field_tag.Examplesurl_field_tag 'name'
+# => <input id="name" name="name" type="url" />
+
+url_field_tag 'url', 'http://rubyonrails.org'
+# => <input id="url" name="url" type="url" value="http://rubyonrails.org" />
+
+url_field_tag 'url', nil, class: 'special_input'
+# => <input class="special_input" id="url" name="url" type="url" />
+
+url_field_tag 'url', 'http://rubyonrails.org', class: 'special_input', disabled: true
+# => <input disabled="disabled" class="special_input" id="url" name="url" type="url" value="http://rubyonrails.org" />Source:show|on GitHub# File actionview/lib/action_view/helpers/form_tag_helper.rb, line 874defurl_field_tag(name,value=nil,options= {})text_field_tag(name,value,options.merge(type::url))endutf8_enforcer_tag()LinkCreates the hidden UTF-8 enforcer tag. Override this method in a helper to customize the tag.Source:show|on GitHub# File actionview/lib/action_view/helpers/form_tag_helper.rb, line 976defutf8_enforcer_tag# Use raw HTML to ensure the value is written as an HTML entity; it# needs to be the right character regardless of which encoding the# browser infers.'<input name="utf8" type="hidden" value="&#x2713;" autocomplete="off" />'.html_safeendweek_field_tag(name, value = nil, options = {})LinkCreates a text field of type âweekâ.OptionsSupports the same options astext_field_tag. Additionally, supports::min- The minimum acceptable value.:max- The maximum acceptable value.:step- The acceptable value granularity.Examplesweek_field_tag 'name'
+# => <input id="name" name="name" type="week" />
+
+week_field_tag 'week', '2014-W01'
+# => <input id="week" name="week" type="week" value="2014-W01" />
+
+week_field_tag 'week', nil, class: 'special_input'
+# => <input class="special_input" id="week" name="week" type="week" />
+
+week_field_tag 'week', '2014-W01', class: 'special_input', disabled: true
+# => <input disabled="disabled" class="special_input" id="week" name="week" type="week" value="2014-W01" />Source:show|on GitHub# File actionview/lib/action_view/helpers/form_tag_helper.rb, line 851defweek_field_tag(name,value=nil,options= {})text_field_tag(name,value,options.merge(type::week))end

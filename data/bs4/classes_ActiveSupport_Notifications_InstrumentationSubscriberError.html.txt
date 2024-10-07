@@ -1,0 +1,1 @@
+MethodsNnewAttributes[R]exceptionsClass Public methodsnew(exceptions)LinkSource:show|on GitHub# File activesupport/lib/active_support/notifications/fanout.rb, line 12definitialize(exceptions)@exceptions=exceptionsexception_class_names=exceptions.map{|e|e.class.name}super"Exception(s) occurred within instrumentation subscribers: #{exception_class_names.join(', ')}"end

@@ -1,0 +1,12 @@
+Active Storage Attached OneRepresentation of a single attachment to a model.MethodsAattach,attached?,attachmentBblank?DdetachPpurge,purge_laterInstance Public methodsattach(attachable)LinkAttaches anattachableto the record.If the record is persisted and unchanged, the attachment is saved to the database immediately. Otherwise, itâll be saved to the DB when the record is next saved.person.avatar.attach(params[:avatar]) # ActionDispatch::Http::UploadedFile object
+person.avatar.attach(params[:signed_blob_id]) # Signed reference to blob from direct upload
+person.avatar.attach(io: File.open("/path/to/face.jpg"), filename: "face.jpg", content_type: "image/jpeg")
+person.avatar.attach(avatar_blob) # ActiveStorage::Blob objectSource:show|on GitHub# File activestorage/lib/active_storage/attached/one.rb, line 58defattach(attachable)record.public_send("#{name}=",attachable)ifrecord.persisted?&&!record.changed?returnif!record.saveendrecord.public_send("#{name}")endattached?()LinkReturnstrueif an attachment has been made.class User < ApplicationRecord
+  has_one_attached :avatar
+end
+
+User.new.avatar.attached? # => falseSource:show|on GitHub# File activestorage/lib/active_storage/attached/one.rb, line 73defattached?attachment.present?endattachment()LinkReturns the associated attachment record.You donât have to call this method to access the attachmentâs methods as they are all available at the model level.Source:show|on GitHub# File activestorage/lib/active_storage/attached/one.rb, line 33defattachmentchange.present??change.attachment:record.public_send("#{name}_attachment")endblank?()LinkReturnstrueif an attachment is not attached.class User < ApplicationRecord
+  has_one_attached :avatar
+end
+
+User.new.avatar.blank? # => trueSource:show|on GitHub# File activestorage/lib/active_storage/attached/one.rb, line 44defblank?!attached?enddetachLinkDeletes the attachment without purging it, leaving its blob in place.Source:show|on GitHub# File activestorage/lib/active_storage/attached/one.rb, line 25delegate:detach,to::detach_onepurgeLinkDirectly purges the attachment (i.e. destroys the blob and attachment and deletes the file on the service).Source:show|on GitHub# File activestorage/lib/active_storage/attached/one.rb, line 13delegate:purge,to::purge_onepurge_laterLinkPurges the attachment through the queuing system.Source:show|on GitHub# File activestorage/lib/active_storage/attached/one.rb, line 19delegate:purge_later,to::purge_one

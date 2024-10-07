@@ -1,0 +1,1 @@
+NamespaceMODULEActiveRecord::MessagePack::ExtensionsCLASSActiveRecord::MessagePack::DecoderCLASSActiveRecord::MessagePack::Encoder

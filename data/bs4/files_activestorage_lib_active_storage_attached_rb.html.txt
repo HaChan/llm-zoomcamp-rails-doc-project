@@ -1,0 +1,1 @@
+Required Filesactive_support/core_ext/module/delegationactive_storage/attached/modelactive_storage/attached/oneactive_storage/attached/manyactive_storage/attached/changesNamespaceMODULEActiveStorageCLASSActiveStorage::Attached

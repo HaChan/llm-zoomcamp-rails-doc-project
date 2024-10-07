@@ -1,0 +1,1 @@
+NamespaceMODULEActiveStorageMODULEActiveStorage::ReflectionMODULEActiveStorage::Reflection::ActiveRecordExtensionsMODULEActiveStorage::Reflection::ActiveRecordExtensions::ClassMethods

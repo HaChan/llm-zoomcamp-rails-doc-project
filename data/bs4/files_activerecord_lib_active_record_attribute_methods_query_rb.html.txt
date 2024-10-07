@@ -1,0 +1,1 @@
+NamespaceMODULEActiveModelMODULEActiveModel::TypeMODULEActiveRecordMODULEActiveRecord::AttributeMethodsMODULEActiveRecord::AttributeMethods::QueryCLASSActiveModel::Type::Boolean

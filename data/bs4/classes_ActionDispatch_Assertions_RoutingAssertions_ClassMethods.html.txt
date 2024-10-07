@@ -1,0 +1,5 @@
+MethodsWwith_routingInstance Public methodswith_routing(&block)LinkA helper to make it easier to test different route configurations. This method temporarily replaces @routes with a new RouteSet instance before each test.The new instance is yielded to the passed block. Typically the block will create some routes usingset.draw { match ... }:with_routing do |set|
+  set.draw do
+    resources :users
+  end
+endSource:show|on GitHub# File actionpack/lib/action_dispatch/testing/assertions/routing.rb, line 89defwith_routing(&block)old_routes,old_controller=nilsetupdoold_routes,old_controller=@routes,@controllercreate_routes(&block)endteardowndoreset_routes(old_routes,old_controller)endend

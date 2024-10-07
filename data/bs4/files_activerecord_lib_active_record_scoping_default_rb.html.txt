@@ -1,0 +1,1 @@
+NamespaceMODULEActiveRecordMODULEActiveRecord::ScopingMODULEActiveRecord::Scoping::DefaultMODULEActiveRecord::Scoping::Default::ClassMethods

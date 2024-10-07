@@ -1,0 +1,1 @@
+Required Filesabstract_controller/collectoractive_support/core_ext/hash/reverse_mergeactive_support/core_ext/array/extract_optionsNamespaceMODULEActionMailerCLASSActionMailer::Collector

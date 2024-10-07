@@ -1,0 +1,1 @@
+NamespaceMODULEActiveRecord::ConnectionAdapters::Deduplicable::ClassMethodsMethods#-@DdeduplicateInstance Public methods-@()LinkAlias for:deduplicatededuplicate()LinkAlso aliased as:-@Source:show|on GitHub# File activerecord/lib/active_record/connection_adapters/deduplicable.rb, line 18defdeduplicateself.class.registry[self]||=deduplicatedend

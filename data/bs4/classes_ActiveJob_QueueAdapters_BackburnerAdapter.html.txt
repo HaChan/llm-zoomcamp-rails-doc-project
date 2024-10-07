@@ -1,0 +1,1 @@
+Backburner adapter for Active JobBackburner is a beanstalkd-powered job queue that can handle a very high volume of jobs. You create background jobs and place them on multiple work queues to be processed later. Read more about Backburnerhere.To use Backburner set the queue_adapter config to:backburner.Rails.application.config.active_job.queue_adapter = :backburner

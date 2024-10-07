@@ -1,0 +1,1 @@
+NamespaceMODULEActionDispatchMODULEActionDispatch::SystemTestingMODULEActionDispatch::SystemTesting::TestHelpersMODULEActionDispatch::SystemTesting::TestHelpers::ScreenshotHelperMODULEMinitest

@@ -1,0 +1,82 @@
+MethodsAacts_like?Bblank?Ddeep_dup,duplicable?Hhtml_safe?Iin?,instance_values,instance_variable_namesPpresence,presence_in,present?Tto_param,to_query,try,try!Wwith,with_optionsIncluded ModulesActiveSupport::NumericWithFormatJavaConstantsAPP_PATH=File.expand_path("test/dummy/config/application", ENGINE_ROOT)Instance Public methodsacts_like?(duck)LinkProvides a way to check whether some class acts like some other class based on the existence of an appropriately-named marker method.A class that provides the same interface asSomeClassmay define a marker method namedacts_like_some_class?to signal its compatibility to callers ofacts_like?(:some_class).For example, Active Support extendsDateto define anacts_like_date?method, and extendsTimeto defineacts_like_time?. As a result, developers can callx.acts_like?(:time)andx.acts_like?(:date)to test duck-type compatibility, and classes that are able to act likeTimecan also define anacts_like_time?method to interoperate.Note that the marker method is only expected to exist. It isnât called, so its body or return value are irrelevant.Example: A class that provides the same interface asStringThis class may define:class Stringish
+  def acts_like_string?
+  end
+endThen client code can query for duck-type-safeness this way:Stringish.new.acts_like?(:string) # => trueSource:show|on GitHub# File activesupport/lib/active_support/core_ext/object/acts_like.rb, line 33defacts_like?(duck)caseduckwhen:timerespond_to?:acts_like_time?when:daterespond_to?:acts_like_date?when:stringrespond_to?:acts_like_string?elserespond_to?:"acts_like_#{duck}?"endendblank?()LinkAn object is blank if itâs false, empty, or a whitespace string. For example,nil, â, â   â, [], {}, andfalseare all blank.This simplifies!address || address.empty?toaddress.blank?@return [true, false]Source:show|on GitHub# File activesupport/lib/active_support/core_ext/object/blank.rb, line 18defblank?respond_to?(:empty?)?!!empty?:falseenddeep_dup()LinkReturns a deep copy of object if itâs duplicable. If itâs not duplicable, returnsself.object = Object.new
+dup    = object.deep_dup
+dup.instance_variable_set(:@a, 1)
+
+object.instance_variable_defined?(:@a) # => false
+dup.instance_variable_defined?(:@a)    # => trueSource:show|on GitHub# File activesupport/lib/active_support/core_ext/object/deep_dup.rb, line 15defdeep_dupduplicable??dup:selfendduplicable?()LinkCan you safely dup this object?False for method objects; true otherwise.Source:show|on GitHub# File activesupport/lib/active_support/core_ext/object/duplicable.rb, line 26defduplicable?trueendhtml_safe?()LinkSource:show|on GitHub# File activesupport/lib/active_support/core_ext/string/output_safety.rb, line 7defhtml_safe?falseendin?(another_object)LinkReturns true if this object is included in the argument.When argument is aRange,#cover?is used to properly handle inclusion check within open ranges. Otherwise, argument must be any object which responds to#include?. Usage:characters = ["Konata", "Kagami", "Tsukasa"]
+"Konata".in?(characters) # => trueFor nonRangearguments, this will throw anArgumentErrorif the argument doesnât respond to#include?.Source:show|on GitHub# File activesupport/lib/active_support/core_ext/object/inclusion.rb, line 15defin?(another_object)caseanother_objectwhenRangeanother_object.cover?(self)elseanother_object.include?(self)endrescueNoMethodErrorraiseArgumentError.new("The parameter passed to #in? must respond to #include?")endinstance_values()LinkReturns a hash with string keys that maps instance variable names without â@â to their corresponding values.class C
+  def initialize(x, y)
+    @x, @y = x, y
+  end
+end
+
+C.new(0, 1).instance_values # => {"x" => 0, "y" => 1}Source:show|on GitHub# File activesupport/lib/active_support/core_ext/object/instance_variables.rb, line 14definstance_valuesinstance_variables.to_hdo|ivar|[ivar[1..-1].freeze,instance_variable_get(ivar)]endendinstance_variable_names()LinkReturns an array of instance variable names as strings including â@â.class C
+  def initialize(x, y)
+    @x, @y = x, y
+  end
+end
+
+C.new(0, 1).instance_variable_names # => ["@y", "@x"]Source:show|on GitHub# File activesupport/lib/active_support/core_ext/object/instance_variables.rb, line 29definstance_variable_namesinstance_variables.map(&:name)endpresence()LinkReturns the receiver if itâs present otherwise returnsnil.object.presenceis equivalent toobject.present? ? object : nilFor example, something likestate   = params[:state]   if params[:state].present?
+country = params[:country] if params[:country].present?
+region  = state || country || 'US'becomesregion = params[:state].presence || params[:country].presence || 'US'@return [Object]Source:show|on GitHub# File activesupport/lib/active_support/core_ext/object/blank.rb, line 45defpresenceselfifpresent?endpresence_in(another_object)LinkReturns the receiver if itâs included in the argument otherwise returnsnil. Argument must be any object which responds to#include?. Usage:params[:bucket_type].presence_in %w( project calendar )This will throw anArgumentErrorif the argument doesnât respond to#include?.@return [Object]Source:show|on GitHub# File activesupport/lib/active_support/core_ext/object/inclusion.rb, line 34defpresence_in(another_object)in?(another_object)?self:nilendpresent?()LinkAn object is present if itâs not blank.@return [true, false]Source:show|on GitHub# File activesupport/lib/active_support/core_ext/object/blank.rb, line 25defpresent?!blank?endto_param()LinkAlias ofto_s.Source:show|on GitHub# File activesupport/lib/active_support/core_ext/object/to_query.rb, line 7defto_paramto_sendto_query(key)LinkConverts an object into a string suitable for use as a URL query string, using the givenkeyas the param name.Source:show|on GitHub# File activesupport/lib/active_support/core_ext/object/to_query.rb, line 13defto_query(key)"#{CGI.escape(key.to_param)}=#{CGI.escape(to_param.to_s)}"endtry(*args, █)LinkInvokes the public method whose name goes as first argument just likepublic_senddoes, except that if the receiver does not respond to it the call returnsnilrather than raising an exception.This method is defined to be able to write@person.try(:name)instead of@person.name if @persontrycalls can be chained:@person.try(:spouse).try(:name)instead of@person.spouse.name if @person && @person.spousetrywill also returnnilif the receiver does not respond to the method:@person.try(:non_existing_method) # => nilinstead of@person.non_existing_method if @person.respond_to?(:non_existing_method) # => niltryreturnsnilwhen called onnilregardless of whether it responds to the method:nil.try(:to_i) # => nil, rather than 0Arguments and blocks are forwarded to the method if invoked:@posts.try(:each_slice, 2) do |a, b|
+  ...
+endThe number of arguments in the signature must match. If the object responds to the method the call is attempted andArgumentErroris still raised in case of argument mismatch.Iftryis called without arguments it yields the receiver to a given block unless it isnil:@person.try do |p|
+  ...
+endYou can also call try with a block without accepting an argument, and the block will be instance_evalâed instead:@person.try { upcase.truncate(50) }Please also note thattryis defined onObject. Therefore, it wonât work with instances of classes that do not haveObjectamong their ancestors, like direct subclasses ofBasicObject.Source:on GitHub# File activesupport/lib/active_support/core_ext/object/try.rb, line 39try!(*args, █)LinkSame astry, but raises aNoMethodErrorexception if the receiver is notniland does not implement the tried method."a".try!(:upcase) # => "A"
+nil.try!(:upcase) # => nil
+123.try!(:upcase) # => NoMethodError: undefined method `upcase' for 123:IntegerSource:on GitHub# File activesupport/lib/active_support/core_ext/object/try.rb, line 104with(**attributes)LinkSet and restore public attributes around a block.client.timeout # => 5
+client.with(timeout: 1) do |c|
+  c.timeout # => 1
+end
+client.timeout # => 5The receiver is yielded to the provided block.This method is a shorthand for the common begin/ensure pattern:old_value = object.attribute
+begin
+  object.attribute = new_value
+  # do things
+ensure
+  object.attribute = old_value
+endIt can be used on any object as long as both the reader and writer methods are public.Source:show|on GitHub# File activesupport/lib/active_support/core_ext/object/with.rb, line 26defwith(**attributes)old_values= {}beginattributes.eachdo|key,value|old_values[key] =public_send(key)public_send("#{key}=",value)endyieldselfensureold_values.eachdo|key,old_value|public_send("#{key}=",old_value)endendendwith_options(options, &block)LinkAn elegant way to factor duplication out of options passed to a series of method calls. Each method called in the block, with the block variable as the receiver, will have its options merged with the defaultoptionsHashorHash-like object provided. Each method called on the block variable must take an options hash as its final argument.Withoutwith_options, this code contains duplication:class Account < ActiveRecord::Base
+  has_many :customers, dependent: :destroy
+  has_many :products,  dependent: :destroy
+  has_many :invoices,  dependent: :destroy
+  has_many :expenses,  dependent: :destroy
+endUsingwith_options, we can remove the duplication:class Account < ActiveRecord::Base
+  with_options dependent: :destroy do |assoc|
+    assoc.has_many :customers
+    assoc.has_many :products
+    assoc.has_many :invoices
+    assoc.has_many :expenses
+  end
+endIt can also be used with an explicit receiver:I18n.with_options locale: user.locale, scope: 'newsletter' do |i18n|
+  subject i18n.t :subject
+  body    i18n.t :body, user_name: user.name
+endWhen you donât pass an explicit receiver, it executes the whole block in merging options context:class Account < ActiveRecord::Base
+  with_options dependent: :destroy do
+    has_many :customers
+    has_many :products
+    has_many :invoices
+    has_many :expenses
+  end
+endwith_optionscan also be nested since the call is forwarded to its receiver.NOTE: Each nesting level will merge inherited defaults in addition to their own.class Post < ActiveRecord::Base
+  with_options if: :persisted?, length: { minimum: 50 } do
+    validates :content, if: -> { content.present? }
+  end
+endThe code is equivalent to:validates :content, length: { minimum: 50 }, if: -> { content.present? }Hence the inherited default forifkey is ignored.NOTE: You cannot call class methods implicitly inside ofwith_options. You can access these methods using the class name instead:class Phone < ActiveRecord::Base
+  enum :phone_number_type, { home: 0, office: 1, mobile: 2 }
+
+  with_options presence: true do
+    validates :phone_number_type, inclusion: { in: Phone.phone_number_types.keys }
+  end
+endWhen the block argument is omitted, the decoratedObjectinstance is returned:module MyStyledHelpers
+  def styled
+    with_options style: "color: red;"
+  end
+end
+
+styled.link_to "I'm red", "/"
+# => <a href="/" style="color: red;">I'm red</a>
+
+styled.button_tag "I'm red too!"
+# => <button style="color: red;">I'm red too!</button>Source:show|on GitHub# File activesupport/lib/active_support/core_ext/object/with_options.rb, line 92defwith_options(options,&block)option_merger=ActiveSupport::OptionMerger.new(self,options)ifblockblock.arity.zero??option_merger.instance_eval(&block):block.call(option_merger)elseoption_mergerendend

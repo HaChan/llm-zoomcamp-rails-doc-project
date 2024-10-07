@@ -1,0 +1,3 @@
+MethodsAafter_bundleInstance Private methodsafter_bundle(&block)LinkRegisters a callback to be executed after bundle binstubs have run.after_bundle do
+  git add: '.'
+endSource:show|on GitHub# File railties/lib/rails/generators/rails/app/app_generator.rb, line 606defafter_bundle(&block)# :doc:@after_bundle_callbacks<<blockend

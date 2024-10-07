@@ -1,0 +1,1 @@
+NamespaceMODULEAbstractController::Helpers::ClassMethodsMethods#_helpersInstance Public methods_helpers()LinkSource:show|on GitHub# File actionpack/lib/abstract_controller/helpers.rb, line 28def_helpersself.class._helpersend

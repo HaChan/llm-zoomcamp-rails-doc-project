@@ -1,0 +1,27 @@
+Action TextRichTextTheRichTextrecord holds the content produced by the Trix editor in a serializedbodyattribute. It also holds all the references to the embedded files, which are stored using Active Storage. This record is then associated with the Active Record model the application desires to have rich text content using thehas_rich_textclass method.class Message < ActiveRecord::Base
+  has_rich_text :content
+end
+
+message = Message.create!(content: "<h1>Funny times!</h1>")
+message.content #=> #<ActionText::RichText....
+message.content.to_s # => "<h1>Funny times!</h1>"
+message.content.to_plain_text # => "Funny times!"
+
+message = Message.create!(content: "<div onclick='action()'>safe<script>unsafe</script></div>")
+message.content #=> #<ActionText::RichText....
+message.content.to_s # => "<div>safeunsafe</div>"
+message.content.to_plain_text # => "safeunsafe"MethodsEembedsRrecordTto_plain_text,to_s,to_trix_htmlInstance Public methodsembedsLinkReturns theActiveStorage::Blobs of the embedded files.Source:show|on GitHub# File actiontext/app/models/action_text/rich_text.rb, line 52has_many_attached:embedsrecordLinkReturns the associated record.Source:show|on GitHub# File actiontext/app/models/action_text/rich_text.rb, line 46belongs_to:record,polymorphic:true,touch:trueto_plain_text()LinkReturns a plain-text version of the markup contained by thebodyattribute, with tags removed but HTML entities encoded.message = Message.create!(content: "<h1>Funny times!</h1>")
+message.content.to_plain_text # => "Funny times!"NOTE: that the returned string is not HTML safe and should not be rendered in browsers.message = Message.create!(content: "&lt;script&gt;alert()&lt;/script&gt;")
+message.content.to_plain_text # => "<script>alert()</script>"Source:show|on GitHub# File actiontext/app/models/action_text/rich_text.rb, line 69defto_plain_textbody&.to_plain_text.to_sendto_sLinkSafely transformsRichTextinto an HTMLString.message = Message.create!(content: "<h1>Funny times!</h1>")
+message.content.to_s # => "<h1>Funny times!</h1>"
+
+message = Message.create!(content: "<div onclick='action()'>safe<script>unsafe</script></div>")
+message.content.to_s # => "<div>safeunsafe</div>"Source:show|on GitHub# File actiontext/app/models/action_text/rich_text.rb, line 39serialize:body,coder:ActionText::Contentto_trix_html()LinkReturns thebodyattribute in a format that makes it editable in the Trix editor. Previews of attachments are rendered inline.content = "<h1>Funny Times!</h1><figure data-trix-attachment='{\"sgid\":\"..."\}'></figure>"
+message = Message.create!(content: content)
+message.content.to_trix_html # =>
+# <div class="trix-content">
+#   <h1>Funny times!</h1>
+#   <figure data-trix-attachment='{\"sgid\":\"..."\}'>
+#      <img src="http://example.org/rails/active_storage/.../funny.jpg">
+#   </figure>
+# </div>Source:show|on GitHub# File actiontext/app/models/action_text/rich_text.rb, line 85defto_trix_htmlbody&.to_trix_htmlend

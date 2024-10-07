@@ -1,0 +1,1 @@
+NamespaceCLASSActionMailbox::Ingresses::Mandrill::InboundEmailsController

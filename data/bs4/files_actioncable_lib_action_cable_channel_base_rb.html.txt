@@ -1,0 +1,1 @@
+Required Filessetactive_support/rescuableactive_support/parameter_filterNamespaceMODULEActionCableMODULEActionCable::ChannelMODULEActiveSupportCLASSActionCable::Channel::Base

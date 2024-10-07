@@ -1,0 +1,1 @@
+NamespaceMODULEActiveModelMODULEActiveRecordCLASSActiveRecord::StatementCacheCLASSActiveRecord::StatementCache::PartialQueryCollector

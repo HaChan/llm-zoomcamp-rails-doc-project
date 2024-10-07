@@ -1,0 +1,1 @@
+Methods#_forkInstance Public methods_fork()LinkSource:show|on GitHub# File activesupport/lib/active_support/fork_tracker.rb, line 6def_forkpid=superifpid==0ForkTracker.after_fork_callbackendpidend

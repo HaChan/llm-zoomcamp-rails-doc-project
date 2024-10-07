@@ -1,0 +1,49 @@
+MethodsCclass_attributeDdescendantsInstance Public methodsclass_attribute(*attrs, instance_accessor: true, instance_reader: instance_accessor, instance_writer: instance_accessor, instance_predicate: true, default: nil)LinkDeclare a class-level attribute whose value is inheritable by subclasses. Subclasses can change their own value and it will not impact parent class.Options:instance_reader- Sets the instance reader method (defaults to true).:instance_writer- Sets the instance writer method (defaults to true).:instance_accessor- Sets both instance methods (defaults to true).:instance_predicate- Sets a predicate method (defaults to true).:default- Sets a default value for the attribute (defaults to nil).Examplesclass Base
+  class_attribute :setting
+end
+
+class Subclass < Base
+end
+
+Base.setting = true
+Subclass.setting            # => true
+Subclass.setting = false
+Subclass.setting            # => false
+Base.setting                # => trueIn the above case as long as Subclass does not assign a value to setting by performingSubclass.setting =something,Subclass.settingwould read value assigned to parent class. Once Subclass assigns a value then the value assigned by Subclass would be returned.This matches normal Ruby method inheritance: think of writing an attribute on a subclass as overriding the reader method. However, you need to be aware when usingclass_attributewith mutable structures asArrayorHash. In such cases, you donât want to do changes in place. Instead use setters:Base.setting = []
+Base.setting                # => []
+Subclass.setting            # => []
+
+# Appending in child changes both parent and child because it is the same object:
+Subclass.setting << :foo
+Base.setting               # => [:foo]
+Subclass.setting           # => [:foo]
+
+# Use setters to not propagate changes:
+Base.setting = []
+Subclass.setting += [:foo]
+Base.setting               # => []
+Subclass.setting           # => [:foo]For convenience, an instance predicate method is defined as well. To skip it, passinstance_predicate: false.Subclass.setting?       # => falseInstances may overwrite the class value in the same way:Base.setting = true
+object = Base.new
+object.setting          # => true
+object.setting = false
+object.setting          # => false
+Base.setting            # => trueTo opt out of the instance reader method, passinstance_reader: false.object.setting          # => NoMethodError
+object.setting?         # => NoMethodErrorTo opt out of the instance writer method, passinstance_writer: false.object.setting = false  # => NoMethodErrorTo opt out of both instance methods, passinstance_accessor: false.To set a default value for the attribute, passdefault:, like so:class_attribute :settings, default: {}Source:show|on GitHub# File activesupport/lib/active_support/core_ext/class/attribute.rb, line 85defclass_attribute(*attrs,instance_accessor:true,instance_reader:instance_accessor,instance_writer:instance_accessor,instance_predicate:true,default:nil)class_methods,methods= [], []attrs.eachdo|name|unlessname.is_a?(Symbol)||name.is_a?(String)raiseTypeError,"#{name.inspect} is not a symbol nor a string"endclass_methods<<<<~RUBY# In case the method exists and is not publicsilence_redefinition_of_method def #{name}
+        endRUBYmethods<<<<~RUBYifinstance_readersilence_redefinition_of_method def #{name}
+          defined?(@#{name}) ? @#{name} : self.class.#{name}
+        endRUBYclass_methods<<<<~RUBYsilence_redefinition_of_method def #{name}=(value)
+          redefine_method(:#{name}) { value } if singleton_class?
+          redefine_singleton_method(:#{name}) { value }
+          value
+        endRUBYmethods<<<<~RUBYifinstance_writersilence_redefinition_of_method(:#{name}=)
+        attr_writer :#{name}RUBYifinstance_predicateclass_methods<<"silence_redefinition_of_method def #{name}?; !!self.#{name}; end"ifinstance_readermethods<<"silence_redefinition_of_method def #{name}?; !!self.#{name}; end"endendendlocation=caller_locations(1,1).firstclass_eval(["class << self",*class_methods,"end",*methods].join(";").tr("\n",";"),location.path,location.lineno)attrs.each{|name|public_send("#{name}=",default) }enddescendants()LinkReturns an array with all classes that are < than its receiver.class C; end
+C.descendants # => []
+
+class B < C; end
+C.descendants # => [B]
+
+class A < B; end
+C.descendants # => [B, A]
+
+class D < C; end
+C.descendants # => [B, A, D]Source:show|on GitHub# File activesupport/lib/active_support/core_ext/class/subclasses.rb, line 19defdescendantssubclasses.concat(subclasses.flat_map(&:descendants))end

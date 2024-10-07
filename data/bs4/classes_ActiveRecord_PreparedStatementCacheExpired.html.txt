@@ -1,0 +1,1 @@
+Raised when PostgreSQL returns âcached plan must not change result typeâ and we cannot retry gracefully (e.g. inside a transaction)

@@ -1,0 +1,45 @@
+NamespaceMODULEActionController::Rendering::ClassMethodsMethodsRrender,render_to_stringConstantsRENDER_FORMATS_IN_PRIORITY=[:body, :plain, :html]Instance Public methodsrender(*args)LinkRenders a template and assigns the result toself.response_body.If no rendering mode option is specified, the template will be derived from the first argument.render "posts/show"
+# => renders app/views/posts/show.html.erb
+
+# In a PostsController action...
+render :show
+# => renders app/views/posts/show.html.erbIf the first argument responds torender_in, the template will be rendered by callingrender_inwith the current view context.class Greeting
+  def render_in(view_context)
+    view_context.render html: "<h1>Hello, World</h1>"
+  end
+
+  def format
+    :html
+  end
+end
+
+render(Greeting.new)
+# => "<h1>Hello, World</h1>"
+
+render(renderable: Greeting.new)
+# => "<h1>Hello, World</h1>"RenderingMode:partialSeeActionView::PartialRendererfor details.render partial: "posts/form", locals: { post: Post.new }
+    # => renders app/views/posts/_form.html.erb:fileRenders the contents of a file. This option shouldnotbe used with unsanitized user input.render file: "/path/to/some/file"
+    # => renders /path/to/some/file:inlineRenders anERBtemplate string.@name = "World"
+    render inline: "<h1>Hello, <%= @name %>!</h1>"
+    # => renders "<h1>Hello, World!</h1>":bodyRenders the provided text, and sets the content type astext/plain.render body: "Hello, World!"
+    # => renders "Hello, World!":plainRenders the provided text, and sets the content type astext/plain.render plain: "Hello, World!"
+    # => renders "Hello, World!":htmlRenders the provided HTML string, and sets the content type astext/html. If the string is nothtml_safe?, performs HTML escaping on the string before rendering.render html: "<h1>Hello, World!</h1>".html_safe
+    # => renders "<h1>Hello, World!</h1>"
+
+    render html: "<h1>Hello, World!</h1>"
+    # => renders "&lt;h1&gt;Hello, World!&lt;/h1&gt;":jsonRenders the provided object as JSON, and sets the content type asapplication/json. If the object is not a string, it will be converted to JSON by callingto_json.render json: { hello: "world" }
+    # => renders "{\"hello\":\"world\"}":renderableRenders the provided object by callingrender_inwith the current view context. The response format is determined by callingformaton the renderable if it responds toformat, falling back totext/htmlby default.render renderable: Greeting.new
+    # => renders "<h1>Hello, World</h1>"By default, when a rendering mode is specified, no layout template is rendered.Options:assignsHashof instance variable assignments for the template.render inline: "<h1>Hello, <%= @name %>!</h1>", assigns: { name: "World" }
+    # => renders "<h1>Hello, World!</h1>":localsHashof local variable assignments for the template.render inline: "<h1>Hello, <%= name %>!</h1>", locals: { name: "World" }
+    # => renders "<h1>Hello, World!</h1>":layoutThe layout template to render. Can also befalseortrueto disable or (re)enable the default layout template.render "posts/show", layout: "holiday"
+    # => renders app/views/posts/show.html.erb with the app/views/layouts/holiday.html.erb layout
+
+    render "posts/show", layout: false
+    # => renders app/views/posts/show.html.erb with no layout
+
+    render inline: "<h1>Hello, World!</h1>", layout: true
+    # => renders "<h1>Hello, World!</h1>" with the default layout:statusThe HTTP status code to send with the response. Can be specified as a number or as the status name inSymbolform. Defaults to 200.render "posts/new", status: 422
+    # => renders app/views/posts/new.html.erb with HTTP status code 422
+
+    render "posts/new", status: :unprocessable_entity
+    # => renders app/views/posts/new.html.erb with HTTP status code 422Source:show|on GitHub# File actionpack/lib/action_controller/metal/rendering.rb, line 165defrender(*args)raise::AbstractController::DoubleRenderErrorifresponse_bodysuperendrender_to_string(*)LinkSimilar torender, but only returns the rendered template as a string, instead of settingself.response_body.Source:show|on GitHub# File actionpack/lib/action_controller/metal/rendering.rb, line 174defrender_to_string(*)result=superifresult.respond_to?(:each)string=+""result.each{|r|string<<r}stringelseresultendend

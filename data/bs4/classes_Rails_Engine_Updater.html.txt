@@ -1,0 +1,2 @@
+MethodsGgeneratorRrunClass Public methodsgenerator()LinkSource:show|on GitHub# File railties/lib/rails/engine/updater.rb, line 10defgenerator@generator||=Rails::Generators::PluginGenerator.new["plugin"],
+    {engine:true}, {destination_root:ENGINE_ROOT}endrun(action)LinkSource:show|on GitHub# File railties/lib/rails/engine/updater.rb, line 15defrun(action)generator.public_send(action)end

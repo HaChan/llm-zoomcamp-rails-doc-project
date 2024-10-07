@@ -1,0 +1,9 @@
+MethodsHheaderNnew,no_routesRresultSsection,section_titleClass Public methodsnew(view)LinkSource:show|on GitHub# File actionpack/lib/action_dispatch/routing/inspector.rb, line 286definitialize(view)@view=view@buffer= []endInstance Public methodsheader(routes)LinkThe header is part of the HTML page, so we donât construct it here.Source:show|on GitHub# File actionpack/lib/action_dispatch/routing/inspector.rb, line 300defheader(routes)endno_routes(*)LinkSource:show|on GitHub# File actionpack/lib/action_dispatch/routing/inspector.rb, line 303defno_routes(*)@buffer<<<<~MESSAGE<p>You don't have any routes defined!</p>
+          <ul>
+            <li>Please add some routes in <tt>config/routes.rb</tt>.</li>
+            <li>
+              For more information about routes, please see the Rails guide
+              <a href="https://guides.rubyonrails.org/routing.html">Rails Routing from the Outside In</a>.
+            </li>
+          </ul>MESSAGEendresult()LinkSource:show|on GitHub# File actionpack/lib/action_dispatch/routing/inspector.rb, line 316defresult@view.raw@view.render(layout:"routes/table") {@view.raw@buffer.join("\n")
+  }endsection(routes)LinkSource:show|on GitHub# File actionpack/lib/action_dispatch/routing/inspector.rb, line 295defsection(routes)@buffer<<@view.render(partial:"routes/route",collection:routes)endsection_title(title)LinkSource:show|on GitHub# File actionpack/lib/action_dispatch/routing/inspector.rb, line 291defsection_title(title)@buffer<<%(<tr><th colspan="5">#{title}</th></tr>)end

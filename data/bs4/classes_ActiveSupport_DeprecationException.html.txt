@@ -1,0 +1,1 @@
+Raised whenActiveSupport::Deprecation::Behavior#behavioris set with:raise. You would set:raise, as a behavior to raise errors and proactively report exceptions from deprecations.

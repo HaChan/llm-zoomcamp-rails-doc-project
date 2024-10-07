@@ -1,0 +1,73 @@
+NotificationsActiveSupport::Notificationsprovides an instrumentation API for Ruby.InstrumentersTo instrument an event you just need to do:ActiveSupport::Notifications.instrument('render', extra: :information) do
+  render plain: 'Foo'
+endThat first executes the block and then notifies all subscribers once done.In the example aboverenderis the name of the event, and the rest is called thepayload. The payload is a mechanism that allows instrumenters to pass extra information to subscribers. Payloads consist of a hash whose contents are arbitrary and generally depend on the event.SubscribersYou can consume those events and the information they provide by registering a subscriber.ActiveSupport::Notifications.subscribe('render') do |event|
+  event.name          # => "render"
+  event.duration      # => 10 (in milliseconds)
+  event.payload       # => { extra: :information }
+  event.allocations   # => 1826 (objects)
+endEventobjects record CPU time and allocations. If you donât need this itâs also possible to pass a block that accepts five arguments:ActiveSupport::Notifications.subscribe('render') do |name, start, finish, id, payload|
+  name    # => String, name of the event (such as 'render' from above)
+  start   # => Time, when the instrumented block started execution
+  finish  # => Time, when the instrumented block ended execution
+  id      # => String, unique ID for the instrumenter that fired the event
+  payload # => Hash, the payload
+endHere, thestartandfinishvalues represent wall-clock time. If you are concerned about accuracy, you can register a monotonic subscriber.ActiveSupport::Notifications.monotonic_subscribe('render') do |name, start, finish, id, payload|
+  name    # => String, name of the event (such as 'render' from above)
+  start   # => Float, monotonic time when the instrumented block started execution
+  finish  # => Float, monotonic time when the instrumented block ended execution
+  id      # => String, unique ID for the instrumenter that fired the event
+  payload # => Hash, the payload
+endFor instance, letâs store all ârenderâ events in an array:events = []
+
+ActiveSupport::Notifications.subscribe('render') do |event|
+  events << event
+endThat code returns right away, you are just subscribing to ârenderâ events. The block is saved and will be called whenever someone instruments ârenderâ:ActiveSupport::Notifications.instrument('render', extra: :information) do
+  render plain: 'Foo'
+end
+
+event = events.first
+event.name          # => "render"
+event.duration      # => 10 (in milliseconds)
+event.payload       # => { extra: :information }
+event.allocations   # => 1826 (objects)If an exception happens during that particular instrumentation the payload will have a key:exceptionwith an array of two elements as value: a string with the name of the exception class, and the exception message. The:exception_objectkey of the payload will have the exception itself as the value:event.payload[:exception]         # => ["ArgumentError", "Invalid value"]
+event.payload[:exception_object]  # => #<ArgumentError: Invalid value>As the earlier example depicts, the classActiveSupport::Notifications::Eventis able to take the arguments as they come and provide an object-oriented interface to that data.It is also possible to pass an object which responds tocallmethod as the second parameter to thesubscribemethod instead of a block:module ActionController
+  class PageRequest
+    def call(name, started, finished, unique_id, payload)
+      Rails.logger.debug ['notification:', name, started, finished, unique_id, payload].join(' ')
+    end
+  end
+end
+
+ActiveSupport::Notifications.subscribe('process_action.action_controller', ActionController::PageRequest.new)resulting in the following output within the logs including a hash with the payload:notification: process_action.action_controller 2012-04-13 01:08:35 +0300 2012-04-13 01:08:35 +0300 af358ed7fab884532ec7 {
+   controller: "Devise::SessionsController",
+   action: "new",
+   params: {"action"=>"new", "controller"=>"devise/sessions"},
+   format: :html,
+   method: "GET",
+   path: "/login/sign_in",
+   status: 200,
+   view_runtime: 279.3080806732178,
+   db_runtime: 40.053
+ }You can also subscribe to all events whose name matches a certain regexp:ActiveSupport::Notifications.subscribe(/render/) do |*args|
+  ...
+endand even pass no argument tosubscribe, in which case you are subscribing to all events.Temporary SubscriptionsSometimes you do not want to subscribe to an event for the entire life of the application. There are two ways to unsubscribe.WARNING: The instrumentation framework is designed for long-running subscribers, use this feature sparingly because it wipes some internal caches and that has a negative impact on performance.Subscribe While a Block RunsYou can subscribe to some event temporarily while some block runs. For example, incallback = lambda {|event| ... }
+ActiveSupport::Notifications.subscribed(callback, "sql.active_record") do
+  ...
+endthe callback will be called for all âsql.active_recordâ events instrumented during the execution of the block. The callback is unsubscribed automatically after that.To recordstartedandfinishedvalues with monotonic time, specify the optional:monotonicoption to thesubscribedmethod. The:monotonicoption is set tofalseby default.callback = lambda {|name, started, finished, unique_id, payload| ... }
+ActiveSupport::Notifications.subscribed(callback, "sql.active_record", monotonic: true) do
+  ...
+endManual UnsubscriptionThesubscribemethod returns a subscriber object:subscriber = ActiveSupport::Notifications.subscribe("render") do |event|
+  ...
+endTo prevent that block from being called anymore, just unsubscribe passing that reference:ActiveSupport::Notifications.unsubscribe(subscriber)You can also unsubscribe by passing the name of the subscriber object. Note that this will unsubscribe all subscriptions with the given name:ActiveSupport::Notifications.unsubscribe("render")Subscribers using a regexp or other pattern-matching object will remain subscribed to all events that match their original pattern, unless those events match a string passed tounsubscribe:subscriber = ActiveSupport::Notifications.subscribe(/render/) { }
+ActiveSupport::Notifications.unsubscribe('render_template.action_view')
+subscriber.matches?('render_template.action_view') # => false
+subscriber.matches?('render_partial.action_view') # => trueDefault QueueNotificationsships with a queue implementation that consumes and publishes events to all log subscribers. You can use any queue implementation you want.NamespaceCLASSActiveSupport::Notifications::EventCLASSActiveSupport::Notifications::FanoutCLASSActiveSupport::Notifications::InstrumentationSubscriberErrorCLASSActiveSupport::Notifications::InstrumenterMethodsIinstrument,instrumenterMmonotonic_subscribePpublishSsubscribe,subscribedUunsubscribeAttributes[RW]notifierClass Public methodsinstrument(name, payload = {})LinkSource:show|on GitHub# File activesupport/lib/active_support/notifications.rb, line 208definstrument(name,payload= {})ifnotifier.listening?(name)instrumenter.instrument(name,payload) {yieldpayloadifblock_given?}elseyieldpayloadifblock_given?endendinstrumenter()LinkSource:show|on GitHub# File activesupport/lib/active_support/notifications.rb, line 269definstrumenterregistry[notifier]||=Instrumenter.new(notifier)endmonotonic_subscribe(pattern = nil, callback = nil, &block)LinkPerforms the same functionality as subscribe, but thestartandfinishblock arguments are in monotonic time instead of wall-clock time. Monotonic time will not jump forward or backward (due to NTP or Daylights Savings). Usemonotonic_subscribewhen accuracy of time duration is important. For example, computing elapsed time between two events.Source:show|on GitHub# File activesupport/lib/active_support/notifications.rb, line 254defmonotonic_subscribe(pattern=nil,callback=nil,&block)notifier.subscribe(pattern,callback,monotonic:true,&block)endpublish(name, *args)LinkSource:show|on GitHub# File activesupport/lib/active_support/notifications.rb, line 200defpublish(name,*args)notifier.publish(name,*args)endsubscribe(pattern = nil, callback = nil, &block)LinkSubscribe to a given event name with the passedblock.You can subscribe to events by passing aStringto match exact event names, or by passing aRegexpto match all events that match a pattern.If the block passed to the method only takes one argument, it will yield anEventobject to the block:ActiveSupport::Notifications.subscribe(/render/) do |event|
+  @event = event
+endOtherwise theblockwill receive five arguments with information about the event:ActiveSupport::Notifications.subscribe('render') do |name, start, finish, id, payload|
+  name    # => String, name of the event (such as 'render' from above)
+  start   # => Time, when the instrumented block started execution
+  finish  # => Time, when the instrumented block ended execution
+  id      # => String, unique ID for the instrumenter that fired the event
+  payload # => Hash, the payload
+endRaises an error if invalid event name type is passed:ActiveSupport::Notifications.subscribe(:render) {|event| ...}
+#=> ArgumentError (pattern must be specified as a String, Regexp or empty)Source:show|on GitHub# File activesupport/lib/active_support/notifications.rb, line 244defsubscribe(pattern=nil,callback=nil,&block)notifier.subscribe(pattern,callback,monotonic:false,&block)endsubscribed(callback, pattern = nil, monotonic: false, &block)LinkSource:show|on GitHub# File activesupport/lib/active_support/notifications.rb, line 258defsubscribed(callback,pattern=nil,monotonic:false,&block)subscriber=notifier.subscribe(pattern,callback,monotonic:monotonic)yieldensureunsubscribe(subscriber)endunsubscribe(subscriber_or_name)LinkSource:show|on GitHub# File activesupport/lib/active_support/notifications.rb, line 265defunsubscribe(subscriber_or_name)notifier.unsubscribe(subscriber_or_name)end

@@ -1,0 +1,49 @@
+MethodsDdefine_callbacksRreset_callbacksSset_callback,skip_callbackInstance Public methodsdefine_callbacks(*names)LinkDefine sets of events in the object life cycle that support callbacks.define_callbacks :validate
+define_callbacks :initialize, :save, :destroyOptions:terminator- Determines when a before filter will halt the callback chain, preventing following before and around callbacks from being called and the event from being triggered. This should be a lambda to be executed. The current object and the result lambda of the callback will be provided to the terminator lambda.define_callbacks :validate, terminator: ->(target, result_lambda) { result_lambda.call == false }In this example, if any before validate callbacks returnsfalse, any successive before and around callback is not executed.The default terminator halts the chain when a callback throws:abort.:skip_after_callbacks_if_terminated- Determines if after callbacks should be terminated by the:terminatoroption. By default after callbacks are executed no matter if callback chain was terminated or not. This option has no effect if:terminatoroption is set tonil.:scope- Indicates which methods should be executed when an object is used as a callback.class Audit
+  def before(caller)
+    puts 'Audit: before is called'
+  end
+
+  def before_save(caller)
+    puts 'Audit: before_save is called'
+  end
+end
+
+class Account
+  include ActiveSupport::Callbacks
+
+  define_callbacks :save
+  set_callback :save, :before, Audit.new
+
+  def save
+    run_callbacks :save do
+      puts 'save in main'
+    end
+  end
+endIn the above case whenever you save an account the methodAudit#beforewill be called. On the other handdefine_callbacks :save, scope: [:kind, :name]would triggerAudit#before_saveinstead. Thatâs constructed by calling#{kind}_#{name}on the given instance. In this case âkindâ is âbeforeâ and ânameâ is âsaveâ. In this context:kindand:namehave special meanings::kindrefers to the kind of callback (before/after/around) and:namerefers to the method on which callbacks are being defined.A declaration likedefine_callbacks :save, scope: [:name]would callAudit#save.Notesnamespassed todefine_callbacksmust not end with!,?or=.Callingdefine_callbacksmultiple times with the samenameswill overwrite previous callbacks registered withset_callback.Source:show|on GitHub# File activesupport/lib/active_support/callbacks.rb, line 901defdefine_callbacks(*names)options=names.extract_options!names.eachdo|name|name=name.to_sym([self]+self.descendants).eachdo|target|target.set_callbacksname,CallbackChain.new(name,options)endmodule_eval<<-RUBY,__FILE__,__LINE__+1def _run_#{name}_callbacks(&block)
+                run_callbacks #{name.inspect}, &block
+              end
+
+              def self._#{name}_callbacks
+                get_callbacks(#{name.inspect})
+              end
+
+              def self._#{name}_callbacks=(value)
+                set_callbacks(#{name.inspect}, value)
+              end
+
+              def _#{name}_callbacks
+                __callbacks[#{name.inspect}]
+              endRUBYendendreset_callbacks(name)LinkRemove all set callbacks for the given event.Source:show|on GitHub# File activesupport/lib/active_support/callbacks.rb, line 811defreset_callbacks(name)callbacks=get_callbacksnameself.descendants.eachdo|target|chain=target.get_callbacks(name).dupcallbacks.each{|c|chain.delete(c) }target.set_callbacksname,chainendset_callbacks(name,callbacks.dup.clear)endset_callback(name, *filter_list, &block)LinkInstall a callback for the given event.set_callback :save, :before, :before_method
+set_callback :save, :after,  :after_method, if: :condition
+set_callback :save, :around, ->(r, block) { stuff; result = block.call; stuff }The second argument indicates whether the callback is to be run:before,:after, or:aroundthe event. If omitted,:beforeis assumed. This means the first example above can also be written as:set_callback :save, :before_methodThe callback can be specified as a symbol naming an instance method; as a proc, lambda, or block; or as an object that responds to a certain method determined by the:scopeargument todefine_callbacks.If a proc, lambda, or block is given, its body is evaluated in the context of the current object. It can also optionally accept the current object as an argument.Before and around callbacks are called in the order that they are set; after callbacks are called in the reverse order.Around callbacks can access the return value from the event, if it wasnât halted, from theyieldcall.Options:if- A symbol or an array of symbols, each naming an instance method or a proc; the callback will be called only when they all return a true value.If a proc is given, its body is evaluated in the context of the current object. It can also optionally accept the current object as an argument.:unless- A symbol or an array of symbols, each naming an instance method or a proc; the callback will be called only when they all return a false value.If a proc is given, its body is evaluated in the context of the current object. It can also optionally accept the current object as an argument.:prepend- Iftrue, the callback will be prepended to the existing chain rather than appended.Source:show|on GitHub# File activesupport/lib/active_support/callbacks.rb, line 737defset_callback(name,*filter_list,&block)type,filters,options=normalize_callback_params(filter_list,block)self_chain=get_callbacksnamemapped=filters.mapdo|filter|Callback.build(self_chain,filter,type,options)end__update_callbacks(name)do|target,chain|options[:prepend]?chain.prepend(*mapped):chain.append(*mapped)target.set_callbacksname,chainendendskip_callback(name, *filter_list, &block)LinkSkip a previously set callback. Likeset_callback,:ifor:unlessoptions may be passed in order to control when the callback is skipped.Note: this example usesPersonRecordand#saving_message, which you can see definedhereclass Writer < PersonRecord
+  attr_accessor :age
+  skip_callback :save, :before, :saving_message, if: -> { age > 18 }
+endWhen if option returns true, callback is skipped.writer = Writer.new
+writer.age = 20
+writer.saveOutput:- save
+savedWhen if option returns false, callback is NOT skipped.young_writer = Writer.new
+young_writer.age = 17
+young_writer.saveOutput:saving...
+- save
+savedAnArgumentErrorwill be raised if the callback has not already been set (unless the:raiseoption is set tofalse).Source:show|on GitHub# File activesupport/lib/active_support/callbacks.rb, line 786defskip_callback(name,*filter_list,&block)type,filters,options=normalize_callback_params(filter_list,block)options[:raise] =trueunlessoptions.key?(:raise)__update_callbacks(name)do|target,chain|filters.eachdo|filter|callback=chain.find{|c|c.matches?(type,filter) }if!callback&&options[:raise]raiseArgumentError,"#{type.to_s.capitalize} #{name} callback #{filter.inspect} has not been defined"endifcallback&&(options.key?(:if)||options.key?(:unless))new_callback=callback.merge_conditional_options(chain,if_option:options[:if],unless_option:options[:unless])chain.insert(chain.index(callback),new_callback)endchain.delete(callback)endtarget.set_callbacksname,chainendend

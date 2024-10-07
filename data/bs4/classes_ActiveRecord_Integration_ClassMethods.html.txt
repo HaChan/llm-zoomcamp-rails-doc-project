@@ -1,0 +1,10 @@
+MethodsTto_paramInstance Public methodsto_param(method_name = nil)LinkDefines your modelâsto_parammethod to generate âprettyâ URLs usingmethod_name, which can be any attribute or method that responds toto_s.class User < ActiveRecord::Base
+  to_param :name
+end
+
+user = User.find_by(name: 'Fancy Pants')
+user.id         # => 123
+user_path(user) # => "/users/123-fancy-pants"Values longer than 20 characters will be truncated. The value is truncated word by word.user = User.find_by(name: 'David Heinemeier Hansson')
+user.id         # => 125
+user_path(user) # => "/users/125-david-heinemeier"Because the generated param begins with the recordâsid, it is suitable for passing tofind. In a controller, for example:params[:id]               # => "123-fancy-pants"
+User.find(params[:id]).id # => 123Source:show|on GitHub# File activerecord/lib/active_record/integration.rb, line 147defto_param(method_name=nil)ifmethod_name.nil?super()elsedefine_method:to_paramdoif(default=super())&&(result=send(method_name).to_s).present?&&(param=result.squish.parameterize.truncate(20,separator:/-/,omission:"")).present?"#{default}-#{param}"elsedefaultendendendend

@@ -1,0 +1,1 @@
+Raised when a write to the database is attempted on a read only connection.

@@ -1,0 +1,21 @@
+Active Model Decimal TypeAttribute type for decimal, high-precision floating point numeric representation. It is registered under the:decimalkey.class BagOfCoffee
+  include ActiveModel::Attributes
+
+  attribute :weight, :decimal
+endNumericinstances are converted toBigDecimalinstances. Any other objects are cast using theirto_dmethod, except for blank strings, which are cast tonil. If ato_dmethod is not defined, the object is converted to a string usingto_s, which is then cast usingto_d.bag = BagOfCoffee.new
+
+bag.weight = 0.01
+bag.weight # => 0.1e-1
+
+bag.weight = "0.01"
+bag.weight # => 0.1e-1
+
+bag.weight = ""
+bag.weight # => nil
+
+bag.weight = :arbitrary
+bag.weight # => nil (the result of `.to_s.to_d`)Decimalprecision defaults to 18, and can be customized when declaring an attribute:class BagOfCoffee
+  include ActiveModel::Attributes
+
+  attribute :weight, :decimal, precision: 24
+endMethodsTtype,type_cast_for_schemaIncluded ModulesActiveModel::Type::Helpers::NumericConstantsBIGDECIMAL_PRECISION=18Instance Public methodstype()LinkSource:show|on GitHub# File activemodel/lib/active_model/type/decimal.rb, line 49deftype:decimalendtype_cast_for_schema(value)LinkSource:show|on GitHub# File activemodel/lib/active_model/type/decimal.rb, line 53deftype_cast_for_schema(value)value.to_s.inspectend

@@ -1,0 +1,1 @@
+Raised when aPrevieweris unable to generate a preview image.

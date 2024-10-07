@@ -1,0 +1,1 @@
+NamespaceMODULERails::Railtie::Configurable::ClassMethods

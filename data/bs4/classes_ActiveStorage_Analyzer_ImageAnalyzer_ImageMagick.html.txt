@@ -1,0 +1,1 @@
+This analyzer relies on the third-partyMiniMagickgem. MiniMagick requires theImageMagicksystem library.MethodsAaccept?Class Public methodsaccept?(blob)LinkSource:show|on GitHub# File activestorage/lib/active_storage/analyzer/image_analyzer/image_magick.rb, line 7defself.accept?(blob)super&&ActiveStorage.variant_processor==:mini_magickend

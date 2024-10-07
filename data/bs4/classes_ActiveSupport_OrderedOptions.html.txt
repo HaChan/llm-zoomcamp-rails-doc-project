@@ -1,0 +1,11 @@
+Ordered OptionsOrderedOptionsinherits fromHashand provides dynamic accessor methods.With aHash, key-value pairs are typically managed like this:h = {}
+h[:boy] = 'John'
+h[:girl] = 'Mary'
+h[:boy]  # => 'John'
+h[:girl] # => 'Mary'
+h[:dog]  # => nilUsingOrderedOptions, the above code can be written as:h = ActiveSupport::OrderedOptions.new
+h.boy = 'John'
+h.girl = 'Mary'
+h.boy  # => 'John'
+h.girl # => 'Mary'
+h.dog  # => nilTo raise an exception when the value is blank, append a bang to the key name, like:h.dog! # => raises KeyError: :dog is blankMethods#[],[]=,_getDdigEextractable_options?IinspectMmethod_missingRrespond_to_missing?Instance Public methods[](key)LinkAlso aliased as:_getSource:show|on GitHub# File activesupport/lib/active_support/ordered_options.rb, line 41def[](key)super(key.to_sym)end[]=(key, value)LinkSource:show|on GitHub# File activesupport/lib/active_support/ordered_options.rb, line 37def[]=(key,value)super(key.to_sym,value)end_get(key)LinkAlias for:[]dig(key, *identifiers)LinkSource:show|on GitHub# File activesupport/lib/active_support/ordered_options.rb, line 45defdig(key,*identifiers)super(key.to_sym,*identifiers)endextractable_options?()LinkSource:show|on GitHub# File activesupport/lib/active_support/ordered_options.rb, line 64defextractable_options?trueendinspect()LinkSource:show|on GitHub# File activesupport/lib/active_support/ordered_options.rb, line 68definspect"#<#{self.class.name} #{super}>"endmethod_missing(method, *args)LinkSource:show|on GitHub# File activesupport/lib/active_support/ordered_options.rb, line 49defmethod_missing(method,*args)ifmethod.end_with?("=")self[method.name.chomp("=")] =args.firstelsifmethod.end_with?("!")name_string=method.name.chomp("!")self[name_string].presence||raise(KeyError.new(":#{name_string} is blank"))elseself[method.name]endendrespond_to_missing?(name, include_private)LinkSource:show|on GitHub# File activesupport/lib/active_support/ordered_options.rb, line 60defrespond_to_missing?(name,include_private)trueend

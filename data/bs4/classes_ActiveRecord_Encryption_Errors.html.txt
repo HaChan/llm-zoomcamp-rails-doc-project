@@ -1,0 +1,1 @@
+NamespaceCLASSActiveRecord::Encryption::Errors::BaseCLASSActiveRecord::Encryption::Errors::ConfigurationCLASSActiveRecord::Encryption::Errors::DecryptionCLASSActiveRecord::Encryption::Errors::EncodingCLASSActiveRecord::Encryption::Errors::EncryptedContentIntegrityCLASSActiveRecord::Encryption::Errors::EncryptionCLASSActiveRecord::Encryption::Errors::ForbiddenClass

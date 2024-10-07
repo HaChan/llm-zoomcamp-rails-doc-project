@@ -1,0 +1,3 @@
+MethodsTtestInstance Public methodstest(name, &block)LinkHelper to define a test method using aString. Under the hood, it replaces spaces with underscores and defines the test method.test "verify something" do
+  ...
+endSource:show|on GitHub# File activesupport/lib/active_support/testing/declarative.rb, line 13deftest(name,&block)test_name="test_#{name.gsub(/\s+/, '_')}".to_symdefined=method_defined?test_nameraise"#{test_name} is already defined in #{self}"ifdefinedifblock_given?define_method(test_name,&block)elsedefine_method(test_name)doflunk"No implementation provided for #{name}"endendend

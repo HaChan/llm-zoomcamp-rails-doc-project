@@ -1,0 +1,1 @@
+Required Filesrails/generatorsrails/generators/rails/db/system/change/change_generatorNamespaceMODULERailsMODULERails::CommandMODULERails::Command::DbMODULERails::Command::Db::SystemMODULERails::Generators

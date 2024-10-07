@@ -1,0 +1,85 @@
+MethodsEexists?Ffifth,fifth!,find,find_by,find_by!,find_sole_by,first,first!,forty_two,forty_two!,fourth,fourth!Iinclude?Llast,last!Mmember?Ssecond,second!,second_to_last,second_to_last!,soleTtake,take!,third,third!,third_to_last,third_to_last!ConstantsONE_AS_ONE="1 AS one"Instance Public methodsexists?(conditions = :none)LinkReturns true if a record exists in the table that matches theidor conditions given, or false otherwise. The argument can take six forms:Integer- Finds the record with this primary key.String- Finds the record with a primary key corresponding to this string (such as'5').Array- Finds the record that matches thesewhere-style conditions (such as['name LIKE ?', "%#{query}%"]).Hash- Finds the record that matches thesewhere-style conditions (such as{name: 'David'}).false- Returns alwaysfalse.No args - Returnsfalseif the relation is empty,trueotherwise.For more information about specifying conditions as a hash or array, see the Conditions section in the introduction toActiveRecord::Base.Note: You canât pass in a condition as a string (likename = 'Jamie'), since it would be sanitized and then queried against the primary key column, likeid = 'name = \'Jamie\''.Person.exists?(5)
+Person.exists?('5')
+Person.exists?(['name LIKE ?', "%#{query}%"])
+Person.exists?(id: [1, 4, 8])
+Person.exists?(name: 'David')
+Person.exists?(false)
+Person.exists?
+Person.where(name: 'Spartacus', rating: 4).exists?Source:show|on GitHub# File activerecord/lib/active_record/relation/finder_methods.rb, line 357defexists?(conditions=:none)returnfalseif@noneifBase===conditionsraiseArgumentError,<<-MSG.squishYou are passing an instance of ActiveRecord::Base to `exists?`.
+          Please pass the id of the object by calling `.id`.MSGendreturnfalseif!conditions||limit_value==0ifeager_loading?relation=apply_join_dependency(eager_loading:false)returnrelation.exists?(conditions)endrelation=construct_relation_for_exists(conditions)returnfalseifrelation.where_clause.contradiction?skip_query_cache_if_necessarydowith_connectiondo|c|c.select_rows(relation.arel,"#{name} Exists?").size==1endendendfifth()LinkFind the fifth record. If no order is defined it will order by primary key.Person.fifth # returns the fifth object fetched by SELECT * FROM people
+Person.offset(3).fifth # returns the fifth object from OFFSET 3 (which is OFFSET 7)
+Person.where(["user_name = :u", { u: user_name }]).fifthSource:show|on GitHub# File activerecord/lib/active_record/relation/finder_methods.rb, line 271deffifthfind_nth4endfifth!()LinkSame asfifthbut raisesActiveRecord::RecordNotFoundif no record is found.Source:show|on GitHub# File activerecord/lib/active_record/relation/finder_methods.rb, line 277deffifth!fifth||raise_record_not_found_exception!endfind(*args)LinkFind by id - This can either be a specific id (ID), a list of ids (ID, ID, ID), or an array of ids ([ID, ID, ID]). âID` refers to an âidentifierâ. For models with a single-column primary key, `ID` will be a single value, and for models with a composite primary key, it will be an array of values. If one or more records cannot be found for the requested ids, thenActiveRecord::RecordNotFoundwill be raised. If the primary key is an integer, find by id coerces its arguments by usingto_i.Person.find(1)          # returns the object for ID = 1
+Person.find("1")        # returns the object for ID = 1
+Person.find("31-sarah") # returns the object for ID = 31
+Person.find(1, 2, 6)    # returns an array for objects with IDs in (1, 2, 6)
+Person.find([7, 17])    # returns an array for objects with IDs in (7, 17), or with composite primary key [7, 17]
+Person.find([1])        # returns an array for the object with ID = 1
+Person.where("administrator = 1").order("created_on DESC").find(1)Find a record for a composite primary key modelTravelRoute.primary_key = [:origin, :destination]
+
+TravelRoute.find(["Ottawa", "London"])
+=> #<TravelRoute origin: "Ottawa", destination: "London">
+
+TravelRoute.find([["Paris", "Montreal"]])
+=> [#<TravelRoute origin: "Paris", destination: "Montreal">]
+
+TravelRoute.find(["New York", "Las Vegas"], ["New York", "Portland"])
+=> [
+     #<TravelRoute origin: "New York", destination: "Las Vegas">,
+     #<TravelRoute origin: "New York", destination: "Portland">
+   ]
+
+TravelRoute.find([["Berlin", "London"], ["Barcelona", "Lisbon"]])
+=> [
+     #<TravelRoute origin: "Berlin", destination: "London">,
+     #<TravelRoute origin: "Barcelona", destination: "Lisbon">
+   ]NOTE: The returned records are in the same order as the ids you provide. If you want the results to be sorted by database, you can useActiveRecord::QueryMethods#wheremethod and provide an explicitActiveRecord::QueryMethods#orderoption. ButActiveRecord::QueryMethods#wheremethod doesnât raiseActiveRecord::RecordNotFound.Find with lockExample for find with a lock: Imagine two concurrent transactions: each will readperson.visits == 2, add 1 to it, and save, resulting in two saves ofperson.visits = 3. By locking the row, the second transaction has to wait until the first is finished; we get the expectedperson.visits == 4.Person.transaction do
+  person = Person.lock(true).find(1)
+  person.visits += 1
+  person.save!
+endVariations offindPerson.where(name: 'Spartacus', rating: 4)
+# returns a chainable list (which can be empty).
+
+Person.find_by(name: 'Spartacus', rating: 4)
+# returns the first item or nil.
+
+Person.find_or_initialize_by(name: 'Spartacus', rating: 4)
+# returns the first item or returns a new instance (requires you call .save to persist against the database).
+
+Person.find_or_create_by(name: 'Spartacus', rating: 4)
+# returns the first item or creates it and returns it.Alternatives forfindPerson.where(name: 'Spartacus', rating: 4).exists?(conditions = :none)
+# returns a boolean indicating if any record with the given conditions exist.
+
+Person.where(name: 'Spartacus', rating: 4).select("field1, field2, field3")
+# returns a chainable list of instances with only the mentioned fields.
+
+Person.where(name: 'Spartacus', rating: 4).ids
+# returns an Array of ids.
+
+Person.where(name: 'Spartacus', rating: 4).pluck(:field1, :field2)
+# returns an Array of the required fields.Edge CasesPerson.find(37)          # raises ActiveRecord::RecordNotFound exception if the record with the given ID does not exist.
+Person.find([37])        # raises ActiveRecord::RecordNotFound exception if the record with the given ID in the input array does not exist.
+Person.find(nil)         # raises ActiveRecord::RecordNotFound exception if the argument is nil.
+Person.find([])          # returns an empty array if the argument is an empty array.
+Person.find              # raises ActiveRecord::RecordNotFound exception if the argument is not provided.Source:show|on GitHub# File activerecord/lib/active_record/relation/finder_methods.rb, line 98deffind(*args)returnsuperifblock_given?find_with_ids(*args)endfind_by(arg, *args)LinkFinds the first record matching the specified conditions. There is no implied ordering so if order matters, you should specify it yourself.If no record is found, returnsnil.Post.find_by name: 'Spartacus', rating: 4
+Post.find_by "published_at < ?", 2.weeks.agoSource:show|on GitHub# File activerecord/lib/active_record/relation/finder_methods.rb, line 111deffind_by(arg,*args)where(arg,*args).takeendfind_by!(arg, *args)LinkLikefind_by, except that if no record is found, raises anActiveRecord::RecordNotFounderror.Source:show|on GitHub# File activerecord/lib/active_record/relation/finder_methods.rb, line 117deffind_by!(arg,*args)where(arg,*args).take!endfind_sole_by(arg, *args)LinkFinds the sole matching record. RaisesActiveRecord::RecordNotFoundif no record is found. RaisesActiveRecord::SoleRecordExceededif more than one record is found.Product.find_sole_by(["price = %?", price])Source:show|on GitHub# File activerecord/lib/active_record/relation/finder_methods.rb, line 160deffind_sole_by(arg,*args)where(arg,*args).soleendfirst(limit = nil)LinkFind the first record (or first N records if a parameter is supplied). If no order is defined it will order by primary key.Person.first # returns the first object fetched by SELECT * FROM people ORDER BY people.id LIMIT 1
+Person.where(["user_name = ?", user_name]).first
+Person.where(["user_name = :u", { u: user_name }]).first
+Person.order("created_on DESC").offset(5).first
+Person.first(3) # returns the first three objects fetched by SELECT * FROM people ORDER BY people.id LIMIT 3Source:show|on GitHub# File activerecord/lib/active_record/relation/finder_methods.rb, line 173deffirst(limit=nil)iflimitfind_nth_with_limit(0,limit)elsefind_nth0endendfirst!()LinkSame asfirstbut raisesActiveRecord::RecordNotFoundif no record is found. Note thatfirst!accepts no arguments.Source:show|on GitHub# File activerecord/lib/active_record/relation/finder_methods.rb, line 183deffirst!first||raise_record_not_found_exception!endforty_two()LinkFind the forty-second record. Also known as accessing âthe redditâ. If no order is defined it will order by primary key.Person.forty_two # returns the forty-second object fetched by SELECT * FROM people
+Person.offset(3).forty_two # returns the forty-second object from OFFSET 3 (which is OFFSET 44)
+Person.where(["user_name = :u", { u: user_name }]).forty_twoSource:show|on GitHub# File activerecord/lib/active_record/relation/finder_methods.rb, line 287defforty_twofind_nth41endforty_two!()LinkSame asforty_twobut raisesActiveRecord::RecordNotFoundif no record is found.Source:show|on GitHub# File activerecord/lib/active_record/relation/finder_methods.rb, line 293defforty_two!forty_two||raise_record_not_found_exception!endfourth()LinkFind the fourth record. If no order is defined it will order by primary key.Person.fourth # returns the fourth object fetched by SELECT * FROM people
+Person.offset(3).fourth # returns the fourth object from OFFSET 3 (which is OFFSET 6)
+Person.where(["user_name = :u", { u: user_name }]).fourthSource:show|on GitHub# File activerecord/lib/active_record/relation/finder_methods.rb, line 255deffourthfind_nth3endfourth!()LinkSame asfourthbut raisesActiveRecord::RecordNotFoundif no record is found.Source:show|on GitHub# File activerecord/lib/active_record/relation/finder_methods.rb, line 261deffourth!fourth||raise_record_not_found_exception!endinclude?(record)LinkReturns true if the relation contains the given record or false otherwise.No query is performed if the relation is loaded; the given record is compared to the records in memory. If the relation is unloaded, an efficient existence query is performed, as inexists?.Also aliased as:member?Source:show|on GitHub# File activerecord/lib/active_record/relation/finder_methods.rb, line 389definclude?(record)# The existing implementation relies on receiving an Active Record instance as the input parameter named record.# Any non-Active Record object passed to this implementation is guaranteed to return `false`.returnfalseunlessrecord.is_a?(klass)ifloaded?||offset_value||limit_value||having_clause.any?records.include?(record)elseid=ifrecord.class.composite_primary_key?record.class.primary_key.zip(record.id).to_helserecord.idendexists?(id)endendlast(limit = nil)LinkFind the last record (or last N records if a parameter is supplied). If no order is defined it will order by primary key.Person.last # returns the last object fetched by SELECT * FROM people
+Person.where(["user_name = ?", user_name]).last
+Person.order("created_on DESC").offset(5).last
+Person.last(3) # returns the last three objects fetched by SELECT * FROM people.Take note that in that last case, the results are sorted in ascending order:[#<Person id:2>, #<Person id:3>, #<Person id:4>]and not:[#<Person id:4>, #<Person id:3>, #<Person id:2>]Source:show|on GitHub# File activerecord/lib/active_record/relation/finder_methods.rb, line 202deflast(limit=nil)returnfind_last(limit)ifloaded?||has_limit_or_offset?result=ordered_relation.limit(limit)result=result.reverse_order!limit?result.reverse:result.firstendlast!()LinkSame aslastbut raisesActiveRecord::RecordNotFoundif no record is found. Note thatlast!accepts no arguments.Source:show|on GitHub# File activerecord/lib/active_record/relation/finder_methods.rb, line 213deflast!last||raise_record_not_found_exception!endmember?(record)LinkAlias for:include?second()LinkFind the second record. If no order is defined it will order by primary key.Person.second # returns the second object fetched by SELECT * FROM people
+Person.offset(3).second # returns the second object from OFFSET 3 (which is OFFSET 4)
+Person.where(["user_name = :u", { u: user_name }]).secondSource:show|on GitHub# File activerecord/lib/active_record/relation/finder_methods.rb, line 223defsecondfind_nth1endsecond!()LinkSame assecondbut raisesActiveRecord::RecordNotFoundif no record is found.Source:show|on GitHub# File activerecord/lib/active_record/relation/finder_methods.rb, line 229defsecond!second||raise_record_not_found_exception!endsecond_to_last()LinkFind the second-to-last record. If no order is defined it will order by primary key.Person.second_to_last # returns the second-to-last object fetched by SELECT * FROM people
+Person.offset(3).second_to_last # returns the second-to-last object from OFFSET 3
+Person.where(["user_name = :u", { u: user_name }]).second_to_lastSource:show|on GitHub# File activerecord/lib/active_record/relation/finder_methods.rb, line 319defsecond_to_lastfind_nth_from_last2endsecond_to_last!()LinkSame assecond_to_lastbut raisesActiveRecord::RecordNotFoundif no record is found.Source:show|on GitHub# File activerecord/lib/active_record/relation/finder_methods.rb, line 325defsecond_to_last!second_to_last||raise_record_not_found_exception!endsole()LinkFinds the sole matching record. RaisesActiveRecord::RecordNotFoundif no record is found. RaisesActiveRecord::SoleRecordExceededif more than one record is found.Product.where(["price = %?", price]).soleSource:show|on GitHub# File activerecord/lib/active_record/relation/finder_methods.rb, line 143defsolefound,undesired=first(2)iffound.nil?raise_record_not_found_exception!elsifundesired.present?raiseActiveRecord::SoleRecordExceeded.new(self)elsefoundendendtake(limit = nil)LinkGives a record (or N records if a parameter is supplied) without any implied order. The order will depend on the database implementation. If an order is supplied it will be respected.Person.take # returns an object fetched by SELECT * FROM people LIMIT 1
+Person.take(5) # returns 5 objects fetched by SELECT * FROM people LIMIT 5
+Person.where(["name LIKE '%?'", name]).takeSource:show|on GitHub# File activerecord/lib/active_record/relation/finder_methods.rb, line 128deftake(limit=nil)limit?find_take_with_limit(limit):find_takeendtake!()LinkSame astakebut raisesActiveRecord::RecordNotFoundif no record is found. Note thattake!accepts no arguments.Source:show|on GitHub# File activerecord/lib/active_record/relation/finder_methods.rb, line 134deftake!take||raise_record_not_found_exception!endthird()LinkFind the third record. If no order is defined it will order by primary key.Person.third # returns the third object fetched by SELECT * FROM people
+Person.offset(3).third # returns the third object from OFFSET 3 (which is OFFSET 5)
+Person.where(["user_name = :u", { u: user_name }]).thirdSource:show|on GitHub# File activerecord/lib/active_record/relation/finder_methods.rb, line 239defthirdfind_nth2endthird!()LinkSame asthirdbut raisesActiveRecord::RecordNotFoundif no record is found.Source:show|on GitHub# File activerecord/lib/active_record/relation/finder_methods.rb, line 245defthird!third||raise_record_not_found_exception!endthird_to_last()LinkFind the third-to-last record. If no order is defined it will order by primary key.Person.third_to_last # returns the third-to-last object fetched by SELECT * FROM people
+Person.offset(3).third_to_last # returns the third-to-last object from OFFSET 3
+Person.where(["user_name = :u", { u: user_name }]).third_to_lastSource:show|on GitHub# File activerecord/lib/active_record/relation/finder_methods.rb, line 303defthird_to_lastfind_nth_from_last3endthird_to_last!()LinkSame asthird_to_lastbut raisesActiveRecord::RecordNotFoundif no record is found.Source:show|on GitHub# File activerecord/lib/active_record/relation/finder_methods.rb, line 309defthird_to_last!third_to_last||raise_record_not_found_exception!end

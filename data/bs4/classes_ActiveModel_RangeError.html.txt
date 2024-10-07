@@ -1,0 +1,1 @@
+Active Model RangeErrorRaised when attribute values are out of range.

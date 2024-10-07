@@ -1,0 +1,1 @@
+NamespaceMODULEActionCableMODULEActionCable::ConnectionMODULEActionCable::Connection::InternalChannel

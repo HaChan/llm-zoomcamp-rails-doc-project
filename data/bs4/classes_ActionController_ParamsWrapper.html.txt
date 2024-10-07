@@ -1,0 +1,12 @@
+Action Controller Params WrapperWraps the parameters hash into a nested hash. This will allow clients to submit requests without having to specify any root elements.This functionality is enabled by default for JSON, and can be customized by setting the format array:class ApplicationController < ActionController::Base
+  wrap_parameters format: [:json, :xml]
+endYou could also turn it on per controller:class UsersController < ApplicationController
+  wrap_parameters format: [:json, :xml, :url_encoded_form, :multipart_form]
+endIf you enableParamsWrapperfor:jsonformat, instead of having to send JSON parameters like this:{"user": {"name": "Konata"}}You can send parameters like this:{"name": "Konata"}And it will be wrapped into a nested hash with the key name matching the controllerâs name. For example, if youâre posting toUsersController, your newparamshash will look like this:{"name" => "Konata", "user" => {"name" => "Konata"}}You can also specify the key in which the parameters should be wrapped to, and also the list of attributes it should wrap by using either:includeor:excludeoptions like this:class UsersController < ApplicationController
+  wrap_parameters :person, include: [:username, :password]
+endOn Active Record models with no:includeor:excludeoption set, it will only wrap the parameters returned by the class methodattribute_names.If youâre going to pass the parameters to anActiveModelobject (such asUser.new(params[:user])), you might consider passing the model class to the method instead. TheParamsWrapperwill actually try to determine the list of attribute names from the model and only wrap those attributes:class UsersController < ApplicationController
+  wrap_parameters Person
+endYou still could pass:includeand:excludeto set the list of attributes you want to wrap.By default, if you donât specify the key in which the parameters would be wrapped to,ParamsWrapperwill actually try to determine if thereâs a model related to it or not. This controller, for example:class Admin::UsersController < ApplicationController
+endwill try to check ifAdmin::UserorUsermodel exists, and use it to determine the wrapper key respectively. If both models donât exist, it will then fall back to useuseras the key.To disable this functionality for a controller:class UsersController < ApplicationController
+  wrap_parameters false
+endNamespaceCLASSActionController::ParamsWrapper::OptionsConstantsEXCLUDE_PARAMETERS=%w(authenticity_token _method utf8)

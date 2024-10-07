@@ -1,0 +1,8 @@
+Action DispatchPermissionsPolicyConfigures the HTTPFeature-Policyresponse header to specify which browser features the current document and its iframes can use.Example global policy:Rails.application.config.permissions_policy do |policy|
+  policy.camera      :none
+  policy.gyroscope   :none
+  policy.microphone  :none
+  policy.usb         :none
+  policy.fullscreen  :self
+  policy.payment     :self, "https://secure.example.com"
+endThe Feature-Policy header has been renamed to Permissions-Policy. The Permissions-Policy requires a different implementation and isnât yet supported by all browsers. To avoid having to rename this middleware in the future we use the new name for the middleware but keep the old header name and implementation for now.NamespaceMODULEActionDispatch::PermissionsPolicy::RequestCLASSActionDispatch::PermissionsPolicy::MiddlewareMethodsBbuildIinitialize_copyNnewAttributes[R]directivesClass Public methodsnew()LinkSource:show|on GitHub# File actionpack/lib/action_dispatch/http/permissions_policy.rb, line 111definitialize@directives= {}yieldselfifblock_given?endInstance Public methodsbuild(context = nil)LinkSource:show|on GitHub# File actionpack/lib/action_dispatch/http/permissions_policy.rb, line 130defbuild(context=nil)build_directives(context).compact.join("; ")endinitialize_copy(other)LinkSource:show|on GitHub# File actionpack/lib/action_dispatch/http/permissions_policy.rb, line 116definitialize_copy(other)@directives=other.directives.deep_dupend

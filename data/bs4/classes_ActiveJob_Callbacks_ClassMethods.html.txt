@@ -1,0 +1,75 @@
+These methods will be included into any Active Job object, adding callbacks forperformandenqueuemethods.MethodsAafter_enqueue,after_perform,around_enqueue,around_performBbefore_enqueue,before_performInstance Public methodsafter_enqueue(*filters, &blk)LinkDefines a callback that will get called right after the job is enqueued.class VideoProcessJob < ActiveJob::Base
+  queue_as :default
+
+  after_enqueue do |job|
+    result = job.successfully_enqueued? ? "success" : "failure"
+    $statsd.increment "enqueue-video-job.#{result}"
+  end
+
+  def perform(video_id)
+    Video.find(video_id).process
+  end
+endSource:show|on GitHub# File activejob/lib/active_job/callbacks.rb, line 141defafter_enqueue(*filters,&blk)set_callback(:enqueue,:after,*filters,&blk)endafter_perform(*filters, &blk)LinkDefines a callback that will get called right after the jobâs perform method has finished.class VideoProcessJob < ActiveJob::Base
+  queue_as :default
+
+  after_perform do |job|
+    UserMailer.notify_video_processed(job.arguments.first)
+  end
+
+  def perform(video_id)
+    Video.find(video_id).process
+  end
+endSource:show|on GitHub# File activejob/lib/active_job/callbacks.rb, line 69defafter_perform(*filters,&blk)set_callback(:perform,:after,*filters,&blk)endaround_enqueue(*filters, &blk)LinkDefines a callback that will get called around the enqueuing of the job.class VideoProcessJob < ActiveJob::Base
+  queue_as :default
+
+  around_enqueue do |job, block|
+    $statsd.time "video-job.process" do
+      block.call
+    end
+  end
+
+  def perform(video_id)
+    Video.find(video_id).process
+  end
+endSource:show|on GitHub# File activejob/lib/active_job/callbacks.rb, line 162defaround_enqueue(*filters,&blk)set_callback(:enqueue,:around,*filters,&blk)endaround_perform(*filters, &blk)LinkDefines a callback that will get called around the jobâs perform method.class VideoProcessJob < ActiveJob::Base
+  queue_as :default
+
+  around_perform do |job, block|
+    UserMailer.notify_video_started_processing(job.arguments.first)
+    block.call
+    UserMailer.notify_video_processed(job.arguments.first)
+  end
+
+  def perform(video_id)
+    Video.find(video_id).process
+  end
+endYou can access the return value of the job only if the execution wasnât halted.class VideoProcessJob < ActiveJob::Base
+  around_perform do |job, block|
+    value = block.call
+    puts value # => "Hello World!"
+  end
+
+  def perform
+    "Hello World!"
+  end
+endSource:show|on GitHub# File activejob/lib/active_job/callbacks.rb, line 102defaround_perform(*filters,&blk)set_callback(:perform,:around,*filters,&blk)endbefore_enqueue(*filters, &blk)LinkDefines a callback that will get called right before the job is enqueued.class VideoProcessJob < ActiveJob::Base
+  queue_as :default
+
+  before_enqueue do |job|
+    $statsd.increment "enqueue-video-job.try"
+  end
+
+  def perform(video_id)
+    Video.find(video_id).process
+  end
+endSource:show|on GitHub# File activejob/lib/active_job/callbacks.rb, line 121defbefore_enqueue(*filters,&blk)set_callback(:enqueue,:before,*filters,&blk)endbefore_perform(*filters, &blk)LinkDefines a callback that will get called right before the jobâs perform method is executed.class VideoProcessJob < ActiveJob::Base
+  queue_as :default
+
+  before_perform do |job|
+    UserMailer.notify_video_started_processing(job.arguments.first)
+  end
+
+  def perform(video_id)
+    Video.find(video_id).process
+  end
+endSource:show|on GitHub# File activejob/lib/active_job/callbacks.rb, line 50defbefore_perform(*filters,&blk)set_callback(:perform,:before,*filters,&blk)end

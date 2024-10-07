@@ -1,0 +1,31 @@
+Active Model AttributesTheAttributesmodule allows models to define attributes beyond simple Ruby readers and writers. Similar to Active Record attributes, which are typically inferred from the database schema, ActiveModelAttributesare aware of data types, can have default values, and can handle casting and serialization.To useAttributes, include the module in your model class and define your attributes using theattributemacro. It accepts a name, a type, a default value, and any other options supported by the attribute type.Examplesclass Person
+  include ActiveModel::Attributes
+
+  attribute :name, :string
+  attribute :active, :boolean, default: true
+end
+
+person = Person.new
+person.name = "Volmer"
+
+person.name # => "Volmer"
+person.active # => trueNamespaceMODULEActiveModel::Attributes::ClassMethodsMethodsAattribute_names,attributesIncluded ModulesActiveModel::AttributeMethodsInstance Public methodsattribute_names()LinkReturns an array of attribute names as strings.class Person
+  include ActiveModel::Attributes
+
+  attribute :name, :string
+  attribute :age, :integer
+end
+
+person = Person.new
+person.attribute_names # => ["name", "age"]Source:show|on GitHub# File activemodel/lib/active_model/attributes.rb, line 146defattribute_names@attributes.keysendattributes()LinkReturns a hash of all the attributes with their names as keys and the values of the attributes as values.class Person
+  include ActiveModel::Attributes
+
+  attribute :name, :string
+  attribute :age, :integer
+end
+
+person = Person.new
+person.name = "Francesco"
+person.age = 22
+
+person.attributes # => { "name" => "Francesco", "age" => 22}Source:show|on GitHub# File activemodel/lib/active_model/attributes.rb, line 131defattributes@attributes.to_hashend

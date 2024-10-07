@@ -1,0 +1,1 @@
+NamespaceMODULEActionCableMODULEActionCable::ServerMODULEActionCable::Server::BroadcastingMODULEActiveSupportCLASSActionCable::Server::Broadcasting::Broadcaster

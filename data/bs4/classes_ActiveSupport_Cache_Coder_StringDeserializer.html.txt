@@ -1,0 +1,1 @@
+MethodsLloadNnewClass Public methodsnew(encoding)LinkSource:show|on GitHub# File activesupport/lib/active_support/cache/coder.rb, line 87definitialize(encoding)@encoding=encodingendInstance Public methodsload(payload)LinkSource:show|on GitHub# File activesupport/lib/active_support/cache/coder.rb, line 91defload(payload)payload.force_encoding(@encoding)end

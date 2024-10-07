@@ -1,0 +1,1 @@
+MethodsNnewTto_sClass Public methodsnew(filename)LinkSource:show|on GitHub# File actionview/lib/action_view/template/sources/file.rb, line 7definitialize(filename)@filename=filenameendInstance Public methodsto_s()LinkSource:show|on GitHub# File actionview/lib/action_view/template/sources/file.rb, line 11defto_s::File.binread@filenameend

@@ -1,0 +1,35 @@
+Methods##,_helpers_for_modificationCclear_helpersHhelper,helper_methodIinheritedMmodules_for_helpersAttributes[W]_helpersInstance Public methodsall_helpers_from_path(path)LinkReturns a list of helper names in a given path.ActionController::Base.all_helpers_from_path 'app/helpers'
+# => ["application", "chart", "rubygems"]Source:on GitHub# File actionpack/lib/abstract_controller/helpers.rb, line 93_helpers_for_modification()LinkSource:show|on GitHub# File actionpack/lib/abstract_controller/helpers.rb, line 216def_helpers_for_modificationunless@_helpersself._helpers=define_helpers_module(self,superclass._helpers)end_helpersendclear_helpers()LinkClears up all existing helpers in this class, only keeping the helper with the same name as this class.Source:show|on GitHub# File actionpack/lib/abstract_controller/helpers.rb, line 207defclear_helpersinherited_helper_methods=_helper_methodsself._helpers=Module.newself._helper_methods=Array.newinherited_helper_methods.each{|meth|helper_methodmeth}default_helper_module!unlessanonymous?endhelper(*args, &block)LinkIncludes the given modules in the template class.Modules can be specified in different ways. All of the following calls includeFooHelper:# Module, recommended.
+helper FooHelper
+
+# String/symbol without the "helper" suffix, camel or snake case.
+helper "Foo"
+helper :Foo
+helper "foo"
+helper :fooThe last two assume that"foo".camelizereturns âFooâ.When strings or symbols are passed, the method finds the actual module object usingString#constantize. Therefore, if the module has not been yet loaded, it has to be autoloadable, which is normally the case.Namespaces are supported. The following calls includeFoo::BarHelper:# Module, recommended.
+helper Foo::BarHelper
+
+# String/symbol without the "helper" suffix, camel or snake case.
+helper "Foo::Bar"
+helper :"Foo::Bar"
+helper "foo/bar"
+helper :"foo/bar"The last two assume that"foo/bar".camelizereturns âFoo::Barâ.The method accepts a block too. If present, the block is evaluated in the context of the controller helper module. This simple call makes thewadusmethod available in templates of the enclosing controller:helper do
+  def wadus
+    "wadus"
+  end
+endFurthermore, all the above styles can be mixed together:helper FooHelper, "woo", "bar/baz" do
+  def wadus
+    "wadus"
+  end
+endSource:show|on GitHub# File actionpack/lib/abstract_controller/helpers.rb, line 196defhelper(*args,&block)modules_for_helpers(args).eachdo|mod|nextif_helpers.include?(mod)_helpers_for_modification.include(mod)end_helpers_for_modification.module_eval(&block)ifblock_given?endhelper_method(*methods)LinkDeclare a controller method as a helper. For example, the following makes thecurrent_userandlogged_in?controller methods available to the view: class ApplicationController <ActionController::Basehelper_method:current_user, :logged_in?private
+    def current_user
+      @current_user ||= User.find_by(id: session[:user])
+    end
+
+    def logged_in?
+      current_user != nil
+    end
+endIn a view: <% if logged_in? -%>Welcome, <%= current_user.name %><% end -%>Parametersmethod[, method]- A name or names of a method on the controller to be made available on the view.Source:show|on GitHub# File actionpack/lib/abstract_controller/helpers.rb, line 126defhelper_method(*methods)methods.flatten!self._helper_methods+=methodslocation=caller_locations(1,1).firstfile,line=location.path,location.linenomethods.eachdo|method|# def current_user(...)#   controller.send(:'current_user', ...)# end_helpers_for_modification.class_eval<<~ruby_eval.lines.map(&:strip).join(";"),file,linedef #{method}(...)
+              controller.send(:'#{method}', ...)
+            endruby_evalendendinherited(klass)LinkWhen a class is inherited, wrap its helper module in a new module. This ensures that the parent classâs module can be changed independently of the child classâs.Source:show|on GitHub# File actionpack/lib/abstract_controller/helpers.rb, line 68definherited(klass)# Inherited from parent by defaultklass._helpers=nilklass.class_eval{default_helper_module!}unlessklass.anonymous?superendmodules_for_helpers(modules_or_helper_prefixes)LinkGiven an array of values like the ones accepted byhelper, this method returns an array with the corresponding modules, in the same order.ActionController::Base.modules_for_helpers(["application", "chart", "rubygems"])
+# => [ApplicationHelper, ChartHelper, RubygemsHelper]Source:on GitHub# File actionpack/lib/abstract_controller/helpers.rb, line 81

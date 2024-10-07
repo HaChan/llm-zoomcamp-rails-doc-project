@@ -1,0 +1,1 @@
+Required Filesactive_model/attribute/user_provided_defaultNamespaceMODULEActiveModelMODULEActiveRecordMODULEActiveRecord::AttributesMODULEActiveRecord::Attributes::ClassMethods

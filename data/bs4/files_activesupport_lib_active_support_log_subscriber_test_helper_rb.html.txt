@@ -1,0 +1,1 @@
+Required Filesactive_support/log_subscriberactive_support/loggeractive_support/notificationsNamespaceMODULEActiveSupportMODULEActiveSupport::LogSubscriber::TestHelperCLASSActiveSupport::LogSubscriberCLASSActiveSupport::LogSubscriber::TestHelper::MockLogger

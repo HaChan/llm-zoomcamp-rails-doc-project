@@ -1,0 +1,8 @@
+Action Controller Form BuilderOverride the default form builder for all views rendered by this controller and any of its descendants. Accepts a subclass ofActionView::Helpers::FormBuilder.For example, given a form builder:class AdminFormBuilder < ActionView::Helpers::FormBuilder
+  def special_field(name)
+  end
+endThe controller specifies a form builder as its default:class AdminAreaController < ApplicationController
+  default_form_builder AdminFormBuilder
+endThen in the view any form usingform_forwill be an instance of the specified form builder:<%= form_for(@instance) do |builder| %>
+  <%= builder.special_field(:name) %>
+<% end %>NamespaceMODULEActionController::FormBuilder::ClassMethodsMethodsDdefault_form_builderInstance Public methodsdefault_form_builder()LinkDefault form builder for the controllerSource:show|on GitHub# File actionpack/lib/action_controller/form_builder.rb, line 51defdefault_form_builderself.class._default_form_builderend

@@ -1,0 +1,1 @@
+Required Filesrails/generatorsrails/generators/rails/app/app_generatorNamespaceMODULERailsMODULERails::CommandMODULERails::GeneratorsCLASSRails::Generators::AppGenerator

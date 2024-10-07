@@ -1,0 +1,1 @@
+Required Filesmini_magickNamespaceMODULEActiveStorageCLASSActiveStorage::AnalyzerCLASSActiveStorage::Analyzer::ImageAnalyzerCLASSActiveStorage::Analyzer::ImageAnalyzer::ImageMagick

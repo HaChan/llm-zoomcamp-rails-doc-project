@@ -1,0 +1,21 @@
+Includes the ability to override the default queue name and prefix.MethodsQqueue_asInstance Public methodsqueue_as(part_name = nil, &block)LinkSpecifies the name of the queue to process the job on.class PublishToFeedJob < ActiveJob::Base
+  queue_as :feeds
+
+  def perform(post)
+    post.to_feed!
+  end
+endCan be given a block that will evaluate in the context of the job so that a dynamic queue name can be applied:class PublishToFeedJob < ApplicationJob
+  queue_as do
+    post = self.arguments.first
+
+    if post.paid?
+      :paid_feeds
+    else
+      :feeds
+    end
+  end
+
+  def perform(post)
+    post.to_feed!
+  end
+endSource:show|on GitHub# File activejob/lib/active_job/queue_name.rb, line 39defqueue_as(part_name=nil,&block)ifblock_given?self.queue_name=blockelseself.queue_name=queue_name_from_part(part_name)endend

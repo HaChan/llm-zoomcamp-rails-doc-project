@@ -1,0 +1,1 @@
+NamespaceCLASSActiveRecord::Middleware::DatabaseSelectorCLASSActiveRecord::Middleware::ShardSelector

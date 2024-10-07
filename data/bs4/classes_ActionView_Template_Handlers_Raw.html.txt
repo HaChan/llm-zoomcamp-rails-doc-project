@@ -1,0 +1,1 @@
+MethodsCcallInstance Public methodscall(template, source)LinkSource:show|on GitHub# File actionview/lib/action_view/template/handlers/raw.rb, line 6defcall(template,source)"#{source.inspect}.html_safe;"end

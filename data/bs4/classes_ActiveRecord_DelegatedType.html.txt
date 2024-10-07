@@ -1,0 +1,93 @@
+Delegated typesClasshierarchies can map to relational database tables in many ways. Active Record, for example, offers purely abstract classes, where the superclass doesnât persist any attributes, and single-table inheritance, where all attributes from all levels of the hierarchy are represented in a single table. Both have their places, but neither are without their drawbacks.The problem with purely abstract classes is that all concrete subclasses must persist all the shared attributes themselves in their own tables (also known as class-table inheritance). This makes it hard to do queries across the hierarchy. For example, imagine you have the following hierarchy:Entry < ApplicationRecord
+Message < Entry
+Comment < EntryHow do you show a feed that has bothMessageandCommentrecords, which can be easily paginated? Well, you canât! Messages are backed by a messages table and comments by a comments table. You canât pull from both tables at once and use a consistent OFFSET/LIMIT scheme.You can get around the pagination problem by using single-table inheritance, but now youâre forced into a single mega table with all the attributes from all subclasses. No matter how divergent. If a Message has a subject, but the comment does not, well, now the comment does anyway! So STI works best when thereâs little divergence between the subclasses and their attributes.But thereâs a third way: Delegated types. With this approach, the âsuperclassâ is a concrete class that is represented by its own table, where all the superclass attributes that are shared amongst all the âsubclassesâ are stored. And then each of the subclasses have their own individual tables for additional attributes that are particular to their implementation. This is similar to whatâs called multi-table inheritance in Django, but instead of actual inheritance, this approach uses delegation to form the hierarchy and share responsibilities.Letâs look at that entry/message/comment example using delegated types:# Schema: entries[ id, account_id, creator_id, entryable_type, entryable_id, created_at, updated_at ]
+class Entry < ApplicationRecord
+  belongs_to :account
+  belongs_to :creator
+  delegated_type :entryable, types: %w[ Message Comment ]
+end
+
+module Entryable
+  extend ActiveSupport::Concern
+
+  included do
+    has_one :entry, as: :entryable, touch: true
+  end
+end
+
+# Schema: messages[ id, subject, body, created_at, updated_at ]
+class Message < ApplicationRecord
+  include Entryable
+end
+
+# Schema: comments[ id, content, created_at, updated_at ]
+class Comment < ApplicationRecord
+  include Entryable
+endAs you can see, neitherMessagenorCommentare meant to stand alone. Crucial metadata for both classes resides in theEntryâsuperclassâ. But theEntryabsolutely can stand alone in terms of querying capacity in particular. You can now easily do things like:Account.find(1).entries.order(created_at: :desc).limit(50)Which is exactly what you want when displaying both comments and messages together. The entry itself can be rendered as its delegated type easily, like so:# entries/_entry.html.erb
+<%= render "entries/entryables/#{entry.entryable_name}", entry: entry %>
+
+# entries/entryables/_message.html.erb
+<div class="message">
+  <div class="subject"><%= entry.message.subject %></div>
+  <p><%= entry.message.body %></p>
+  <i>Posted on <%= entry.created_at %> by <%= entry.creator.name %></i>
+</div>
+
+# entries/entryables/_comment.html.erb
+<div class="comment">
+  <%= entry.creator.name %> said: <%= entry.comment.content %>
+</div>Sharing behavior with concerns and controllersThe entry âsuperclassâ also serves as a perfect place to put all that shared logic that applies to both messages and comments, and which acts primarily on the shared attributes. Imagine:class Entry < ApplicationRecord
+  include Eventable, Forwardable, Redeliverable
+endWhich allows you to have controllers for things likeForwardsControllerandRedeliverableControllerthat both act on entries, and thus provide the shared functionality to both messages and comments.Creating new recordsYou create a new record that uses delegated typing by creating the delegator and delegatee at the same time, like so:Entry.create! entryable: Comment.new(content: "Hello!"), creator: Current.user, account: Current.accountIf you need more complicated composition, or you need to perform dependent validation, you should build a factory method or class to take care of the complicated needs. This could be as simple as:class Entry < ApplicationRecord
+  def self.create_with_comment(content, creator: Current.user, account: Current.account)
+    create! entryable: Comment.new(content: content), creator: creator, account: account
+  end
+endQueryingacross recordsA consequence of delegated types is that querying attributes spread across multiple classes becomes slightly more tricky, but not impossible.The simplest method is to join the âsuperclassâ to the âsubclassâ and apply the query parameters (i.e.#where) in appropriate places:Comment.joins(:entry).where(comments: { content: 'Hello!' }, entry: { creator: Current.user } )For convenience, add a scope on the concern. Now all classes that implement the concern will automatically include the method:# app/models/concerns/entryable.rb
+scope :with_entry, ->(attrs) { joins(:entry).where(entry: attrs) }Now the query can be shortened significantly:Comment.where(content: 'Hello!').with_entry(creator: Current.user)Adding further delegationThe delegated type shouldnât just answer the question of what the underlying class is called. In fact, thatâs an anti-pattern most of the time. The reason youâre building this hierarchy is to take advantage of polymorphism. So hereâs a simple example of that:class Entry < ApplicationRecord
+  delegated_type :entryable, types: %w[ Message Comment ]
+  delegate :title, to: :entryable
+end
+
+class Message < ApplicationRecord
+  def title
+    subject
+  end
+end
+
+class Comment < ApplicationRecord
+  def title
+    content.truncate(20)
+  end
+endNow you can list a bunch of entries, callEntry#title, and polymorphism will provide you with the answer.Nested AttributesEnabling nested attributes on adelegated_typeassociation allows you to create the entry and message in one go:class Entry < ApplicationRecord
+  delegated_type :entryable, types: %w[ Message Comment ]
+  accepts_nested_attributes_for :entryable
+end
+
+params = { entry: { entryable_type: 'Message', entryable_attributes: { subject: 'Smiling' } } }
+entry = Entry.create(params[:entry])
+entry.entryable.id # => 2
+entry.entryable.subject # => 'Smiling'MethodsDdelegated_typeInstance Public methodsdelegated_type(role, types:, **options)LinkDefines this as a class thatâll delegate its type for the passedroleto the class references intypes. Thatâll create a polymorphicbelongs_torelationship to thatrole, and itâll add all the delegated type convenience methods:class Entry < ApplicationRecord
+  delegated_type :entryable, types: %w[ Message Comment ], dependent: :destroy
+end
+
+Entry#entryable_class # => +Message+ or +Comment+
+Entry#entryable_name  # => "message" or "comment"
+Entry.messages        # => Entry.where(entryable_type: "Message")
+Entry#message?        # => true when entryable_type == "Message"
+Entry#message         # => returns the message record, when entryable_type == "Message", otherwise nil
+Entry#message_id      # => returns entryable_id, when entryable_type == "Message", otherwise nil
+Entry.comments        # => Entry.where(entryable_type: "Comment")
+Entry#comment?        # => true when entryable_type == "Comment"
+Entry#comment         # => returns the comment record, when entryable_type == "Comment", otherwise nil
+Entry#comment_id      # => returns entryable_id, when entryable_type == "Comment", otherwise nilYou can also declare namespaced types:class Entry < ApplicationRecord
+  delegated_type :entryable, types: %w[ Message Comment Access::NoticeMessage ], dependent: :destroy
+end
+
+Entry.access_notice_messages
+entry.access_notice_message
+entry.access_notice_message?OptionsTheoptionsare passed directly to thebelongs_tocall, so this is where you declaredependentetc. The following options can be included to specialize the behavior of the delegated type convenience methods.:foreign_keySpecify the foreign key used for the convenience methods. By default this is guessed to be the passedrolewith an â_idâ suffix. So a class that defines adelegated_type :entryable, types: %w[ Message Comment ]association will use âentryable_idâ as the default:foreign_key.:foreign_typeSpecify the column used to store the associated objectâs type. By default this is inferred to be the passedrolewith a â_typeâ suffix. A class that defines adelegated_type :entryable, types: %w[ Message Comment ]association will use âentryable_typeâ as the default:foreign_type.:primary_keySpecify the method that returns the primary key of associated object used for the convenience methods. By default this isid.Option examples:class Entry < ApplicationRecord
+  delegated_type :entryable, types: %w[ Message Comment ], primary_key: :uuid, foreign_key: :entryable_uuid
+end
+
+Entry#message_uuid      # => returns entryable_uuid, when entryable_type == "Message", otherwise nil
+Entry#comment_uuid      # => returns entryable_uuid, when entryable_type == "Comment", otherwise nilSource:show|on GitHub# File activerecord/lib/active_record/delegated_type.rb, line 231defdelegated_type(role,types:,**options)belongs_torole,options.delete(:scope),**options.merge(polymorphic:true)define_delegated_type_methodsrole,types:types,options:optionsend

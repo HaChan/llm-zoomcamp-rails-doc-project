@@ -1,0 +1,19 @@
+Encrypted ConfigurationProvides convenience methods on top ofEncryptedFileto access values stored as encrypted YAML.Values can be accessed viaHashmethods, such asfetchanddig, or via dynamic accessor methods, similar toOrderedOptions.my_config = ActiveSupport::EncryptedConfiguration.new(...)
+my_config.read # => "some_secret: 123\nsome_namespace:\n  another_secret: 456"
+
+my_config[:some_secret]
+# => 123
+my_config.some_secret
+# => 123
+my_config.dig(:some_namespace, :another_secret)
+# => 456
+my_config.some_namespace.another_secret
+# => 456
+my_config.fetch(:foo)
+# => KeyError
+my_config.foo!
+# => KeyErrorNamespaceCLASSActiveSupport::EncryptedConfiguration::InvalidContentErrorMethodsCconfigNnewRreadClass Public methodsnew(config_path:, key_path:, env_key:, raise_if_missing_key:)LinkSource:show|on GitHub# File activesupport/lib/active_support/encrypted_configuration.rb, line 48definitialize(config_path:,key_path:,env_key:,raise_if_missing_key:)supercontent_path:config_path,key_path:key_path,env_key:env_key,raise_if_missing_key:raise_if_missing_key@config=nil@options=nilendInstance Public methodsconfig()LinkReturns the decrypted content as aHashwith symbolized keys.my_config = ActiveSupport::EncryptedConfiguration.new(...)
+my_config.read # => "some_secret: 123\nsome_namespace:\n  another_secret: 456"
+
+my_config.config
+# => { some_secret: 123, some_namespace: { another_secret: 789 } }Source:show|on GitHub# File activesupport/lib/active_support/encrypted_configuration.rb, line 75defconfig@config||=deserialize(read).deep_symbolize_keysendread()LinkReads the file and returns the decrypted content. SeeEncryptedFile#read.Source:show|on GitHub# File activesupport/lib/active_support/encrypted_configuration.rb, line 56defreadsuperrescueActiveSupport::EncryptedFile::MissingContentError# Allow a config to be started without a file present""end

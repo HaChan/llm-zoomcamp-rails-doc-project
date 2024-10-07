@@ -1,0 +1,114 @@
+Active Model ErrorsProvides error related functionalities you can include in your object for handling error messages and interacting with Action View helpers.A minimal implementation could be:class Person
+  # Required dependency for ActiveModel::Errors
+  extend ActiveModel::Naming
+
+  def initialize
+    @errors = ActiveModel::Errors.new(self)
+  end
+
+  attr_accessor :name
+  attr_reader   :errors
+
+  def validate!
+    errors.add(:name, :blank, message: "cannot be nil") if name.nil?
+  end
+
+  # The following methods are needed to be minimally implemented
+
+  def read_attribute_for_validation(attr)
+    send(attr)
+  end
+
+  def self.human_attribute_name(attr, options = {})
+    attr
+  end
+
+  def self.lookup_ancestors
+    [self]
+  end
+endThe last three methods are required in your object forErrorsto be able to generate error messages correctly and also handle multiple languages. Of course, if you extend your object withActiveModel::Translationyou will not need to implement the last two. Likewise, usingActiveModel::Validationswill handle the validation related methods for you.The above allows you to do:person = Person.new
+person.validate!            # => ["cannot be nil"]
+person.errors.full_messages # => ["name cannot be nil"]
+# etc..Methods#[]Aadd,added?,as_json,attribute_namesCclearDdelete,detailsEeach,empty?Ffull_message,full_messages,full_messages_forGgenerate_message,group_by_attributeHhas_key?Iimport,include?Kkey?Mmerge!,messages,messages_forNnewOof_kind?SsizeTto_a,to_hashWwhereIncluded ModulesEnumerableAttributes[R]errorsThe actual array ofErrorobjects This method is aliased toobjects.[R]objectsThe actual array ofErrorobjects This method is aliased toobjects.Class Public methodsnew(base)LinkPass in the instance of the object that is using the errors object.class Person
+  def initialize
+    @errors = ActiveModel::Errors.new(self)
+  end
+endSource:show|on GitHub# File activemodel/lib/active_model/errors.rb, line 117definitialize(base)@base=base@errors= []endInstance Public methods[](attribute)LinkWhen passed a symbol or a name of a method, returns an array of errors for the method.person.errors[:name]  # => ["cannot be nil"]
+person.errors['name'] # => ["cannot be nil"]Source:show|on GitHub# File activemodel/lib/active_model/errors.rb, line 229def[](attribute)messages_for(attribute)endadd(attribute, type = :invalid, **options)LinkAdds a new error oftypeonattribute. More than one error can be added to the sameattribute. If notypeis supplied,:invalidis assumed.person.errors.add(:name)
+# Adds <#ActiveModel::Error attribute=name, type=invalid>
+person.errors.add(:name, :not_implemented, message: "must be implemented")
+# Adds <#ActiveModel::Error attribute=name, type=not_implemented,
+                            options={:message=>"must be implemented"}>
+
+person.errors.messages
+# => {:name=>["is invalid", "must be implemented"]}Iftypeis a string, it will be used as error message.Iftypeis a symbol, it will be translated using the appropriate scope (seegenerate_message).person.errors.add(:name, :blank)
+person.errors.messages
+# => {:name=>["can't be blank"]}
+
+person.errors.add(:name, :too_long, count: 25)
+person.errors.messages
+# => ["is too long (maximum is 25 characters)"]Iftypeis a proc, it will be called, allowing for things likeTime.nowto be used within an error.If the:strictoption is set totrue, it will raiseActiveModel::StrictValidationFailedinstead of adding the error.:strictoption can also be set to any other exception.person.errors.add(:name, :invalid, strict: true)
+# => ActiveModel::StrictValidationFailed: Name is invalid
+person.errors.add(:name, :invalid, strict: NameIsInvalid)
+# => NameIsInvalid: Name is invalid
+
+person.errors.messages # => {}attributeshould be set to:baseif the error is not directly associated with a single attribute.person.errors.add(:base, :name_or_email_blank,
+  message: "either name or email must be present")
+person.errors.messages
+# => {:base=>["either name or email must be present"]}
+person.errors.details
+# => {:base=>[{error: :name_or_email_blank}]}Source:show|on GitHub# File activemodel/lib/active_model/errors.rb, line 342defadd(attribute,type=:invalid,**options)attribute,type,options=normalize_arguments(attribute,type,**options)error=Error.new(@base,attribute,type,**options)ifexception=options[:strict]exception=ActiveModel::StrictValidationFailedifexception==trueraiseexception,error.full_messageend@errors.append(error)errorendadded?(attribute, type = :invalid, options = {})LinkReturnstrueif an error matches providedattributeandtype, orfalseotherwise.typeis treated the same as foradd.person.errors.add :name, :blank
+person.errors.added? :name, :blank           # => true
+person.errors.added? :name, "can't be blank" # => trueIf the error requires options, then it returnstruewith the correct options, orfalsewith incorrect or missing options.person.errors.add :name, :too_long, count: 25
+person.errors.added? :name, :too_long, count: 25                     # => true
+person.errors.added? :name, "is too long (maximum is 25 characters)" # => true
+person.errors.added? :name, :too_long, count: 24                     # => false
+person.errors.added? :name, :too_long                                # => false
+person.errors.added? :name, "is too long"                            # => falseSource:show|on GitHub# File activemodel/lib/active_model/errors.rb, line 372defadded?(attribute,type=:invalid,options= {})attribute,type,options=normalize_arguments(attribute,type,**options)iftype.is_a?Symbol@errors.any?{|error|error.strict_match?(attribute,type,**options)
+    }elsemessages_for(attribute).include?(type)endendas_json(options = nil)LinkReturns aHashthat can be used as the JSON representation for this object. You can pass the:full_messagesoption. This determines if the JSON object should contain full messages or not (false by default).person.errors.as_json                      # => {:name=>["cannot be nil"]}
+person.errors.as_json(full_messages: true) # => {:name=>["name cannot be nil"]}Source:show|on GitHub# File activemodel/lib/active_model/errors.rb, line 247defas_json(options=nil)to_hash(options&&options[:full_messages])endattribute_names()LinkReturns all error attribute namesperson.errors.messages        # => {:name=>["cannot be nil", "must be specified"]}
+person.errors.attribute_names # => [:name]Source:show|on GitHub# File activemodel/lib/active_model/errors.rb, line 237defattribute_names@errors.map(&:attribute).uniq.freezeendclearLinkClears all errors. Clearing the errors does not, however, make the model valid. The next time the validations are run (for example, viaActiveRecord::Validations#valid?), the errors collection will be filled again if any validations fail.Source:on GitHub# File activemodel/lib/active_model/errors.rb, line 80delete(attribute, type = nil, **options)LinkDelete messages forkey. Returns the deleted messages.person.errors[:name]        # => ["cannot be nil"]
+person.errors.delete(:name) # => ["cannot be nil"]
+person.errors[:name]        # => []Source:show|on GitHub# File activemodel/lib/active_model/errors.rb, line 215defdelete(attribute,type=nil,**options)attribute,type,options=normalize_arguments(attribute,type,**options)matches=where(attribute,type,**options)matches.eachdo|error|@errors.delete(error)endmatches.map(&:message).presenceenddetails()LinkReturns aHashof attributes with an array of their error details.Source:show|on GitHub# File activemodel/lib/active_model/errors.rb, line 276defdetailshash=group_by_attribute.transform_valuesdo|errors|errors.map(&:details)endhash.default=EMPTY_ARRAYhash.freezehashendeach(█)LinkIterates through each error object.person.errors.add(:name, :too_short, count: 2)
+person.errors.each do |error|
+  # Will yield <#ActiveModel::Error attribute=name, type=too_short,
+                                    options={:count=>3}>
+endSource:on GitHub# File activemodel/lib/active_model/errors.rb, line 67empty?LinkReturns true if there are no errors.Source:on GitHub# File activemodel/lib/active_model/errors.rb, line 90full_message(attribute, message)LinkReturns a full message for a given attribute.person.errors.full_message(:name, 'is invalid') # => "Name is invalid"Source:show|on GitHub# File activemodel/lib/active_model/errors.rb, line 451deffull_message(attribute,message)Error.full_message(attribute,message,@base)endfull_messages()LinkReturns all the full error messages in an array.class Person
+  validates_presence_of :name, :address, :email
+  validates_length_of :name, in: 5..30
+end
+
+person = Person.create(address: '123 First St.')
+person.errors.full_messages
+# => ["Name is too short (minimum is 5 characters)", "Name can't be blank", "Email can't be blank"]Also aliased as:to_aSource:show|on GitHub# File activemodel/lib/active_model/errors.rb, line 415deffull_messages@errors.map(&:full_message)endfull_messages_for(attribute)LinkReturns all the full error messages for a given attribute in an array.class Person
+  validates_presence_of :name, :email
+  validates_length_of :name, in: 5..30
+end
+
+person = Person.create()
+person.errors.full_messages_for(:name)
+# => ["Name is too short (minimum is 5 characters)", "Name can't be blank"]Source:show|on GitHub# File activemodel/lib/active_model/errors.rb, line 430deffull_messages_for(attribute)where(attribute).map(&:full_message).freezeendgenerate_message(attribute, type = :invalid, options = {})LinkTranslates an error message in its default scope (activemodel.errors.messages).Errormessages are first looked up inactivemodel.errors.models.MODEL.attributes.ATTRIBUTE.MESSAGE, if itâs not there, itâs looked up inactivemodel.errors.models.MODEL.MESSAGEand if that is not there also, it returns the translation of the default message (e.g.activemodel.errors.messages.MESSAGE). The translated model name, translated attribute name, and the value are available for interpolation.When using inheritance in your models, it will check all the inherited models too, but only if the model itself hasnât been found. Say you haveclass Admin < User; endand you wanted the translation for the:blankerror message for thetitleattribute, it looks for these translations:activemodel.errors.models.admin.attributes.title.blankactivemodel.errors.models.admin.blankactivemodel.errors.models.user.attributes.title.blankactivemodel.errors.models.user.blankany default you provided through theoptionshash (in theactivemodel.errorsscope)activemodel.errors.messages.blankerrors.attributes.title.blankerrors.messages.blankSource:show|on GitHub# File activemodel/lib/active_model/errors.rb, line 479defgenerate_message(attribute,type=:invalid,options= {})Error.generate_message(attribute,type,@base,options)endgroup_by_attribute()LinkReturns aHashof attributes with an array of theirErrorobjects.person.errors.group_by_attribute
+# => {:name=>[<#ActiveModel::Error>, <#ActiveModel::Error>]}Source:show|on GitHub# File activemodel/lib/active_model/errors.rb, line 289defgroup_by_attribute@errors.group_by(&:attribute)endhas_key?(attribute)LinkAlias for:include?import(error, override_options = {})LinkImports one error. Imported errors are wrapped as aNestedError, providing access to original error object. If attribute or type needs to be overridden, useoverride_options.Options:attribute- Override the attribute the error belongs to.:type- Override type of the error.Source:show|on GitHub# File activemodel/lib/active_model/errors.rb, line 154defimport(error,override_options= {})
+  [:attribute,:type].eachdo|key|ifoverride_options.key?(key)override_options[key] =override_options[key].to_symendend@errors.append(NestedError.new(@base,error,override_options))endinclude?(attribute)LinkReturnstrueif the error messages include an error for the given keyattribute,falseotherwise.person.errors.messages        # => {:name=>["cannot be nil"]}
+person.errors.include?(:name) # => true
+person.errors.include?(:age)  # => falseAlso aliased as:has_key?,key?Source:show|on GitHub# File activemodel/lib/active_model/errors.rb, line 202definclude?(attribute)@errors.any?{|error|error.match?(attribute.to_sym)
+  }endkey?(attribute)LinkAlias for:include?merge!(other)LinkMerges the errors fromother, eachErrorwrapped asNestedError.Parametersother- TheActiveModel::Errorsinstance.Examplesperson.errors.merge!(other)Source:show|on GitHub# File activemodel/lib/active_model/errors.rb, line 174defmerge!(other)returnerrorsifequal?(other)other.errors.each{|error|import(error)
+  }endmessages()LinkReturns aHashof attributes with an array of their error messages.Source:show|on GitHub# File activemodel/lib/active_model/errors.rb, line 268defmessageshash=to_hashhash.default=EMPTY_ARRAYhash.freezehashendmessages_for(attribute)LinkReturns all the error messages for a given attribute in an array.class Person
+  validates_presence_of :name, :email
+  validates_length_of :name, in: 5..30
+end
+
+person = Person.create()
+person.errors.messages_for(:name)
+# => ["is too short (minimum is 5 characters)", "can't be blank"]Source:show|on GitHub# File activemodel/lib/active_model/errors.rb, line 444defmessages_for(attribute)where(attribute).map(&:message)endof_kind?(attribute, type = :invalid)LinkReturnstrueif an error on the attribute with the given type is present, orfalseotherwise.typeis treated the same as foradd.person.errors.add :age
+person.errors.add :name, :too_long, count: 25
+person.errors.of_kind? :age                                            # => true
+person.errors.of_kind? :name                                           # => false
+person.errors.of_kind? :name, :too_long                                # => true
+person.errors.of_kind? :name, "is too long (maximum is 25 characters)" # => true
+person.errors.of_kind? :name, :not_too_long                            # => false
+person.errors.of_kind? :name, "is too long"                            # => falseSource:show|on GitHub# File activemodel/lib/active_model/errors.rb, line 395defof_kind?(attribute,type=:invalid)attribute,type=normalize_arguments(attribute,type)iftype.is_a?Symbol!where(attribute,type).empty?elsemessages_for(attribute).include?(type)endendsizeLinkReturns number of errors.Source:show|on GitHub# File activemodel/lib/active_model/errors.rb, line 103def_delegators:@errors,:each,:clear,:empty?,:size,:uniq!to_a()LinkAlias for:full_messagesto_hash(full_messages = false)LinkReturns aHashof attributes with their error messages. Iffull_messagesistrue, it will contain full messages (seefull_message).person.errors.to_hash       # => {:name=>["cannot be nil"]}
+person.errors.to_hash(true) # => {:name=>["name cannot be nil"]}Source:show|on GitHub# File activemodel/lib/active_model/errors.rb, line 256defto_hash(full_messages=false)message_method=full_messages?:full_message::messagegroup_by_attribute.transform_valuesdo|errors|errors.map(&message_method)endendwhere(attribute, type = nil, **options)LinkSearch for errors matchingattribute,type, oroptions.Only supplied params will be matched.person.errors.where(:name) # => all name errors.
+person.errors.where(:name, :too_short) # => all name errors being too short
+person.errors.where(:name, :too_short, minimum: 2) # => all name errors being too short and minimum is 2Source:show|on GitHub# File activemodel/lib/active_model/errors.rb, line 189defwhere(attribute,type=nil,**options)attribute,type,options=normalize_arguments(attribute,type,**options)@errors.select{|error|error.match?(attribute,type,**options)
+  }end

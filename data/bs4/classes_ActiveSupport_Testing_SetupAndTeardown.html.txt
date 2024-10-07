@@ -1,0 +1,9 @@
+Adds support forsetupandteardowncallbacks. These callbacks serve as a replacement to overwriting the#setupand#teardownmethods of yourTestCase.class ExampleTest < ActiveSupport::TestCase
+  setup do
+    # ...
+  end
+
+  teardown do
+    # ...
+  end
+endNamespaceMODULEActiveSupport::Testing::SetupAndTeardown::ClassMethodsMethodsPprependedIncluded ModulesActiveSupport::CallbacksClass Public methodsprepended(klass)LinkSource:show|on GitHub# File activesupport/lib/active_support/testing/setup_and_teardown.rb, line 21defself.prepended(klass)klass.includeActiveSupport::Callbacksklass.define_callbacks:setup,:teardownklass.extendClassMethodsend

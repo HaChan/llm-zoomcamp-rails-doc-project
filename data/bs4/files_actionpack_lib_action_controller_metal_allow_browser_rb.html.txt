@@ -1,0 +1,1 @@
+Required FilesuseragentNamespaceMODULEActionControllerMODULEActionController::AllowBrowserMODULEActionController::AllowBrowser::ClassMethodsMODULEActiveSupportCLASSActionController::AllowBrowser::BrowserBlocker

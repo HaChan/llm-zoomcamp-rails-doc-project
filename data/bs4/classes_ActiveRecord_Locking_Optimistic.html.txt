@@ -1,0 +1,16 @@
+What is Optimistic LockingOptimisticlocking allows multiple users to access the same record for edits, and assumes a minimum of conflicts with the data. It does this by checking whether another process has made changes to a record since it was opened, anActiveRecord::StaleObjectErrorexception is thrown if that has occurred and the update is ignored.Check outActiveRecord::Locking::Pessimisticfor an alternative.UsageActive Record supports optimistic locking if thelock_versionfield is present. Each update to the record increments the integer columnlock_versionand the locking facilities ensure that records instantiated twice will let the last one saved raise aStaleObjectErrorif the first was also updated. Example:p1 = Person.find(1)
+p2 = Person.find(1)
+
+p1.first_name = "Michael"
+p1.save
+
+p2.first_name = "should fail"
+p2.save # Raises an ActiveRecord::StaleObjectErrorOptimisticlocking will also check for stale data when objects are destroyed. Example:p1 = Person.find(1)
+p2 = Person.find(1)
+
+p1.first_name = "Michael"
+p1.save
+
+p2.destroy # Raises an ActiveRecord::StaleObjectErrorYouâre then responsible for dealing with the conflict by rescuing the exception and either rolling back, merging, or otherwise apply the business logic needed to resolve the conflict.This locking mechanism will function inside a single Ruby process. To make it work across all web requests, the recommended approach is to addlock_versionas a hidden field to your form.This behavior can be turned off by settingActiveRecord::Base.lock_optimistically = false. To override the name of thelock_versioncolumn, set thelocking_columnclass attribute:class Person < ActiveRecord::Base
+  self.locking_column = :lock_person
+endNamespaceMODULEActiveRecord::Locking::Optimistic::ClassMethods

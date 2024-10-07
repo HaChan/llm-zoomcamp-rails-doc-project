@@ -1,0 +1,1 @@
+MethodsGgroup_classPpublish_eventInstance Public methodsgroup_class()LinkSource:show|on GitHub# File activesupport/lib/active_support/notifications/fanout.rb, line 435defgroup_classEventObjectGroupendpublish_event(event)LinkSource:show|on GitHub# File activesupport/lib/active_support/notifications/fanout.rb, line 439defpublish_event(event)@delegate.calleventend

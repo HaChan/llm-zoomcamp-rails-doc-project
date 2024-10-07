@@ -1,0 +1,13 @@
+Active Support ConfigurableConfigurableprovides aconfigmethod to store and retrieve configuration options as anOrderedOptions.NamespaceMODULEActiveSupport::Configurable::ClassMethodsCLASSActiveSupport::Configurable::ConfigurationMethodsCconfigInstance Public methodsconfig()LinkReads and writes attributes from a configurationOrderedOptions.require "active_support/configurable"
+
+class User
+  include ActiveSupport::Configurable
+end
+
+user = User.new
+
+user.config.allowed_access = true
+user.config.level = 1
+
+user.config.allowed_access # => true
+user.config.level          # => 1Source:show|on GitHub# File activesupport/lib/active_support/configurable.rb, line 155defconfig@_config||=self.class.config.inheritable_copyend

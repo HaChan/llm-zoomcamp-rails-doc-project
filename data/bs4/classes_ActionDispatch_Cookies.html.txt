@@ -1,0 +1,43 @@
+Read and write data to cookies throughActionController::Cookies#cookies.When reading cookie data, the data is read from the HTTP request header, Cookie. When writing cookie data, the data is sent out in the HTTP response header,Set-Cookie.Examples of writing:# Sets a simple session cookie.
+# This cookie will be deleted when the user's browser is closed.
+cookies[:user_name] = "david"
+
+# Cookie values are String-based. Other data types need to be serialized.
+cookies[:lat_lon] = JSON.generate([47.68, -122.37])
+
+# Sets a cookie that expires in 1 hour.
+cookies[:login] = { value: "XJ-122", expires: 1.hour }
+
+# Sets a cookie that expires at a specific time.
+cookies[:login] = { value: "XJ-122", expires: Time.utc(2020, 10, 15, 5) }
+
+# Sets a signed cookie, which prevents users from tampering with its value.
+# It can be read using the signed method `cookies.signed[:name]`
+cookies.signed[:user_id] = current_user.id
+
+# Sets an encrypted cookie value before sending it to the client which
+# prevent users from reading and tampering with its value.
+# It can be read using the encrypted method `cookies.encrypted[:name]`
+cookies.encrypted[:discount] = 45
+
+# Sets a "permanent" cookie (which expires in 20 years from now).
+cookies.permanent[:login] = "XJ-122"
+
+# You can also chain these methods:
+cookies.signed.permanent[:login] = "XJ-122"Examples of reading:cookies[:user_name]           # => "david"
+cookies.size                  # => 2
+JSON.parse(cookies[:lat_lon]) # => [47.68, -122.37]
+cookies.signed[:login]        # => "XJ-122"
+cookies.encrypted[:discount]  # => 45Example for deleting:cookies.delete :user_namePlease note that if you specify a:domainwhen setting a cookie, you must also specify the domain when deleting the cookie:cookies[:name] = {
+  value: 'a yummy cookie',
+  expires: 1.year,
+  domain: 'domain.com'
+}
+
+cookies.delete(:name, domain: 'domain.com')The option symbols for setting cookies are::value- The cookieâs value.:path- The path for which this cookie applies. Defaults to the root of the application.:domain- The domain for which this cookie applies so you can restrict to the domain level. If you use a schema likewww.example.comand want to share session with user.example.com set:domainto:all. To support multiple domains, provide an array, and the first domain matchingrequest.hostwill be used. Make sure to specify the:domainoption with:allorArrayagain when deleting cookies. For more flexibility you can set the domain on a per-request basis by specifying:domainwith a proc.domain: nil  # Does not set cookie domain. (default)
+domain: :all # Allow the cookie for the top most level
+             # domain and subdomains.
+domain: %w(.example.com .example.org) # Allow the cookie
+                                      # for concrete domain names.
+domain: proc { Tenant.current.cookie_domain } # Set cookie domain dynamically
+domain: proc { |req| ".sub.#{req.host}" }     # Set cookie domain dynamically based on request:tld_length- When using:domain => :all, this option can be used to explicitly set the TLD length when using a short (<= 3 character) domain that is being interpreted as part of a TLD. For example, to share cookies between user1.lvh.me and user2.lvh.me, set:tld_lengthto 2.:expires- The time at which this cookie expires, as aTimeorActiveSupport::Durationobject.:secure- Whether this cookie is only transmitted to HTTPS servers. Default isfalse.:httponly- Whether this cookie is accessible via scripting or only HTTP. Defaults tofalse.:same_site- The value of theSameSitecookie attribute, which determines how this cookie should be restricted in cross-site contexts. Possible values arenil,:none,:lax, and:strict. Defaults to:lax.NamespaceMODULEActionDispatch::Cookies::ChainedCookieJarsMethodsCcallNnewConstantsAUTHENTICATED_ENCRYPTED_COOKIE_SALT="action_dispatch.authenticated_encrypted_cookie_salt"COOKIES_DIGEST="action_dispatch.cookies_digest"COOKIES_ROTATIONS="action_dispatch.cookies_rotations"COOKIES_SAME_SITE_PROTECTION="action_dispatch.cookies_same_site_protection"COOKIES_SERIALIZER="action_dispatch.cookies_serializer"CookieOverflow=Class.new StandardErrorRaised when storing more than 4K of session data.ENCRYPTED_COOKIE_CIPHER="action_dispatch.encrypted_cookie_cipher"ENCRYPTED_COOKIE_SALT="action_dispatch.encrypted_cookie_salt"ENCRYPTED_SIGNED_COOKIE_SALT="action_dispatch.encrypted_signed_cookie_salt"GENERATOR_KEY="action_dispatch.key_generator"HTTP_HEADER="Set-Cookie"MAX_COOKIE_SIZE=4096Cookiescan typically store 4096 bytes.SECRET_KEY_BASE="action_dispatch.secret_key_base"SIGNED_COOKIE_DIGEST="action_dispatch.signed_cookie_digest"SIGNED_COOKIE_SALT="action_dispatch.signed_cookie_salt"USE_AUTHENTICATED_COOKIE_ENCRYPTION="action_dispatch.use_authenticated_cookie_encryption"USE_COOKIES_WITH_METADATA="action_dispatch.use_cookies_with_metadata"Class Public methodsnew(app)LinkSource:show|on GitHub# File actionpack/lib/action_dispatch/middleware/cookies.rb, line 698definitialize(app)@app=appendInstance Public methodscall(env)LinkSource:show|on GitHub# File actionpack/lib/action_dispatch/middleware/cookies.rb, line 702defcall(env)request=ActionDispatch::Request.new(env)response=@app.call(env)ifrequest.have_cookie_jar?cookie_jar=request.cookie_jarunlesscookie_jar.committed?response=Rack::Response[*response]cookie_jar.write(response)endendresponse.to_aend

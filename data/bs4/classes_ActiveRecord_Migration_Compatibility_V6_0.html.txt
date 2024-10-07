@@ -1,0 +1,1 @@
+NamespaceMODULEActiveRecord::Migration::Compatibility::V6_0::TableDefinitionCLASSActiveRecord::Migration::Compatibility::V6_0::ReferenceDefinition

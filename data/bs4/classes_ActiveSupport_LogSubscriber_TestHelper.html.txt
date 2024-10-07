@@ -1,0 +1,17 @@
+Provides some helpers to deal with testing log subscribers by setting up notifications. Take for instance Active Record subscriber tests:class SyncLogSubscriberTest < ActiveSupport::TestCase
+  include ActiveSupport::LogSubscriber::TestHelper
+
+  setup do
+    ActiveRecord::LogSubscriber.attach_to(:active_record)
+  end
+
+  def test_basic_query_logging
+    Developer.all.to_a
+    wait
+    assert_equal 1, @logger.logged(:debug).size
+    assert_match(/Developer Load/, @logger.logged(:debug).last)
+    assert_match(/SELECT \* FROM "developers"/, @logger.logged(:debug).last)
+  end
+endAll you need to do is to ensure that your log subscriber is added to Rails::Subscriber, as in the second line of the code above. The test helpers are responsible for setting up the queue and subscriptions, and turning colors in logs off.The messages are available in the @logger instance, which is a logger with limited powers (it actually does not send anything to your output), and you can collect them doing @logger.logged(level), where level is the level used in logging, like info, debug, warn, and so on.NamespaceCLASSActiveSupport::LogSubscriber::TestHelper::MockLoggerMethodsSset_loggerWwaitInstance Public methodsset_logger(logger)LinkOverwrite if you use another logger in your log subscriber.def logger
+  ActiveRecord::Base.logger = @logger
+endSource:show|on GitHub# File activesupport/lib/active_support/log_subscriber/test_helper.rb, line 101defset_logger(logger)ActiveSupport::LogSubscriber.logger=loggerendwait()LinkWait notifications to be published.Source:show|on GitHub# File activesupport/lib/active_support/log_subscriber/test_helper.rb, line 92defwait@notifier.waitend

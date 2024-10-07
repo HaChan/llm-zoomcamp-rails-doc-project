@@ -1,0 +1,1 @@
+NamespaceMODULEActionCableMODULEActionCable::ServerMODULEActionCable::Server::Worker::ActiveRecordConnectionManagementMODULEActiveRecordCLASSActionCable::Server::Worker

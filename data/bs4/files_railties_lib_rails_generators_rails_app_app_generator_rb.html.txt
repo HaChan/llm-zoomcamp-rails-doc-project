@@ -1,0 +1,1 @@
+Required Filesrails/generators/app_baserails/generators/rails/devcontainer/devcontainer_generatorrails/generators/rails/master_key/master_key_generatorrails/generators/rails/credentials/credentials_generatorrails/versionNamespaceMODULERailsMODULERails::GeneratorsMODULERails::VERSIONCLASSRails::AppBuilderCLASSRails::Generators::AppBaseCLASSRails::Generators::AppGenerator

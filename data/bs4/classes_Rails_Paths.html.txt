@@ -1,0 +1,1 @@
+NamespaceCLASSRails::Paths::PathCLASSRails::Paths::Root

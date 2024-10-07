@@ -1,0 +1,1 @@
+NamespaceCLASSActiveStorage::Representations::ProxyControllerCLASSActiveStorage::Representations::RedirectController

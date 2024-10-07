@@ -1,0 +1,22 @@
+Action TextAttachmentAttachmentsserialize attachables to HTML or plain text.class Person < ApplicationRecord
+  include ActionText::Attachable
+end
+
+attachable = Person.create! name: "Javan"
+attachment = ActionText::Attachment.from_attachable(attachable)
+attachment.to_html # => "<action-text-attachment sgid=\"BAh7CEk..."MethodsCcaptionFfragment_by_canonicalizing_attachments,from_attachable,from_attachables,from_attributes,from_node,full_attributesIinspectNnewTto_html,to_plain_text,to_sWwith_full_attributesConstantsATTRIBUTES=%w( sgid content-type url href filename filesize width height previewable presentation caption content )Attributes[R]attachable[R]nodeClass Public methodsfragment_by_canonicalizing_attachments(content)LinkSource:show|on GitHub# File actiontext/lib/action_text/attachment.rb, line 27deffragment_by_canonicalizing_attachments(content)fragment_by_minifying_attachments(fragment_by_converting_trix_attachments(content))endfrom_attachable(attachable, attributes = {})LinkSource:show|on GitHub# File actiontext/lib/action_text/attachment.rb, line 39deffrom_attachable(attachable,attributes= {})ifnode=node_from_attributes(attachable.to_rich_text_attributes(attributes))new(node,attachable)endendfrom_attachables(attachables)LinkSource:show|on GitHub# File actiontext/lib/action_text/attachment.rb, line 35deffrom_attachables(attachables)Array(attachables).filter_map{|attachable|from_attachable(attachable) }endfrom_attributes(attributes, attachable = nil)LinkSource:show|on GitHub# File actiontext/lib/action_text/attachment.rb, line 45deffrom_attributes(attributes,attachable=nil)ifnode=node_from_attributes(attributes)from_node(node,attachable)endendfrom_node(node, attachable = nil)LinkSource:show|on GitHub# File actiontext/lib/action_text/attachment.rb, line 31deffrom_node(node,attachable=nil)new(node,attachable||ActionText::Attachable.from_node(node))endnew(node, attachable)LinkSource:show|on GitHub# File actiontext/lib/action_text/attachment.rb, line 68definitialize(node,attachable)@node=node@attachable=attachableendInstance Public methodscaption()LinkSource:show|on GitHub# File actiontext/lib/action_text/attachment.rb, line 73defcaptionnode_attributes["caption"].presenceendfull_attributes()LinkSource:show|on GitHub# File actiontext/lib/action_text/attachment.rb, line 77deffull_attributesnode_attributes.merge(attachable_attributes).merge(sgid_attributes)endinspect()LinkSource:show|on GitHub# File actiontext/lib/action_text/attachment.rb, line 131definspect"#<#{self.class.name} attachable=#{attachable.inspect}>"endto_html()LinkConverts the attachment to HTML.attachable = Person.create! name: "Javan"
+attachment = ActionText::Attachment.from_attachable(attachable)
+attachment.to_html # => "<action-text-attachment sgid=\"BAh7CEk...Source:show|on GitHub# File actiontext/lib/action_text/attachment.rb, line 123defto_htmlHtmlConversion.node_to_html(node)endto_plain_text()LinkConverts the attachment to plain text.attachable = ActiveStorage::Blob.find_by filename: "racecar.jpg"
+attachment = ActionText::Attachment.from_attachable(attachable)
+attachment.to_plain_text # => "[racecar.jpg]"Use thecaptionwhen set:attachment = ActionText::Attachment.from_attachable(attachable, caption: "Vroom vroom")
+attachment.to_plain_text # => "[Vroom vroom]"The presentation can be overridden by implementing theattachable_plain_text_representationmethod:class Person < ApplicationRecord
+  include ActionText::Attachable
+
+  def attachable_plain_text_representation
+    "[#{name}]"
+  end
+end
+
+attachable = Person.create! name: "Javan"
+attachment = ActionText::Attachment.from_attachable(attachable)
+attachment.to_plain_text # => "[Javan]"Source:show|on GitHub# File actiontext/lib/action_text/attachment.rb, line 110defto_plain_textifrespond_to?(:attachable_plain_text_representation)attachable_plain_text_representation(caption)elsecaption.to_sendendto_s()LinkSource:show|on GitHub# File actiontext/lib/action_text/attachment.rb, line 127defto_sto_htmlendwith_full_attributes()LinkSource:show|on GitHub# File actiontext/lib/action_text/attachment.rb, line 81defwith_full_attributesself.class.from_attributes(full_attributes,attachable)end

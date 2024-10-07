@@ -1,0 +1,3 @@
+MethodsBblank?EexistenceInstance Public methodsblank?()LinkAnPathnameis blank if itâs empty:Pathname.new("").blank?      # => true
+Pathname.new(" ").blank?     # => false
+Pathname.new("test").blank?  # => false@return [true, false]Source:show|on GitHub# File activesupport/lib/active_support/core_ext/pathname/blank.rb, line 13defblank?to_s.empty?endexistence()LinkReturns the receiver if the named file exists otherwise returnsnil.pathname.existenceis equivalent topathname.exist? ? pathname : nilFor example, something likecontent = pathname.read if pathname.exist?becomescontent = pathname.existence&.read@return [Pathname]Source:show|on GitHub# File activesupport/lib/active_support/core_ext/pathname/existence.rb, line 20defexistenceselfifexist?end

@@ -1,0 +1,1 @@
+NamespaceCLASSActiveSupport::Testing::ErrorReporterAssertions::ErrorCollector::Report

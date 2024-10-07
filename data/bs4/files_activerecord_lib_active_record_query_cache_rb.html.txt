@@ -1,0 +1,1 @@
+NamespaceMODULEActiveRecordMODULEActiveRecord::QueryCache::ClassMethodsCLASSActiveRecord::QueryCache

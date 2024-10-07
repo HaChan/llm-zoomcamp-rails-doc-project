@@ -1,0 +1,1 @@
+Required Filesthreadconcurrent/mapNamespaceMODULEActiveRecordMODULEActiveRecord::ConnectionAdaptersMODULEActiveSupportCLASSActiveRecord::ConnectionAdapters::ConnectionHandler

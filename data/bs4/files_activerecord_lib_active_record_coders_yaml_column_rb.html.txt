@@ -1,0 +1,1 @@
+Required FilesyamlNamespaceMODULEActiveRecordMODULEActiveRecord::CodersCLASSActiveRecord::Coders::YAMLColumnCLASSActiveRecord::Coders::YAMLColumn::SafeCoder

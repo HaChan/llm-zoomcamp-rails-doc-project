@@ -1,0 +1,1 @@
+Required Filesrails-dom-testingaction_dispatch/testing/assertions/responseaction_dispatch/testing/assertions/routingNamespaceMODULEActionDispatchMODULEActionDispatch::AssertionsMODULERails

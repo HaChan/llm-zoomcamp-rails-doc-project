@@ -1,0 +1,1 @@
+Raised when a record cannot be inserted or updated because it would violate a uniqueness constraint.

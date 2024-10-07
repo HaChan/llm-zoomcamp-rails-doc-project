@@ -1,0 +1,1 @@
+Required Filesbigdecimalbigdecimal/utilactive_support/core_ext/big_decimal/conversionsactive_support/core_ext/hash/keysactive_support/i18nactive_support/core_ext/class/attributeNamespaceMODULEActiveSupportMODULEActiveSupport::NumberHelper

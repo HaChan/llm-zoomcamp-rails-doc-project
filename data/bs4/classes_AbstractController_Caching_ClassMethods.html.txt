@@ -1,0 +1,1 @@
+MethodsVview_cache_dependencyInstance Public methodsview_cache_dependency(&dependency)LinkSource:show|on GitHub# File actionpack/lib/abstract_controller/caching.rb, line 49defview_cache_dependency(&dependency)self._view_cache_dependencies+=[dependency]end

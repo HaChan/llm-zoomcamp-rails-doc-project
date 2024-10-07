@@ -1,0 +1,43 @@
+Action DispatchRoutingUrlForInconfig/routes.rbyou define URL-to-controller mappings, but the reverse is also possible: a URL can be generated from one of your routing definitions. URL generation functionality is centralized in this module.SeeActionDispatch::Routingfor general information about routing andconfig/routes.rb.Tip:If you need to generate URLs from your models or some other place, thenActionDispatch::Routing::UrlForis what youâre looking for. Read on for an introduction. In general, this module should not be included on its own, as it is usually included byurl_helpers(as inRails.application.routes.url_helpers).URL generation from parametersAs you may know, some functions, such asActionController::Base#url_forandActionView::Helpers::UrlHelper#link_to, can generate URLs given a set of parameters. For example, youâve probably had the chance to write code like this in one of your views:<%= link_to('Click here', controller: 'users',
+        action: 'new', message: 'Welcome!') %>
+# => <a href="/users/new?message=Welcome%21">Click here</a>link_to, and all other functions that require URL generation functionality, actually useActionDispatch::Routing::UrlForunder the hood. And in particular, they use theActionDispatch::Routing::UrlFor#url_formethod. One can generate the same path as the above example by using the following code:include ActionDispatch::Routing::UrlFor
+url_for(controller: 'users',
+        action: 'new',
+        message: 'Welcome!',
+        only_path: true)
+# => "/users/new?message=Welcome%21"Notice theonly_path: truepart. This is becauseUrlForhas no information about the website hostname that yourRailsapp is serving. So if you want to include the hostname as well, then you must also pass the:hostargument:include UrlFor
+url_for(controller: 'users',
+        action: 'new',
+        message: 'Welcome!',
+        host: 'www.example.com')
+# => "http://www.example.com/users/new?message=Welcome%21"By default, all controllers and views have access to a special version ofurl_for, that already knows what the current hostname is. So if you useurl_forin your controllers or your views, then you donât need to explicitly pass the:hostargument.For convenience, mailers also includeActionDispatch::Routing::UrlFor. So within mailers, you can use url_for. However, mailers cannot access incoming web requests in order to derive hostname information, so you have to provide the:hostoption or set the default host usingdefault_url_options. For more information onurl_forin mailers see theActionMailer::Basedocumentation.URL generation for named routesUrlForalso allows one to access methods that have been auto-generated from named routes. For example, suppose that you have a âusersâ resource in yourconfig/routes.rb:resources :usersThis generates, among other things, the methodusers_path. By default, this method is accessible from your controllers, views, and mailers. If you need to access this auto-generated method from other places (such as a model), then you can do that by includingRails.application.routes.url_helpersin your class:class User < ActiveRecord::Base
+  include Rails.application.routes.url_helpers
+
+  def base_uri
+    user_path(self)
+  end
+end
+
+User.find(1).base_uri # => "/users/1"Methods#_routes_context,_with_routesNnewOoptimize_routes_generation?Rroute_forUurl_for,url_optionsIncluded ModulesActionDispatch::Routing::PolymorphicRoutesClass Public methodsnew(...)LinkSource:show|on GitHub# File actionpack/lib/action_dispatch/routing/url_for.rb, line 111definitialize(...)@_routes=nilsuperendInstance Public methodsroute_for(name, *args)LinkAllows calling direct or regular named route.resources :buckets
+
+direct :recordable do |recording|
+  route_for(:bucket, recording.bucket)
+end
+
+direct :threadable do |threadable|
+  route_for(:recordable, threadable.parent)
+endThis maintains the context of the original caller on whether to return a path or full URL, e.g:threadable_path(threadable)  # => "/buckets/1"
+threadable_url(threadable)   # => "http://example.com/buckets/1"Source:show|on GitHub# File actionpack/lib/action_dispatch/routing/url_for.rb, line 222defroute_for(name,*args)public_send(:"#{name}_url",*args)endurl_for(options = nil)LinkGenerate a URL based on the options provided,default_url_options, and the routes defined inconfig/routes.rb. The following options are supported::only_path- If true, the relative URL is returned. Defaults tofalse.:protocol- The protocol to connect to. Defaults to"http".:host- Specifies the host the link should be targeted at. If:only_pathis false, this option must be provided either explicitly, or viadefault_url_options.:subdomain- Specifies the subdomain of the link, using thetld_lengthto split the subdomain from the host. If false, removes all subdomains from the host part of the link.:domain- Specifies the domain of the link, using thetld_lengthto split the domain from the host.:tld_length- Number of labels the TLD id composed of, only used if:subdomainor:domainare supplied. Defaults toActionDispatch::Http::URL.tld_length, which in turn defaults to 1.:port- Optionally specify the port to connect to.:anchor- An anchor name to be appended to the path.:params- The query parameters to be appended to the path.:path_params- The query parameters that will only be used for the named dynamic segments of path. If unused, they will be discarded.:trailing_slash- If true, adds a trailing slash, as in"/archive/2009/".:script_name- Specifies application path relative to domain root. If provided, prepends application path.Any other key (:controller,:action, etc.) given tourl_foris forwarded to the Routes module.url_for controller: 'tasks', action: 'testing', host: 'somehost.org', port: '8080'
+# => 'http://somehost.org:8080/tasks/testing'
+url_for controller: 'tasks', action: 'testing', host: 'somehost.org', anchor: 'ok', only_path: true
+# => '/tasks/testing#ok'
+url_for controller: 'tasks', action: 'testing', trailing_slash: true
+# => 'http://somehost.org/tasks/testing/'
+url_for controller: 'tasks', action: 'testing', host: 'somehost.org', number: '33'
+# => 'http://somehost.org/tasks/testing?number=33'
+url_for controller: 'tasks', action: 'testing', host: 'somehost.org', script_name: "/myapp"
+# => 'http://somehost.org/myapp/tasks/testing'
+url_for controller: 'tasks', action: 'testing', host: 'somehost.org', script_name: "/myapp", only_path: true
+# => '/myapp/tasks/testing'Missing routes keys may be filled in from the current requestâs parameters (e.g.:controller,:action,:id, and any other parameters that are placed in the path). Given that the current action has been reached throughGET /users/1:url_for(only_path: true)                        # => '/users/1'
+url_for(only_path: true, action: 'edit')        # => '/users/1/edit'
+url_for(only_path: true, action: 'edit', id: 2) # => '/users/2/edit'Notice that no:idparameter was provided to the firsturl_forcall and the helper used the one from the routeâs path. Any path parameter implicitly used byurl_forcan always be overwritten like shown on the lasturl_forcalls.Source:show|on GitHub# File actionpack/lib/action_dispatch/routing/url_for.rb, line 178defurl_for(options=nil)full_url_for(options)endurl_options()LinkHook overridden in controller to add request information withdefault_url_options. Application logic should not go into url_options.Source:show|on GitHub# File actionpack/lib/action_dispatch/routing/url_for.rb, line 118defurl_optionsdefault_url_optionsendInstance Protected methodsoptimize_routes_generation?()LinkSource:show|on GitHub# File actionpack/lib/action_dispatch/routing/url_for.rb, line 227defoptimize_routes_generation?_routes.optimize_routes_generation?&&default_url_options.empty?endInstance Private methods_routes_context()LinkSource:show|on GitHub# File actionpack/lib/action_dispatch/routing/url_for.rb, line 239def_routes_context# :doc:selfend_with_routes(routes)LinkSource:show|on GitHub# File actionpack/lib/action_dispatch/routing/url_for.rb, line 232def_with_routes(routes)# :doc:old_routes,@_routes=@_routes,routesyieldensure@_routes=old_routesend

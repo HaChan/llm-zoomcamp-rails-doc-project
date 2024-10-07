@@ -1,0 +1,1 @@
+Raised whenActiveSupport::SafeBuffer#safe_concatis called on unsafe buffers.MethodsNnewClass Public methodsnew()LinkSource:show|on GitHub# File activesupport/lib/active_support/core_ext/string/output_safety.rb, line 33definitializesuper"Could not concatenate to the buffer because it is not HTML safe."end

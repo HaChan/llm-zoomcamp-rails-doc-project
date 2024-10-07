@@ -1,0 +1,1 @@
+Can be raised by adapters if they wish to communicate to the caller a reason why the adapter was unexpectedly unable to enqueue a job.

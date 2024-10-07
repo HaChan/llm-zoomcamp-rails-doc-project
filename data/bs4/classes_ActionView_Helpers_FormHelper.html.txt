@@ -1,0 +1,475 @@
+Action View Form HelpersForm helpers are designed to make working with resources much easier compared to using vanilla HTML.Typically, a form designed to create or update a resource reflects the identity of the resource in several ways: (i) the URL that the form is sent to (the form elementâsactionattribute) should result in a request being routed to the appropriate controller action (with the appropriate:idparameter in the case of an existing resource), (ii) input fields should be named in such a way that in the controller their values appear in the appropriate places within theparamshash, and (iii) for an existing record, when the form is initially displayed, input fields corresponding to attributes of the resource should show the current values of those attributes.In Rails, this is usually achieved by creating the form usingform_forand a number of related helper methods.form_forgenerates an appropriateformtag and yields a form builder object that knows the model the form is about. Input fields are created by calling methods defined on the form builder, which means they are able to generate the appropriate names and default values corresponding to the model attributes, as well as convenient IDs, etc. Conventions in the generated field names allow controllers to receive form data nicely structured inparamswith no effort on your side.For example, to create a new person you typically set up a new instance ofPersonin thePeopleController#newaction,@person, and in the view template pass that object toform_for:<%= form_for @person do |f| %>
+  <%= f.label :first_name %>:
+  <%= f.text_field :first_name %><br />
+
+  <%= f.label :last_name %>:
+  <%= f.text_field :last_name %><br />
+
+  <%= f.submit %>
+<% end %>The HTML generated for this would be (modulus formatting):<form action="/people" class="new_person" id="new_person" method="post">
+  <input name="authenticity_token" type="hidden" value="NrOp5bsjoLRuK8IW5+dQEYjKGUJDe7TQoZVvq95Wteg=" />
+  <label for="person_first_name">First name</label>:
+  <input id="person_first_name" name="person[first_name]" type="text" /><br />
+
+  <label for="person_last_name">Last name</label>:
+  <input id="person_last_name" name="person[last_name]" type="text" /><br />
+
+  <input name="commit" type="submit" value="Create Person" />
+</form>As you see, the HTML reflects knowledge about the resource in several spots, like the path the form should be submitted to, or the names of the input fields.In particular, thanks to the conventions followed in the generated field names, the controller gets a nested hashparams[:person]with the person attributes set in the form. That hash is ready to be passed toPerson.new:@person = Person.new(params[:person])
+if @person.save
+  # success
+else
+  # error handling
+endInterestingly, the exact same view code in the previous example can be used to edit a person. If@personis an existing record with name âJohn Smithâ and ID 256, the code above as is would yield instead:<form action="/people/256" class="edit_person" id="edit_person_256" method="post">
+  <input name="_method" type="hidden" value="patch" />
+  <input name="authenticity_token" type="hidden" value="NrOp5bsjoLRuK8IW5+dQEYjKGUJDe7TQoZVvq95Wteg=" />
+  <label for="person_first_name">First name</label>:
+  <input id="person_first_name" name="person[first_name]" type="text" value="John" /><br />
+
+  <label for="person_last_name">Last name</label>:
+  <input id="person_last_name" name="person[last_name]" type="text" value="Smith" /><br />
+
+  <input name="commit" type="submit" value="Update Person" />
+</form>Note that the endpoint, default values, and submit button label are tailored for@person. That works that way because the involved helpers know whether the resource is a new record or not, and generate HTML accordingly.The controller would receive the form data again inparams[:person], ready to be passed toPerson#update:if @person.update(params[:person])
+  # success
+else
+  # error handling
+endThatâs how you typically work with resources.MethodsCcheck_box,color_fieldDdate_field,datetime_field,datetime_local_fieldEemail_fieldFfields,fields_for,file_field,form_for,form_withHhidden_fieldLlabelMmonth_fieldNnumber_fieldPpassword_field,phone_fieldRradio_button,range_field,rich_text_areaSsearch_fieldTtelephone_field,text_area,text_field,time_fieldUurl_fieldWweek_fieldIncluded ModulesActionView::Helpers::FormTagHelperActionView::Helpers::UrlHelperActionView::RecordIdentifierInstance Public methodscheck_box(object_name, method, options = {}, checked_value = "1", unchecked_value = "0")LinkReturns a checkbox tag tailored for accessing a specified attribute (identified bymethod) on an object assigned to the template (identified byobject). This object must be an instance object (@object) and not a local object. Itâs intended thatmethodreturns an integer and if that integer is above zero, then the checkbox is checked. Additional options on the input tag can be passed as a hash withoptions. Thechecked_valuedefaults to 1 while the defaultunchecked_valueis set to 0 which is convenient for boolean values.OptionsAny standard HTML attributes for the tag can be passed in, for example:class.:checked-trueorfalseforces the state of the checkbox to be checked or not.:include_hidden- If set to false, the auxiliary hidden field described below will not be generated.GotchaThe HTML specification says unchecked check boxes are not successful, and thus web browsers do not send them. Unfortunately this introduces a gotcha: if anInvoicemodel has apaidflag, and in the form that edits a paid invoice the user unchecks its check box, nopaidparameter is sent. So, any mass-assignment idiom like@invoice.update(params[:invoice])wouldnât update the flag.To prevent this the helper generates an auxiliary hidden field before every check box. The hidden field has the same name and its attributes mimic an unchecked check box.This way, the client either sends only the hidden field (representing the check box is unchecked), or both fields. Since the HTML specification says key/value pairs have to be sent in the same order they appear in the form, and parameters extraction gets the last occurrence of any repeated key in the query string, that works for ordinary forms.Unfortunately that workaround does not work when the check box goes within an array-like parameter, as in<%= fields_for "project[invoice_attributes][]", invoice, index: nil do |form| %>
+  <%= form.check_box :paid %>
+  ...
+<% end %>because parameter name repetition is precisely what Rails seeks to distinguish the elements of the array. For each item with a checked check box you get an extra ghost item with only that attribute, assigned to â0â.In that case it is preferable to either usecheck_box_tagor to use hashes instead of arrays.Examples# Let's say that @article.validated? is 1:
+check_box("article", "validated")
+# => <input name="article[validated]" type="hidden" value="0" />
+#    <input checked="checked" type="checkbox" id="article_validated" name="article[validated]" value="1" />
+
+# Let's say that @puppy.gooddog is "no":
+check_box("puppy", "gooddog", {}, "yes", "no")
+# => <input name="puppy[gooddog]" type="hidden" value="no" />
+#    <input type="checkbox" id="puppy_gooddog" name="puppy[gooddog]" value="yes" />
+
+check_box("eula", "accepted", { class: 'eula_check' }, "yes", "no")
+# => <input name="eula[accepted]" type="hidden" value="no" />
+#    <input type="checkbox" class="eula_check" id="eula_accepted" name="eula[accepted]" value="yes" />Source:show|on GitHub# File actionview/lib/action_view/helpers/form_helper.rb, line 1345defcheck_box(object_name,method,options= {},checked_value="1",unchecked_value="0")Tags::CheckBox.new(object_name,method,self,checked_value,unchecked_value,options).renderendcolor_field(object_name, method, options = {})LinkReturns atext_fieldof type âcolorâ.color_field("car", "color")
+# => <input id="car_color" name="car[color]" type="color" value="#000000" />Source:show|on GitHub# File actionview/lib/action_view/helpers/form_helper.rb, line 1375defcolor_field(object_name,method,options= {})Tags::ColorField.new(object_name,method,self,options).renderenddate_field(object_name, method, options = {})LinkReturns atext_fieldof type âdateâ.date_field("user", "born_on")
+# => <input id="user_born_on" name="user[born_on]" type="date" />The default value is generated by trying to callstrftimewith â%Y-%m-%dâ on the objectâs value, which makes it behave as expected for instances ofDateTimeandActiveSupport::TimeWithZone. You can still override that by passing the âvalueâ option explicitly, e.g.@user.born_on = Date.new(1984, 1, 27)
+date_field("user", "born_on", value: "1984-05-12")
+# => <input id="user_born_on" name="user[born_on]" type="date" value="1984-05-12" />You can create values for the âminâ and âmaxâ attributes by passing instances ofDateorTimeto the options hash.date_field("user", "born_on", min: Date.today)
+# => <input id="user_born_on" name="user[born_on]" type="date" min="2014-05-20" />Alternatively, you can pass aStringformatted as an ISO8601 date as the values for âminâ and âmax.âdate_field("user", "born_on", min: "2014-05-20")
+# => <input id="user_born_on" name="user[born_on]" type="date" min="2014-05-20" />Source:show|on GitHub# File actionview/lib/action_view/helpers/form_helper.rb, line 1439defdate_field(object_name,method,options= {})Tags::DateField.new(object_name,method,self,options).renderenddatetime_field(object_name, method, options = {})LinkReturns atext_fieldof type âdatetime-localâ.datetime_field("user", "born_on")
+# => <input id="user_born_on" name="user[born_on]" type="datetime-local" />The default value is generated by trying to callstrftimewith â%Y-%m-%dT%Tâ on the objectâs value, which makes it behave as expected for instances ofDateTimeandActiveSupport::TimeWithZone.@user.born_on = Date.new(1984, 1, 12)
+datetime_field("user", "born_on")
+# => <input id="user_born_on" name="user[born_on]" type="datetime-local" value="1984-01-12T00:00:00" />You can create values for the âminâ and âmaxâ attributes by passing instances ofDateorTimeto the options hash.datetime_field("user", "born_on", min: Date.today)
+# => <input id="user_born_on" name="user[born_on]" type="datetime-local" min="2014-05-20T00:00:00.000" />Alternatively, you can pass aStringformatted as an ISO8601 datetime as the values for âminâ and âmax.âdatetime_field("user", "born_on", min: "2014-05-20T00:00:00")
+# => <input id="user_born_on" name="user[born_on]" type="datetime-local" min="2014-05-20T00:00:00.000" />By default, provided datetimes will be formatted including seconds. You can render just the date, hour, and minute by passinginclude_seconds: false.@user.born_on = Time.current
+datetime_field("user", "born_on", include_seconds: false)
+# => <input id="user_born_on" name="user[born_on]" type="datetime-local" value="2014-05-20T14:35" />Also aliased as:datetime_local_fieldSource:show|on GitHub# File actionview/lib/action_view/helpers/form_helper.rb, line 1512defdatetime_field(object_name,method,options= {})Tags::DatetimeLocalField.new(object_name,method,self,options).renderenddatetime_local_field(object_name, method, options = {})LinkAlias for:datetime_fieldemail_field(object_name, method, options = {})LinkReturns atext_fieldof type âemailâ.email_field("user", "address")
+# => <input id="user_address" name="user[address]" type="email" />Source:show|on GitHub# File actionview/lib/action_view/helpers/form_helper.rb, line 1566defemail_field(object_name,method,options= {})Tags::EmailField.new(object_name,method,self,options).renderendfields(scope = nil, model: nil, **options, &block)LinkScopes input fields with either an explicit scope or model. Likeform_withdoes with:scopeor:model, except it doesnât output the form tags.# Using a scope prefixes the input field names:
+<%= fields :comment do |fields| %>
+  <%= fields.text_field :body %>
+<% end %>
+# => <input type="text" name="comment[body]">
+
+# Using a model infers the scope and assigns field values:
+<%= fields model: Comment.new(body: "full bodied") do |fields| %>
+  <%= fields.text_field :body %>
+<% end %>
+# => <input type="text" name="comment[body]" value="full bodied">
+
+# Using +fields+ with +form_with+:
+<%= form_with model: @article do |form| %>
+  <%= form.text_field :title %>
+
+  <%= form.fields :comment do |fields| %>
+    <%= fields.text_field :body %>
+  <% end %>
+<% end %>Much likeform_withaFormBuilderinstance associated with the scope or model is yielded, so any generated field names are prefixed with either the passed scope or the scope inferred from the:model.Mixing with other form helpersWhileform_withuses aFormBuilderobject itâs possible to mix and match the stand-aloneFormHelpermethods and methods from FormTagHelper:<%= fields model: @comment do |fields| %>
+  <%= fields.text_field :body %>
+
+  <%= text_area :commenter, :biography %>
+  <%= check_box_tag "comment[all_caps]", "1", @comment.commenter.hulk_mode? %>
+<% end %>Same goes for the methods inFormOptionsHelperandDateHelperdesigned to work with an object as a base, likeFormOptionsHelper#collection_selectandDateHelper#datetime_select.Source:show|on GitHub# File actionview/lib/action_view/helpers/form_helper.rb, line 1079deffields(scope=nil,model:nil,**options,&block)options= {allow_method_names_outside_object:true,skip_default_ids:!form_with_generates_ids}.merge!(options)ifmodelmodel=_object_for_form_builder(model)scope||=model_name_from_record_or_class(model).param_keyendbuilder=instantiate_builder(scope,model,options)capture(builder,&block)endfields_for(record_name, record_object = nil, options = {}, &block)LinkCreates a scope around a specific model object likeform_with, but doesnât create the form tags themselves. This makesfields_forsuitable for specifying additional model objects in the same form.Although the usage and purpose offields_foris similar toform_withâs, its method signature is slightly different. Likeform_with, it yields aFormBuilderobject associated with a particular model object to a block, and within the block allows methods to be called on the builder to generate fields associated with the model object. Fields may reflect a model object in two ways - how they are named (hence how submitted values appear within theparamshash in the controller) and what default values are shown when the form fields are first displayed. In order for both of these features to be specified independently, both an object name (represented by either a symbol or string) and the object itself can be passed to the method separately -<%= form_with model: @person do |person_form| %>
+  First name: <%= person_form.text_field :first_name %>
+  Last name : <%= person_form.text_field :last_name %>
+
+  <%= fields_for :permission, @person.permission do |permission_fields| %>
+    Admin?  : <%= permission_fields.check_box :admin %>
+  <% end %>
+
+  <%= person_form.submit %>
+<% end %>In this case, the checkbox field will be represented by an HTMLinputtag with thenameattributepermission[admin], and the submitted value will appear in the controller asparams[:permission][:admin]. If@person.permissionis an existing record with an attributeadmin, the initial state of the checkbox when first displayed will reflect the value of@person.permission.admin.Often this can be simplified by passing just the name of the model object tofields_for-<%= fields_for :permission do |permission_fields| %>
+  Admin?: <%= permission_fields.check_box :admin %>
+<% end %>â¦in which case, if:permissionalso happens to be the name of an instance variable@permission, the initial state of the input field will reflect the value of that variableâs attribute@permission.admin.Alternatively, you can pass just the model object itself (if the first argument isnât a string or symbolfields_forwill realize that the name has been omitted) -<%= fields_for @person.permission do |permission_fields| %>
+  Admin?: <%= permission_fields.check_box :admin %>
+<% end %>andfields_forwill derive the required name of the field from theclassof the model object, e.g. if@person.permission, is of classPermission, the field will still be namedpermission[admin].Note: This also works for the methods inFormOptionsHelperandDateHelperthat are designed to work with an object as base, likeFormOptionsHelper#collection_selectandDateHelper#datetime_select.Nested Attributes ExamplesWhen the object belonging to the current scope has a nested attribute writer for a certain attribute,fields_forwill yield a new scope for that attribute. This allows you to create forms that set or change the attributes of a parent object and its associations in one go.Nested attribute writers are normal setter methods named after an association. The most common way of defining these writers is either withaccepts_nested_attributes_forin a model definition or by defining a method with the proper name. For example: the attribute writer for the association:addressis calledaddress_attributes=.Whether a one-to-one or one-to-many style form builder will be yielded depends on whether the normal reader method returns asingleobject or anarrayof objects.One-to-oneConsider a Person class which returns asingleAddress from theaddressreader method and responds to theaddress_attributes=writer method:class Person
+  def address
+    @address
+  end
+
+  def address_attributes=(attributes)
+    # Process the attributes hash
+  end
+endThis model can now be used with a nestedfields_for, like so:<%= form_with model: @person do |person_form| %>
+  ...
+  <%= person_form.fields_for :address do |address_fields| %>
+    Street  : <%= address_fields.text_field :street %>
+    Zip code: <%= address_fields.text_field :zip_code %>
+  <% end %>
+  ...
+<% end %>When address is already an association on a Person you can useaccepts_nested_attributes_forto define the writer method for you:class Person < ActiveRecord::Base
+  has_one :address
+  accepts_nested_attributes_for :address
+endIf you want to destroy the associated model through the form, you have to enable it first using the:allow_destroyoption foraccepts_nested_attributes_for:class Person < ActiveRecord::Base
+  has_one :address
+  accepts_nested_attributes_for :address, allow_destroy: true
+endNow, when you use a form element with the_destroyparameter, with a value that evaluates totrue, you will destroy the associated model (e.g. 1, â1â, true, or âtrueâ):<%= form_with model: @person do |person_form| %>
+  ...
+  <%= person_form.fields_for :address do |address_fields| %>
+    ...
+    Delete: <%= address_fields.check_box :_destroy %>
+  <% end %>
+  ...
+<% end %>One-to-manyConsider a Person class which returns anarrayof Project instances from theprojectsreader method and responds to theprojects_attributes=writer method:class Person
+  def projects
+    [@project1, @project2]
+  end
+
+  def projects_attributes=(attributes)
+    # Process the attributes hash
+  end
+endNote that theprojects_attributes=writer method is in fact required forfields_forto correctly identify:projectsas a collection, and the correct indices to be set in the form markup.When projects is already an association on Person you can useaccepts_nested_attributes_forto define the writer method for you:class Person < ActiveRecord::Base
+  has_many :projects
+  accepts_nested_attributes_for :projects
+endThis model can now be used with a nested fields_for. The block given to the nestedfields_forcall will be repeated for each instance in the collection:<%= form_with model: @person do |person_form| %>
+  ...
+  <%= person_form.fields_for :projects do |project_fields| %>
+    <% if project_fields.object.active? %>
+      Name: <%= project_fields.text_field :name %>
+    <% end %>
+  <% end %>
+  ...
+<% end %>Itâs also possible to specify the instance to be used:<%= form_with model: @person do |person_form| %>
+  ...
+  <% @person.projects.each do |project| %>
+    <% if project.active? %>
+      <%= person_form.fields_for :projects, project do |project_fields| %>
+        Name: <%= project_fields.text_field :name %>
+      <% end %>
+    <% end %>
+  <% end %>
+  ...
+<% end %>Or a collection to be used:<%= form_with model: @person do |person_form| %>
+  ...
+  <%= person_form.fields_for :projects, @active_projects do |project_fields| %>
+    Name: <%= project_fields.text_field :name %>
+  <% end %>
+  ...
+<% end %>If you want to destroy any of the associated models through the form, you have to enable it first using the:allow_destroyoption foraccepts_nested_attributes_for:class Person < ActiveRecord::Base
+  has_many :projects
+  accepts_nested_attributes_for :projects, allow_destroy: true
+endThis will allow you to specify which models to destroy in the attributes hash by adding a form element for the_destroyparameter with a value that evaluates totrue(e.g. 1, â1â, true, or âtrueâ):<%= form_with model: @person do |person_form| %>
+  ...
+  <%= person_form.fields_for :projects do |project_fields| %>
+    Delete: <%= project_fields.check_box :_destroy %>
+  <% end %>
+  ...
+<% end %>When a collection is used you might want to know the index of each object in the array. For this purpose, theindexmethod is available in theFormBuilderobject.<%= form_with model: @person do |person_form| %>
+  ...
+  <%= person_form.fields_for :projects do |project_fields| %>
+    Project #<%= project_fields.index %>
+    ...
+  <% end %>
+  ...
+<% end %>Note thatfields_forwill automatically generate a hidden field to store the ID of the record if it responds topersisted?. There are circumstances where this hidden field is not needed and you can passinclude_id: falseto preventfields_forfrom rendering it automatically.Source:show|on GitHub# File actionview/lib/action_view/helpers/form_helper.rb, line 1028deffields_for(record_name,record_object=nil,options= {},&block)options= {model:record_object,allow_method_names_outside_object:false,skip_default_ids:false}.merge!(options)fields(record_name,**options,&block)endfile_field(object_name, method, options = {})LinkReturns a file upload input tag tailored for accessing a specified attribute (identified bymethod) on an object assigned to the template (identified byobject). Additional options on the input tag can be passed as a hash withoptions. These options will be tagged onto the HTML as an HTML element attribute as in the example shown.Using this method inside aform_withblock will set the enclosing formâs encoding tomultipart/form-data.OptionsCreates standard HTML attributes for the tag.:disabled- If set to true, the user will not be able to use this input.:multiple- If set to true, *in most updated browsers* the user will be allowed to select multiple files.:include_hidden- Whenmultiple: trueandinclude_hidden: true, the field will be prefixed with an<input type="hidden">field with an empty value to support submitting an empty collection of files.:accept- If set to one or multiple mime-types, the user will be suggested a filter when choosing a file. You still need to set up model validations.Examplesfile_field(:user, :avatar)
+# => <input type="file" id="user_avatar" name="user[avatar]" />
+
+file_field(:article, :image, multiple: true)
+# => <input type="file" id="article_image" name="article[image][]" multiple="multiple" />
+
+file_field(:article, :attached, accept: 'text/html')
+# => <input accept="text/html" type="file" id="article_attached" name="article[attached]" />
+
+file_field(:article, :image, accept: 'image/png,image/gif,image/jpeg')
+# => <input type="file" id="article_image" name="article[image]" accept="image/png,image/gif,image/jpeg" />
+
+file_field(:attachment, :file, class: 'file_input')
+# => <input type="file" id="attachment_file" name="attachment[file]" class="file_input" />Source:show|on GitHub# File actionview/lib/action_view/helpers/form_helper.rb, line 1247deffile_field(object_name,method,options= {})options= {include_hidden:multiple_file_field_include_hidden}.merge!(options)Tags::FileField.new(object_name,method,self,convert_direct_upload_option_to_url(options.dup)).renderendform_for(record, options = {}, &block)LinkCreates a form that allows the user to create or update the attributes of a specific model object.The method can be used in several slightly different ways, depending on how much you wish to rely on Rails to infer automatically from the model how the form should be constructed. For a generic model object, a form can be created by passingform_fora string or symbol representing the object we are concerned with:<%= form_for :person do |f| %>
+  First name: <%= f.text_field :first_name %><br />
+  Last name : <%= f.text_field :last_name %><br />
+  Biography : <%= f.text_area :biography %><br />
+  Admin?    : <%= f.check_box :admin %><br />
+  <%= f.submit %>
+<% end %>The variablefyielded to the block is aFormBuilderobject that incorporates the knowledge about the model object represented by:personpassed toform_for. Methods defined on theFormBuilderare used to generate fields bound to this model. Thus, for example,<%= f.text_field :first_name %>will get expanded to<%= text_field :person, :first_name %>which results in an HTML<input>tag whosenameattribute isperson[first_name]. This means that when the form is submitted, the value entered by the user will be available in the controller asparams[:person][:first_name].For fields generated in this way using theFormBuilder, if:personalso happens to be the name of an instance variable@person, the default value of the field shown when the form is initially displayed (e.g. in the situation where you are editing an existing record) will be the value of the corresponding attribute of@person.The rightmost argument toform_foris an optional hash of options -:url- The URL the form is to be submitted to. This may be represented in the same way as values passed tourl_fororlink_to. So for example you may use a named route directly. When the model is represented by a string or symbol, as in the example above, if the:urloption is not specified, by default the form will be sent back to the current URL (We will describe below an alternative resource-oriented usage ofform_forin which the URL does not need to be specified explicitly).:namespace- A namespace for your form to ensure uniqueness of id attributes on form elements. The namespace attribute will be prefixed with underscore on the generated HTML id.:method- The method to use when submitting the form, usually either âgetâ or âpostâ. If âpatchâ, âputâ, âdeleteâ, or another verb is used, a hidden input with name_methodis added to simulate the verb over post.:authenticity_token- Authenticity token to use in the form. Use only if you need to pass custom authenticity token string, or to not add authenticity_token field at all (by passingfalse). Remote forms may omit the embedded authenticity token by settingconfig.action_view.embed_authenticity_token_in_remote_forms = false. This is helpful when youâre fragment-caching the form. Remote forms get the authenticity token from themetatag, so embedding is unnecessary unless you support browsers without JavaScript.:remote- If set to true, will allow the Unobtrusive JavaScript drivers to control the submit behavior.:enforce_utf8- If set to false, a hidden input with name utf8 is not output.:html- Optional HTML attributes for the form tag.Also note thatform_fordoesnât create an exclusive scope. Itâs still possible to use both the stand-aloneFormHelpermethods and methods fromFormTagHelper. For example:<%= form_for :person do |f| %>
+  First name: <%= f.text_field :first_name %>
+  Last name : <%= f.text_field :last_name %>
+  Biography : <%= text_area :person, :biography %>
+  Admin?    : <%= check_box_tag "person[admin]", "1", @person.company.admin? %>
+  <%= f.submit %>
+<% end %>This also works for the methods inFormOptionsHelperandDateHelperthat are designed to work with an object as base, likeFormOptionsHelper#collection_selectandDateHelper#datetime_select.form_forwith a model objectIn the examples above, the object to be created or edited was represented by a symbol passed toform_for, and we noted that a string can also be used equivalently. It is also possible, however, to pass a model object itself toform_for. For example, if@articleis an existing record you wish to edit, you can create the form using<%= form_for @article do |f| %>
+  ...
+<% end %>This behaves in almost the same way as outlined previously, with a couple of small exceptions. First, the prefix used to name the input elements within the form (hence the key that denotes them in theparamshash) is actually derived from the objectâsclass, e.g.params[:article]if the objectâs class isArticle. However, this can be overwritten using the:asoption, e.g. -<%= form_for(@person, as: :client) do |f| %>
+  ...
+<% end %>would result inparams[:client].Secondly, the field values shown when the form is initially displayed are taken from the attributes of the object passed toform_for, regardless of whether the object is an instance variable. So, for example, if we had alocalvariablearticlerepresenting an existing record,<%= form_for article do |f| %>
+  ...
+<% end %>would produce a form with fields whose initial state reflect the current values of the attributes ofarticle.Resource-oriented styleIn the examples just shown, although not indicated explicitly, we still need to use the:urloption in order to specify where the form is going to be sent. However, further simplification is possible if the record passed toform_foris aresource, i.e. it corresponds to a set of RESTful routes, e.g. defined using theresourcesmethod inconfig/routes.rb. In this case Rails will simply infer the appropriate URL from the record itself. For example,<%= form_for @article do |f| %>
+  ...
+<% end %>is then equivalent to something like:<%= form_for @article, as: :article, url: article_path(@article), method: :patch, html: { class: "edit_article", id: "edit_article_45" } do |f| %>
+  ...
+<% end %>And for a new record<%= form_for(Article.new) do |f| %>
+  ...
+<% end %>is equivalent to something like:<%= form_for @article, as: :article, url: articles_path, html: { class: "new_article", id: "new_article" } do |f| %>
+  ...
+<% end %>However you can still overwrite individual conventions, such as:<%= form_for(@article, url: super_articles_path) do |f| %>
+  ...
+<% end %>You can omit theactionattribute by passingurl: false:<%= form_for(@article, url: false) do |f| %>
+  ...
+<% end %>You can also set the answer format, like this:<%= form_for(@article, format: :json) do |f| %>
+  ...
+<% end %>For namespaced routes, likeadmin_article_url:<%= form_for([:admin, @article]) do |f| %>
+ ...
+<% end %>If your resource has associations defined, for example, you want to add comments to the document given that the routes are set correctly:<%= form_for([@document, @comment]) do |f| %>
+ ...
+<% end %>Where@document = Document.find(params[:id])and@comment = Comment.new.Setting the methodYou can force the form to use the full array of HTTP verbs by settingmethod: (:get|:post|:patch|:put|:delete)in the options hash. If the verb is not GET or POST, which are natively supported by HTML forms, the form will be set to POST and a hidden input called _method will carry the intended verb for the server to interpret.Unobtrusive JavaScriptSpecifying:remote: truein the options hash creates a form that will allow the unobtrusive JavaScript drivers to modify its behavior. The form submission will work just like a regular submission as viewed by the receiving side (all elements available inparams).Example:<%= form_for(@article, remote: true) do |f| %>
+  ...
+<% end %>The HTML generated for this would be:<form action='http://www.example.com' method='post' data-remote='true'>
+  <input name='_method' type='hidden' value='patch' />
+  ...
+</form>Setting HTML optionsYou can set data attributes directly by passing in a data hash, but all other HTML options must be wrapped in the HTML key. Example:<%= form_for(@article, data: { behavior: "autosave" }, html: { name: "go" }) do |f| %>
+  ...
+<% end %>The HTML generated for this would be:<form action='http://www.example.com' method='post' data-behavior='autosave' name='go'>
+  <input name='_method' type='hidden' value='patch' />
+  ...
+</form>Removing hidden model idâsTheform_formethod automatically includes the model id as a hidden field in the form. This is used to maintain the correlation between the form data and its associated model. Some ORM systems do not use IDs on nested models so in this case you want to be able to disable the hidden id.In the following example the Article model has many Comments stored within it in a NoSQL database, thus there is no primary key for comments.Example:<%= form_for(@article) do |f| %>
+  <%= f.fields_for(:comments, include_id: false) do |cf| %>
+    ...
+  <% end %>
+<% end %>Customized form buildersYou can also build forms using a customizedFormBuilderclass. SubclassFormBuilderand override or define some more helpers, then use your custom builder. For example, letâs say you made a helper to automatically add labels to form inputs.<%= form_for @person, url: { action: "create" }, builder: LabellingFormBuilder do |f| %>
+  <%= f.text_field :first_name %>
+  <%= f.text_field :last_name %>
+  <%= f.text_area :biography %>
+  <%= f.check_box :admin %>
+  <%= f.submit %>
+<% end %>In this case, if you use this:<%= render f %>The rendered template ispeople/_labelling_formand the local variable referencing the form builder is calledlabelling_form.The customFormBuilderclass is automatically merged with the options of a nestedfields_forcall, unless itâs explicitly set.In many cases you will want to wrap the above in another helper, so you could do something like the following:def labelled_form_for(record_or_name_or_array, *args, &block)
+  options = args.extract_options!
+  form_for(record_or_name_or_array, *(args << options.merge(builder: LabellingFormBuilder)), &block)
+endIf you donât need to attach a form to a model instance, then check outFormTagHelper#form_tag.Form to external resourcesWhen you build forms to external resources sometimes you need to set an authenticity token or just render a form without it, for example when you submit data to a payment gateway number and types of fields could be limited.To set an authenticity token you need to pass an:authenticity_tokenparameter<%= form_for @invoice, url: external_url, authenticity_token: 'external_token' do |f| %>
+  ...
+<% end %>If you donât want to an authenticity token field be rendered at all just passfalse:<%= form_for @invoice, url: external_url, authenticity_token: false do |f| %>
+  ...
+<% end %>Source:show|on GitHub# File actionview/lib/action_view/helpers/form_helper.rb, line 435defform_for(record,options= {},&block)raiseArgumentError,"Missing block"unlessblock_given?caserecordwhenString,Symbolmodel=falseobject_name=recordelsemodel=recordobject=_object_for_form_builder(record)raiseArgumentError,"First argument in form cannot contain nil or be empty"unlessobjectobject_name=options[:as]||model_name_from_record_or_class(object).param_keyapply_form_for_options!(object,options)endremote=options.delete(:remote)ifremote&&!embed_authenticity_token_in_remote_forms&&options[:authenticity_token].blank?options[:authenticity_token] =falseendoptions[:model]                               =modeloptions[:scope]                               =object_nameoptions[:local]                               =!remoteoptions[:skip_default_ids]                    =falseoptions[:allow_method_names_outside_object]   =options.fetch(:allow_method_names_outside_object,false)form_with(**options,&block)endform_with(model: false, scope: nil, url: nil, format: nil, **options, &block)LinkCreates a form tag based on mixing URLs, scopes, or models.# Using just a URL:
+<%= form_with url: articles_path do |form| %>
+  <%= form.text_field :title %>
+<% end %>
+# =>
+<form action="/articles" method="post">
+  <input type="text" name="title" />
+</form>
+
+# With an intentionally empty URL:
+<%= form_with url: false do |form| %>
+  <%= form.text_field :title %>
+<% end %>
+# =>
+<form method="post">
+  <input type="text" name="title" />
+</form>
+
+# Adding a scope prefixes the input field names:
+<%= form_with scope: :article, url: articles_path do |form| %>
+  <%= form.text_field :title %>
+<% end %>
+# =>
+<form action="/articles" method="post">
+  <input type="text" name="article[title]" />
+</form>
+
+# Using a model infers both the URL and scope:
+<%= form_with model: Article.new do |form| %>
+  <%= form.text_field :title %>
+<% end %>
+# =>
+<form action="/articles" method="post">
+  <input type="text" name="article[title]" />
+</form>
+
+# An existing model makes an update form and fills out field values:
+<%= form_with model: Article.first do |form| %>
+  <%= form.text_field :title %>
+<% end %>
+# =>
+<form action="/articles/1" method="post">
+  <input type="hidden" name="_method" value="patch" />
+  <input type="text" name="article[title]" value="<the title of the article>" />
+</form>
+# Though the fields don't have to correspond to model attributes:
+<%= form_with model: Cat.new do |form| %>
+  <%= form.text_field :cats_dont_have_gills %>
+  <%= form.text_field :but_in_forms_they_can %>
+<% end %>
+# =>
+<form action="/cats" method="post">
+  <input type="text" name="cat[cats_dont_have_gills]" />
+  <input type="text" name="cat[but_in_forms_they_can]" />
+</form>The parameters in the forms are accessible in controllers according to their name nesting. So inputs namedtitleandarticle[title]are accessible asparams[:title]andparams[:article][:title]respectively.For ease of comparison the examples above left out the submit button, as well as the auto generated hidden fields that enable UTF-8 support and adds an authenticity token needed for cross site request forgery protection.Resource-oriented styleIn many of the examples just shown, the:modelpassed toform_withis aresource. It corresponds to a set of RESTful routes, most likely defined viaresourcesinconfig/routes.rb.So when passing such a model record, Rails infers the URL and method.<%= form_with model: @article do |form| %>
+  ...
+<% end %>is then equivalent to something like:<%= form_with scope: :article, url: article_path(@article), method: :patch do |form| %>
+  ...
+<% end %>And for a new record<%= form_with model: Article.new do |form| %>
+  ...
+<% end %>is equivalent to something like:<%= form_with scope: :article, url: articles_path do |form| %>
+  ...
+<% end %>form_withoptions:url- The URL the form submits to. Akin to values passed tourl_fororlink_to. For example, you may use a named route directly. When a:scopeis passed without a:urlthe form just submits to the current URL.:method- The method to use when submitting the form, usually either âgetâ or âpostâ. If âpatchâ, âputâ, âdeleteâ, or another verb is used, a hidden input named_methodis added to simulate the verb over post.:format- The format of the route the form submits to. Useful when submitting to another resource type, like:json. Skipped if a:urlis passed.:scope- The scope to prefix input field names with and thereby how the submitted parameters are grouped in controllers.:namespace- A namespace for your form to ensure uniqueness of id attributes on form elements. The namespace attribute will be prefixed with underscore on the generated HTML id.:model- A model object to infer the:urland:scopeby, plus fill out input field values. So if atitleattribute is set to âAhoy!â then atitleinput fieldâs value would be âAhoy!â. If the model is a new record a create form is generated, if an existing record, however, an update form is generated. Pass:scopeor:urlto override the defaults. E.g. turnparams[:article]intoparams[:blog].:authenticity_token- Authenticity token to use in the form. Override with a custom authenticity token or passfalseto skip the authenticity token field altogether. Useful when submitting to an external resource like a payment gateway that might limit the valid fields. Remote forms may omit the embedded authenticity token by settingconfig.action_view.embed_authenticity_token_in_remote_forms = false. This is helpful when fragment-caching the form. Remote forms get the authenticity token from themetatag, so embedding is unnecessary unless you support browsers without JavaScript.:local- Whether to use standard HTTP form submission. When set totrue, the form is submitted via standard HTTP. When set tofalse, the form is submitted as a âremote formâ, which is handled by Rails UJS as an XHR. When unspecified, the behavior is derived fromconfig.action_view.form_with_generates_remote_formswhere the configâs value is actually the inverse of whatlocalâs value would be. As of Rails 6.1, that configuration option defaults tofalse(which has the equivalent effect of passinglocal: true). In previous versions of Rails, that configuration option defaults totrue(the equivalent of passinglocal: false).:skip_enforcing_utf8- If set to true, a hidden input with name utf8 is not output.:builder- Override the object used to build the form.:id- Optional HTML id attribute.:class- Optional HTML class attribute.:data- Optional HTML data attributes.:html- Other optional HTML attributes for the form tag.ExamplesWhen not passing a block,form_withjust generates an opening form tag.<%= form_with(model: @article, url: super_articles_path) %>
+<%= form_with(model: @article, scope: :blog) %>
+<%= form_with(model: @article, format: :json) %>
+<%= form_with(model: @article, authenticity_token: false) %> # Disables the token.For namespaced routes, likeadmin_article_url:<%= form_with(model: [ :admin, @article ]) do |form| %>
+  ...
+<% end %>If your resource has associations defined, for example, you want to add comments to the document given that the routes are set correctly:<%= form_with(model: [ @document, Comment.new ]) do |form| %>
+  ...
+<% end %>Where@document = Document.find(params[:id]).Mixing with other form helpersWhileform_withuses aFormBuilderobject itâs possible to mix and match the stand-aloneFormHelpermethods and methods from FormTagHelper:<%= form_with scope: :person do |form| %>
+  <%= form.text_field :first_name %>
+  <%= form.text_field :last_name %>
+
+  <%= text_area :person, :biography %>
+  <%= check_box_tag "person[admin]", "1", @person.company.admin? %>
+
+  <%= form.submit %>
+<% end %>Same goes for the methods inFormOptionsHelperandDateHelperdesigned to work with an object as a base, likeFormOptionsHelper#collection_selectandDateHelper#datetime_select.Setting the methodYou can force the form to use the full array of HTTP verbs by settingmethod: (:get|:post|:patch|:put|:delete)in the options hash. If the verb is not GET or POST, which are natively supported by HTML forms, the form will be set to POST and a hidden input called _method will carry the intended verb for the server to interpret.Setting HTML optionsYou can set data attributes directly in a data hash, but HTML options besides id and class must be wrapped in an HTML key:<%= form_with(model: @article, data: { behavior: "autosave" }, html: { name: "go" }) do |form| %>
+  ...
+<% end %>generates<form action="/articles/123" method="post" data-behavior="autosave" name="go">
+  <input name="_method" type="hidden" value="patch" />
+  ...
+</form>Removing hidden model idâsTheform_withmethod automatically includes the model id as a hidden field in the form. This is used to maintain the correlation between the form data and its associated model. Some ORM systems do not use IDs on nested models so in this case you want to be able to disable the hidden id.In the following example the Article model has many Comments stored within it in a NoSQL database, thus there is no primary key for comments.<%= form_with(model: @article) do |form| %>
+  <%= form.fields(:comments, skip_id: true) do |fields| %>
+    ...
+  <% end %>
+<% end %>Customized form buildersYou can also build forms using a customizedFormBuilderclass. SubclassFormBuilderand override or define some more helpers, then use your custom builder. For example, letâs say you made a helper to automatically add labels to form inputs.<%= form_with model: @person, url: { action: "create" }, builder: LabellingFormBuilder do |form| %>
+  <%= form.text_field :first_name %>
+  <%= form.text_field :last_name %>
+  <%= form.text_area :biography %>
+  <%= form.check_box :admin %>
+  <%= form.submit %>
+<% end %>In this case, if you use:<%= render form %>The rendered template ispeople/_labelling_formand the local variable referencing the form builder is calledlabelling_form.The customFormBuilderclass is automatically merged with the options of a nestedfieldscall, unless itâs explicitly set.In many cases you will want to wrap the above in another helper, so you could do something like the following:def labelled_form_with(**options, &block)
+  form_with(**options.merge(builder: LabellingFormBuilder), &block)
+endSource:show|on GitHub# File actionview/lib/action_view/helpers/form_helper.rb, line 755defform_with(model:false,scope:nil,url:nil,format:nil,**options,&block)ActionView.deprecator.warn("Passing nil to the :model argument is deprecated and will raise in Rails 8.0")ifmodel.nil?options= {allow_method_names_outside_object:true,skip_default_ids:!form_with_generates_ids}.merge!(options)ifmodelifurl!=falseurl||=ifformat.nil?polymorphic_path(model, {})elsepolymorphic_path(model,format:format)endendmodel=convert_to_model(_object_for_form_builder(model))scope||=model_name_from_record_or_class(model).param_keyendifblock_given?builder=instantiate_builder(scope,model,options)output=capture(builder,&block)options[:multipart]||=builder.multipart?html_options=html_options_for_form_with(url,model,**options)form_tag_with_body(html_options,output)elsehtml_options=html_options_for_form_with(url,model,**options)form_tag_html(html_options)endendhidden_field(object_name, method, options = {})LinkReturns a hidden input tag tailored for accessing a specified attribute (identified bymethod) on an object assigned to the template (identified byobject). Additional options on the input tag can be passed as a hash withoptions. These options will be tagged onto the HTML as an HTML element attribute as in the example shown.Exampleshidden_field(:signup, :pass_confirm)
+# => <input type="hidden" id="signup_pass_confirm" name="signup[pass_confirm]" value="#{@signup.pass_confirm}" />
+
+hidden_field(:article, :tag_list)
+# => <input type="hidden" id="article_tag_list" name="article[tag_list]" value="#{@article.tag_list}" />
+
+hidden_field(:user, :token)
+# => <input type="hidden" id="user_token" name="user[token]" value="#{@user.token}" />Source:show|on GitHub# File actionview/lib/action_view/helpers/form_helper.rb, line 1214defhidden_field(object_name,method,options= {})Tags::HiddenField.new(object_name,method,self,options).renderendlabel(object_name, method, content_or_options = nil, options = nil, &block)LinkReturns a label tag tailored for labelling an input field for a specified attribute (identified bymethod) on an object assigned to the template (identified byobject). The text of label will default to the attribute name unless a translation is found in the current I18n locale (throughhelpers.label.<modelname>.<attribute>) or you specify it explicitly. Additional options on the label tag can be passed as a hash withoptions. These options will be tagged onto the HTML as an HTML element attribute as in the example shown, except for the:valueoption, which is designed to target labels forradio_buttontags (where the value is used in the ID of the input tag).Exampleslabel(:article, :title)
+# => <label for="article_title">Title</label>You can localize your labels based on model and attribute names. For example you can define the following in your locale (e.g. en.yml)helpers:
+  label:
+    article:
+      body: "Write your entire text here"Which then will result inlabel(:article, :body)
+# => <label for="article_body">Write your entire text here</label>Localization can also be based purely on the translation of the attribute-name (if you are usingActiveRecord):activerecord:
+  attributes:
+    article:
+      cost: "Total cost"label(:article, :cost)
+# => <label for="article_cost">Total cost</label>
+
+label(:article, :title, "A short title")
+# => <label for="article_title">A short title</label>
+
+label(:article, :title, "A short title", class: "title_label")
+# => <label for="article_title" class="title_label">A short title</label>
+
+label(:article, :privacy, "Public Article", value: "public")
+# => <label for="article_privacy_public">Public Article</label>
+
+label(:article, :cost) do |translation|
+  content_tag(:span, translation, class: "cost_label")
+end
+# => <label for="article_cost"><span class="cost_label">Total cost</span></label>
+
+label(:article, :cost) do |builder|
+  content_tag(:span, builder.translation, class: "cost_label")
+end
+# => <label for="article_cost"><span class="cost_label">Total cost</span></label>
+
+label(:article, :terms) do
+  raw('Accept <a href="/terms">Terms</a>.')
+end
+# => <label for="article_terms">Accept <a href="/terms">Terms</a>.</label>Source:show|on GitHub# File actionview/lib/action_view/helpers/form_helper.rb, line 1151deflabel(object_name,method,content_or_options=nil,options=nil,&block)Tags::Label.new(object_name,method,self,content_or_options,options).render(&block)endmonth_field(object_name, method, options = {})LinkReturns atext_fieldof type âmonthâ.month_field("user", "born_on")
+# => <input id="user_born_on" name="user[born_on]" type="month" />The default value is generated by trying to callstrftimewith â%Y-%mâ on the objectâs value, which makes it behave as expected for instances ofDateTimeandActiveSupport::TimeWithZone.@user.born_on = Date.new(1984, 1, 27)
+month_field("user", "born_on")
+# => <input id="user_born_on" name="user[born_on]" type="date" value="1984-01" />Source:show|on GitHub# File actionview/lib/action_view/helpers/form_helper.rb, line 1531defmonth_field(object_name,method,options= {})Tags::MonthField.new(object_name,method,self,options).renderendnumber_field(object_name, method, options = {})LinkReturns an input tag of type ânumberâ.OptionsSupports the same options asFormTagHelper#number_field_tag.Source:show|on GitHub# File actionview/lib/action_view/helpers/form_helper.rb, line 1575defnumber_field(object_name,method,options= {})Tags::NumberField.new(object_name,method,self,options).renderendpassword_field(object_name, method, options = {})LinkReturns an input tag of the âpasswordâ type tailored for accessing a specified attribute (identified bymethod) on an object assigned to the template (identified byobject). Additional options on the input tag can be passed as a hash withoptions. These options will be tagged onto the HTML as an HTML element attribute as in the example shown. For security reasons this field is blank by default; pass in a value viaoptionsif this is not desired.Examplespassword_field(:login, :pass, size: 20)
+# => <input type="password" id="login_pass" name="login[pass]" size="20" />
+
+password_field(:account, :secret, class: "form_input", value: @account.secret)
+# => <input type="password" id="account_secret" name="account[secret]" value="#{@account.secret}" class="form_input" />
+
+password_field(:user, :password, onchange: "if ($('#user_password').val().length > 30) { alert('Your password needs to be shorter!'); }")
+# => <input type="password" id="user_password" name="user[password]" onchange="if ($('#user_password').val().length > 30) { alert('Your password needs to be shorter!'); }"/>
+
+password_field(:account, :pin, size: 20, class: 'form_input')
+# => <input type="password" id="account_pin" name="account[pin]" size="20" class="form_input" />Source:show|on GitHub# File actionview/lib/action_view/helpers/form_helper.rb, line 1196defpassword_field(object_name,method,options= {})Tags::PasswordField.new(object_name,method,self,options).renderendphone_field(object_name, method, options = {})Linkaliasestelephone_fieldAlias for:telephone_fieldradio_button(object_name, method, tag_value, options = {})LinkReturns a radio button tag for accessing a specified attribute (identified bymethod) on an object assigned to the template (identified byobject). If the current value ofmethodistag_valuethe radio button will be checked.To force the radio button to be checked passchecked: truein theoptionshash. You may pass HTML options there as well.# Let's say that @article.category returns "rails":
+radio_button("article", "category", "rails")
+radio_button("article", "category", "java")
+# => <input type="radio" id="article_category_rails" name="article[category]" value="rails" checked="checked" />
+#    <input type="radio" id="article_category_java" name="article[category]" value="java" />
+
+# Let's say that @user.receive_newsletter returns "no":
+radio_button("user", "receive_newsletter", "yes")
+radio_button("user", "receive_newsletter", "no")
+# => <input type="radio" id="user_receive_newsletter_yes" name="user[receive_newsletter]" value="yes" />
+#    <input type="radio" id="user_receive_newsletter_no" name="user[receive_newsletter]" value="no" checked="checked" />Source:show|on GitHub# File actionview/lib/action_view/helpers/form_helper.rb, line 1367defradio_button(object_name,method,tag_value,options= {})Tags::RadioButton.new(object_name,method,self,tag_value,options).renderendrange_field(object_name, method, options = {})LinkReturns an input tag of type ârangeâ.OptionsSupports the same options asFormTagHelper#range_field_tag.Source:show|on GitHub# File actionview/lib/action_view/helpers/form_helper.rb, line 1584defrange_field(object_name,method,options= {})Tags::RangeField.new(object_name,method,self,options).renderendrich_text_area(object_name, method, options = {})LinkReturns atrix-editortag that instantiates the Trix JavaScript editor as well as a hidden field that Trix will write to on changes, so the content will be sent on form submissions.Options:class- Defaults to âtrix-contentâ which ensures default styling is applied.:value- Adds a default value to the HTML input tag.[:data][:direct_upload_url]- Defaults torails_direct_uploads_url.[:data][:blob_url_template]- Defaults torails_service_blob_url(":signed_id", ":filename").Examplerich_text_area :message, :content
+# <input type="hidden" name="message[content]" id="message_content_trix_input_message_1">
+# <trix-editor id="content" input="message_content_trix_input_message_1" class="trix-content" ...></trix-editor>
+
+rich_text_area :message, :content, value: "<h1>Default message</h1>"
+# <input type="hidden" name="message[content]" id="message_content_trix_input_message_1" value="<h1>Default message</h1>">
+# <trix-editor id="content" input="message_content_trix_input_message_1" class="trix-content" ...></trix-editor>Source:show|on GitHub# File actiontext/app/helpers/action_text/tag_helper.rb, line 86defrich_text_area(object_name,method,options= {})Tags::ActionText.new(object_name,method,self,options).renderendsearch_field(object_name, method, options = {})LinkReturns an input of type âsearchâ for accessing a specified attribute (identified bymethod) on an object assigned to the template (identified byobject_name). Inputs of type âsearchâ may be styled differently by some browsers.search_field(:user, :name)
+# => <input id="user_name" name="user[name]" type="search" />
+search_field(:user, :name, autosave: false)
+# => <input autosave="false" id="user_name" name="user[name]" type="search" />
+search_field(:user, :name, results: 3)
+# => <input id="user_name" name="user[name]" results="3" type="search" />
+#  Assume request.host returns "www.example.com"
+search_field(:user, :name, autosave: true)
+# => <input autosave="com.example.www" id="user_name" name="user[name]" results="10" type="search" />
+search_field(:user, :name, onsearch: true)
+# => <input id="user_name" incremental="true" name="user[name]" onsearch="true" type="search" />
+search_field(:user, :name, autosave: false, onsearch: true)
+# => <input autosave="false" id="user_name" incremental="true" name="user[name]" onsearch="true" type="search" />
+search_field(:user, :name, autosave: true, onsearch: true)
+# => <input autosave="com.example.www" id="user_name" incremental="true" name="user[name]" onsearch="true" results="10" type="search" />Source:show|on GitHub# File actionview/lib/action_view/helpers/form_helper.rb, line 1398defsearch_field(object_name,method,options= {})Tags::SearchField.new(object_name,method,self,options).renderendtelephone_field(object_name, method, options = {})LinkReturns atext_fieldof type âtelâ.telephone_field("user", "phone")
+# => <input id="user_phone" name="user[phone]" type="tel" />Also aliased as:phone_fieldSource:show|on GitHub# File actionview/lib/action_view/helpers/form_helper.rb, line 1407deftelephone_field(object_name,method,options= {})Tags::TelField.new(object_name,method,self,options).renderendtext_area(object_name, method, options = {})LinkReturns a textarea opening and closing tag set tailored for accessing a specified attribute (identified bymethod) on an object assigned to the template (identified byobject). Additional options on the input tag can be passed as a hash withoptions.Examplestext_area(:article, :body, cols: 20, rows: 40)
+# => <textarea cols="20" rows="40" id="article_body" name="article[body]">
+#      #{@article.body}
+#    </textarea>
+
+text_area(:comment, :text, size: "20x30")
+# => <textarea cols="20" rows="30" id="comment_text" name="comment[text]">
+#      #{@comment.text}
+#    </textarea>
+
+text_area(:application, :notes, cols: 40, rows: 15, class: 'app_input')
+# => <textarea cols="40" rows="15" id="application_notes" name="application[notes]" class="app_input">
+#      #{@application.notes}
+#    </textarea>
+
+text_area(:entry, :body, size: "20x20", disabled: 'disabled')
+# => <textarea cols="20" rows="20" id="entry_body" name="entry[body]" disabled="disabled">
+#      #{@entry.body}
+#    </textarea>Source:show|on GitHub# File actionview/lib/action_view/helpers/form_helper.rb, line 1277deftext_area(object_name,method,options= {})Tags::TextArea.new(object_name,method,self,options).renderendtext_field(object_name, method, options = {})LinkReturns an input tag of the âtextâ type tailored for accessing a specified attribute (identified bymethod) on an object assigned to the template (identified byobject). Additional options on the input tag can be passed as a hash withoptions. These options will be tagged onto the HTML as an HTML element attribute as in the example shown.Examplestext_field(:article, :title, size: 20)
+# => <input type="text" id="article_title" name="article[title]" size="20" value="#{@article.title}" />
+
+text_field(:article, :title, class: "create_input")
+# => <input type="text" id="article_title" name="article[title]" value="#{@article.title}" class="create_input" />
+
+text_field(:article, :title,  maxlength: 30, class: "title_input")
+# => <input type="text" id="article_title" name="article[title]" maxlength="30" size="30" value="#{@article.title}" class="title_input" />
+
+text_field(:session, :user, onchange: "if ($('#session_user').val() === 'admin') { alert('Your login cannot be admin!'); }")
+# => <input type="text" id="session_user" name="session[user]" value="#{@session.user}" onchange="if ($('#session_user').val() === 'admin') { alert('Your login cannot be admin!'); }"/>
+
+text_field(:snippet, :code, size: 20, class: 'code_input')
+# => <input type="text" id="snippet_code" name="snippet[code]" size="20" value="#{@snippet.code}" class="code_input" />Source:show|on GitHub# File actionview/lib/action_view/helpers/form_helper.rb, line 1175deftext_field(object_name,method,options= {})Tags::TextField.new(object_name,method,self,options).renderendtime_field(object_name, method, options = {})LinkReturns atext_fieldof type âtimeâ.The default value is generated by trying to callstrftimewith â%T.%Lâ on the objectâs value. If you passinclude_seconds: false, it will be formatted by trying to callstrftimewith â%H:%Mâ on the objectâs value. It is also possible to override this by passing the âvalueâ option.OptionsSupports the same options asFormTagHelper#time_field_tag.Examplestime_field("task", "started_at")
+# => <input id="task_started_at" name="task[started_at]" type="time" />You can create values for the âminâ and âmaxâ attributes by passing instances ofDateorTimeto the options hash.time_field("task", "started_at", min: Time.now)
+# => <input id="task_started_at" name="task[started_at]" type="time" min="01:00:00.000" />Alternatively, you can pass aStringformatted as an ISO8601 time as the values for âminâ and âmax.âtime_field("task", "started_at", min: "01:00:00")
+# => <input id="task_started_at" name="task[started_at]" type="time" min="01:00:00.000" />By default, provided times will be formatted including seconds. You can render just the hour and minute by passinginclude_seconds: false. Some browsers will render a simpler UI if you exclude seconds in the timestamp format.time_field("task", "started_at", value: Time.now, include_seconds: false)
+# => <input id="task_started_at" name="task[started_at]" type="time" value="01:00" />Source:show|on GitHub# File actionview/lib/action_view/helpers/form_helper.rb, line 1477deftime_field(object_name,method,options= {})Tags::TimeField.new(object_name,method,self,options).renderendurl_field(object_name, method, options = {})LinkReturns atext_fieldof type âurlâ.url_field("user", "homepage")
+# => <input id="user_homepage" name="user[homepage]" type="url" />Source:show|on GitHub# File actionview/lib/action_view/helpers/form_helper.rb, line 1557defurl_field(object_name,method,options= {})Tags::UrlField.new(object_name,method,self,options).renderendweek_field(object_name, method, options = {})LinkReturns atext_fieldof type âweekâ.week_field("user", "born_on")
+# => <input id="user_born_on" name="user[born_on]" type="week" />The default value is generated by trying to callstrftimewith â%Y-W%Wâ on the objectâs value, which makes it behave as expected for instances ofDateTimeandActiveSupport::TimeWithZone.@user.born_on = Date.new(1984, 5, 12)
+week_field("user", "born_on")
+# => <input id="user_born_on" name="user[born_on]" type="date" value="1984-W19" />Source:show|on GitHub# File actionview/lib/action_view/helpers/form_helper.rb, line 1548defweek_field(object_name,method,options= {})Tags::WeekField.new(object_name,method,self,options).renderend

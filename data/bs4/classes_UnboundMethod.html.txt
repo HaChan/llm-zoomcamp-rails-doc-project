@@ -1,0 +1,2 @@
+MethodsDduplicable?Instance Public methodsduplicable?()LinkUnbound methods are not duplicable:method(:puts).unbind.duplicable? # => false
+method(:puts).unbind.dup         # => TypeError: allocator undefined for UnboundMethodSource:show|on GitHub# File activesupport/lib/active_support/core_ext/object/duplicable.rb, line 54defduplicable?falseend

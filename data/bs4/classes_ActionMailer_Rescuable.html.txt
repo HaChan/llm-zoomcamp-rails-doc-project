@@ -1,0 +1,1 @@
+Action Mailer RescuableProvidesrescue_fromfor mailers. Wraps mailer action processing, mail job processing, and mail delivery to handle configured errors.Included ModulesActiveSupport::Rescuable

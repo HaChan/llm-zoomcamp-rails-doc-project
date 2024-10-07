@@ -1,0 +1,1 @@
+MethodsNnewClass Public methodsnew(fixture, model_class)LinkSource:show|on GitHub# File activerecord/lib/active_record/encryption/encrypted_fixtures.rb, line 6definitialize(fixture,model_class)@clean_values= {}encrypt_fixture_data(fixture,model_class)process_preserved_original_columns(fixture,model_class)superend

@@ -1,0 +1,6 @@
+Active Model Validation CallbacksProvides an interface for any class to haveClassMethods#before_validationandClassMethods#after_validationcallbacks.First, includeActiveModel::Validations::Callbacksfrom the class you are creating:class MyModel
+  include ActiveModel::Validations::Callbacks
+
+  before_validation :do_stuff_before_validation
+  after_validation  :do_stuff_after_validation
+endLike otherbefore_*callbacks ifbefore_validationthrows:abortthenvalid?will not be called.NamespaceMODULEActiveModel::Validations::Callbacks::ClassMethodsIncluded ModulesActiveSupport::Callbacks

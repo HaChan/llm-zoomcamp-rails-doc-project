@@ -1,0 +1,13 @@
+MethodsMmonth,months,multiple_of?Oordinal,ordinalizeYyear,yearsInstance Public methodsmonth()LinkAlias for:monthsmonths()LinkReturns a Duration instance matching the number of months provided.2.months # => 2 monthsAlso aliased as:monthSource:show|on GitHub# File activesupport/lib/active_support/core_ext/integer/time.rb, line 10defmonthsActiveSupport::Duration.months(self)endmultiple_of?(number)LinkCheck whether the integer is evenly divisible by the argument.0.multiple_of?(0)  # => true
+6.multiple_of?(5)  # => false
+10.multiple_of?(2) # => trueSource:show|on GitHub# File activesupport/lib/active_support/core_ext/integer/multiple.rb, line 9defmultiple_of?(number)number==0?self==0:self%number==0endordinal()LinkOrdinal returns the suffix used to denote the position in an ordered sequence such as 1st, 2nd, 3rd, 4th.1.ordinal     # => "st"
+2.ordinal     # => "nd"
+1002.ordinal  # => "nd"
+1003.ordinal  # => "rd"
+-11.ordinal   # => "th"
+-1001.ordinal # => "st"Source:show|on GitHub# File activesupport/lib/active_support/core_ext/integer/inflections.rb, line 28defordinalActiveSupport::Inflector.ordinal(self)endordinalize()LinkOrdinalize turns a number into an ordinal string used to denote the position in an ordered sequence such as 1st, 2nd, 3rd, 4th.1.ordinalize     # => "1st"
+2.ordinalize     # => "2nd"
+1002.ordinalize  # => "1002nd"
+1003.ordinalize  # => "1003rd"
+-11.ordinalize   # => "-11th"
+-1001.ordinalize # => "-1001st"Source:show|on GitHub# File activesupport/lib/active_support/core_ext/integer/inflections.rb, line 15defordinalizeActiveSupport::Inflector.ordinalize(self)endyear()LinkAlias for:yearsyears()LinkReturns a Duration instance matching the number of years provided.2.years # => 2 yearsAlso aliased as:yearSource:show|on GitHub# File activesupport/lib/active_support/core_ext/integer/time.rb, line 18defyearsActiveSupport::Duration.years(self)end

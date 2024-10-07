@@ -1,0 +1,10 @@
+Active Model Boolean TypeA class that behaves like a boolean type, including rules for coercion of user input."false","f","0",0or any other value inFALSE_VALUESwill be coerced tofalse.Empty strings are coerced tonil.All other values will be coerced totrue.ConstantsFALSE_VALUES=[
+false, 0,
+"0", :"0",
+"f", :f,
+"F", :F,
+"false", :false,
+"FALSE", :FALSE,
+"off", :off,
+"OFF", :OFF,
+].to_set.freeze

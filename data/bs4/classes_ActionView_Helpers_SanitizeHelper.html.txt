@@ -1,0 +1,37 @@
+Action View Sanitize HelpersTheSanitizeHelpermodule provides a set of methods for scrubbing text of undesired HTML elements. These helper methods extend Action View making them callable within your template files.MethodsSsanitize,sanitize_css,strip_links,strip_tagsInstance Public methodssanitize(html, options = {})LinkSanitizes HTML input, stripping all but known-safe tags and attributes.It also stripshref/srcattributes with unsafe protocols likejavascript:, while also protecting against attempts to use Unicode, ASCII, and hex character references to work around these protocol filters.The default sanitizer isRails::HTML5::SafeListSanitizer. SeeRails HTML Sanitizersfor more information.Custom sanitization rules can also be provided.Please note that sanitizing user-provided text does not guarantee that the resulting markup is valid or even well-formed.Options:tagsAn array of allowed tags.:attributesAn array of allowed attributes.:scrubberARails::HTML scrubberorLoofah::Scrubberobject that defines custom sanitization rules. A custom scrubber takes precedence over custom tags and attributes.ExamplesNormal use<%= sanitize @comment.body %>Providing custom lists of permitted tags and attributes<%= sanitize @comment.body, tags: %w(strong em a), attributes: %w(href) %>Providing a customRails::HTMLscrubberclass CommentScrubber < Rails::HTML::PermitScrubber
+  def initialize
+    super
+    self.tags = %w( form script comment blockquote )
+    self.attributes = %w( style )
+  end
+
+  def skip_node?(node)
+    node.text?
+  end
+end<%= sanitize @comment.body, scrubber: CommentScrubber.new %>SeeRails HTML Sanitizerfor documentation aboutRails::HTMLscrubbers.Providing a customLoofah::Scrubberscrubber = Loofah::Scrubber.new do |node|
+  node.remove if node.name == 'script'
+end<%= sanitize @comment.body, scrubber: scrubber %>SeeLoofahâs documentationfor more information about defining customLoofah::Scrubberobjects.Global ConfigurationTo set the default allowed tags or attributes across your application:# In config/application.rb
+config.action_view.sanitized_allowed_tags = ['strong', 'em', 'a']
+config.action_view.sanitized_allowed_attributes = ['href', 'title']The default, starting in Rails 7.1, is to use an HTML5 parser for sanitization (if it is available, see NOTE below). If you wish to revert back to the previous HTML4 behavior, you can do so by setting the following in your application configuration:# In config/application.rb
+config.action_view.sanitizer_vendor = Rails::HTML4::SanitizerOr, if youâre upgrading from a previous version of Rails and wish to opt into the HTML5 behavior:# In config/application.rb
+config.action_view.sanitizer_vendor = Rails::HTML5::SanitizerNOTE:Rails::HTML5::Sanitizeris not supported on JRuby, so on JRuby platforms Rails will fall back to usingRails::HTML4::Sanitizer.Source:show|on GitHub# File actionview/lib/action_view/helpers/sanitize_helper.rb, line 111defsanitize(html,options= {})self.class.safe_list_sanitizer.sanitize(html,options)&.html_safeendsanitize_css(style)LinkSanitizes a block of CSS code. Used bysanitizewhen it comes across a style attribute.Source:show|on GitHub# File actionview/lib/action_view/helpers/sanitize_helper.rb, line 116defsanitize_css(style)self.class.safe_list_sanitizer.sanitize_css(style)endstrip_links(html)LinkStrips all link tags fromhtmlleaving just the link text.strip_links('<a href="http://www.rubyonrails.org">Ruby on Rails</a>')
+# => Ruby on Rails
+
+strip_links('Please e-mail me at <a href="mailto:me@email.com">me@email.com</a>.')
+# => Please e-mail me at me@email.com.
+
+strip_links('Blog: <a href="http://www.myblog.com/" class="nav" target=\"_blank\">Visit</a>.')
+# => Blog: Visit.
+
+strip_links('<<a href="https://example.org">malformed & link</a>')
+# => &lt;malformed &amp; linkSource:show|on GitHub# File actionview/lib/action_view/helpers/sanitize_helper.rb, line 150defstrip_links(html)self.class.link_sanitizer.sanitize(html)endstrip_tags(html)LinkStrips all HTML tags fromhtml, including comments and special characters.strip_tags("Strip <i>these</i> tags!")
+# => Strip these tags!
+
+strip_tags("<b>Bold</b> no more!  <a href='more.html'>See more here</a>...")
+# => Bold no more!  See more here...
+
+strip_tags("<div id='top-bar'>Welcome to my website!</div>")
+# => Welcome to my website!
+
+strip_tags("> A quote from Smith & Wesson")
+# => &gt; A quote from Smith &amp; WessonSource:show|on GitHub# File actionview/lib/action_view/helpers/sanitize_helper.rb, line 133defstrip_tags(html)self.class.full_sanitizer.sanitize(html)&.html_safeend

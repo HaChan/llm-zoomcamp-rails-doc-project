@@ -1,0 +1,1 @@
+An encryptor that can encrypt data but canât decrypt it.MethodsDdecryptInstance Public methodsdecrypt(encrypted_text, key_provider: nil, cipher_options: {})LinkSource:show|on GitHub# File activerecord/lib/active_record/encryption/encrypting_only_encryptor.rb, line 7defdecrypt(encrypted_text,key_provider:nil,cipher_options:{})encrypted_textend

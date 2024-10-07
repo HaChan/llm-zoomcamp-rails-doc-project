@@ -1,0 +1,4 @@
+Active Record No TouchingNamespaceMODULEActiveRecord::NoTouching::ClassMethodsMethodsNno_touching?Instance Public methodsno_touching?()LinkReturnstrueif the class hasno_touchingset,falseotherwise.Project.no_touching do
+  Project.first.no_touching? # true
+  Message.first.no_touching? # false
+endSource:show|on GitHub# File activerecord/lib/active_record/no_touching.rb, line 53defno_touching?NoTouching.applied_to?(self.class)end

@@ -1,0 +1,34 @@
+MethodsAalias_attribute,alias_attribute_method_definition,attribute_method?,attribute_namesDdangerous_class_method?Hhas_attribute?Iinstance_method_already_implemented?Instance Public methodsalias_attribute(new_name, old_name)LinkAllows you to make aliases for attributes.class Person < ActiveRecord::Base
+  alias_attribute :nickname, :name
+end
+
+person = Person.create(name: 'Bob')
+person.name     # => "Bob"
+person.nickname # => "Bob"The alias can also be used for querying:Person.where(nickname: "Bob")
+# SELECT "people".* FROM "people" WHERE "people"."name" = "Bob"Source:show|on GitHub# File activerecord/lib/active_record/attribute_methods.rb, line 66defalias_attribute(new_name,old_name)superif@alias_attributes_mass_generatedActiveSupport::CodeGenerator.batch(generated_attribute_methods,__FILE__,__LINE__)do|code_generator|generate_alias_attribute_methods(code_generator,new_name,old_name)endendendalias_attribute_method_definition(code_generator, pattern, new_name, old_name)LinkSource:show|on GitHub# File activerecord/lib/active_record/attribute_methods.rb, line 87defalias_attribute_method_definition(code_generator,pattern,new_name,old_name)old_name=old_name.to_sif!abstract_class?&&!has_attribute?(old_name)raiseArgumentError,"#{self.name} model aliases `#{old_name}`, but `#{old_name}` is not an attribute. "\"Use `alias_method :#{new_name}, :#{old_name}` or define the method manually."elsedefine_attribute_method_pattern(pattern,old_name,owner:code_generator,as:new_name,override:true)endendattribute_method?(attribute)LinkReturnstrueifattributeis an attribute method and table exists,falseotherwise.class Person < ActiveRecord::Base
+end
+
+Person.attribute_method?('name')   # => true
+Person.attribute_method?(:age=)    # => true
+Person.attribute_method?(:nothing) # => falseSource:show|on GitHub# File activerecord/lib/active_record/attribute_methods.rb, line 223defattribute_method?(attribute)super||(table_exists?&&column_names.include?(attribute.to_s.delete_suffix("=")))endattribute_names()LinkReturns an array of column names as strings if itâs not an abstract class and table exists. Otherwise it returns an empty array.class Person < ActiveRecord::Base
+end
+
+Person.attribute_names
+# => ["id", "created_at", "updated_at", "name", "age"]Source:show|on GitHub# File activerecord/lib/active_record/attribute_methods.rb, line 235defattribute_names@attribute_names||=if!abstract_class?&&table_exists?attribute_types.keyselse[]end.freezeenddangerous_class_method?(method_name)LinkA class method is âdangerousâ if it is already (re)defined by Active Record, but not by any ancestors. (So âputsâ is not dangerous but ânewâ is.)Source:show|on GitHub# File activerecord/lib/active_record/attribute_methods.rb, line 200defdangerous_class_method?(method_name)returntrueifRESTRICTED_CLASS_METHODS.include?(method_name.to_s)ifBase.respond_to?(method_name,true)ifObject.respond_to?(method_name,true)Base.method(method_name).owner!=Object.method(method_name).ownerelsetrueendelsefalseendendhas_attribute?(attr_name)LinkReturns true if the given attribute exists, otherwise false.class Person < ActiveRecord::Base
+  alias_attribute :new_name, :name
+end
+
+Person.has_attribute?('name')     # => true
+Person.has_attribute?('new_name') # => true
+Person.has_attribute?(:age)       # => true
+Person.has_attribute?(:nothing)   # => falseSource:show|on GitHub# File activerecord/lib/active_record/attribute_methods.rb, line 253defhas_attribute?(attr_name)attr_name=attr_name.to_sattr_name=attribute_aliases[attr_name]||attr_nameattribute_types.key?(attr_name)endinstance_method_already_implemented?(method_name)LinkRaises anActiveRecord::DangerousAttributeErrorexception when an Active Record method is defined in the model, otherwisefalse.class Person < ActiveRecord::Base
+  def save
+    'already defined by Active Record'
+  end
+end
+
+Person.instance_method_already_implemented?(:save)
+# => ActiveRecord::DangerousAttributeError: save is defined by Active Record. Check to make sure that you don't have an attribute or method with the same name.
+
+Person.instance_method_already_implemented?(:name)
+# => falseSource:show|on GitHub# File activerecord/lib/active_record/attribute_methods.rb, line 164definstance_method_already_implemented?(method_name)ifdangerous_attribute_method?(method_name)raiseDangerousAttributeError,"#{method_name} is defined by Active Record. Check to make sure that you don't have an attribute or method with the same name."endifsuperclass==Basesuperelse# If ThisClass < ... < SomeSuperClass < ... < Base and SomeSuperClass# defines its own attribute method, then we don't want to override that.defined=method_defined_within?(method_name,superclass,Base)&&!superclass.instance_method(method_name).owner.is_a?(GeneratedAttributeMethods)defined||superendend

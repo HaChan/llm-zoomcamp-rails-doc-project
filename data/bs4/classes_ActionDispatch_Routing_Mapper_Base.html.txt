@@ -1,0 +1,67 @@
+MethodsDdefault_url_options,default_url_options=Hhas_named_route?Mmatch,mountWwith_default_scopeInstance Public methodsdefault_url_options(options)LinkAlias for:default_url_options=default_url_options=(options)LinkAlso aliased as:default_url_optionsSource:show|on GitHub# File actionpack/lib/action_dispatch/routing/mapper.rb, line 662defdefault_url_options=(options)@set.default_url_options=optionsendhas_named_route?(name)LinkQuery if the following named route was already defined.Source:show|on GitHub# File actionpack/lib/action_dispatch/routing/mapper.rb, line 674defhas_named_route?(name)@set.named_routes.key?(name)endmatch(path, options = nil)LinkMatches a URL pattern to one or more routes.You should not use thematchmethod in your router without specifying an HTTP method.If you want to expose your action to both GET and POST, use:# sets :controller, :action, and :id in params
+match ':controller/:action/:id', via: [:get, :post]Note that:controller,:action, and:idare interpreted as URL query parameters and thus available throughparamsin an action.If you want to expose your action to GET, usegetin the router:Instead of:match ":controller/:action/:id"Do:get ":controller/:action/:id"Two of these symbols are special,:controllermaps to the controller and:actionto the controllerâs action. A pattern can also map wildcard segments (globs) to params:get 'songs/*category/:title', to: 'songs#show'
+
+# 'songs/rock/classic/stairway-to-heaven' sets
+#  params[:category] = 'rock/classic'
+#  params[:title] = 'stairway-to-heaven'To match a wildcard parameter, it must have a name assigned to it. Without a variable name to attach the glob parameter to, the route canât be parsed.When a pattern points to an internal route, the routeâs:actionand:controllershould be set in options or hash shorthand. Examples:match 'photos/:id' => 'photos#show', via: :get
+match 'photos/:id', to: 'photos#show', via: :get
+match 'photos/:id', controller: 'photos', action: 'show', via: :getA pattern can also point to aRackendpoint i.e. anything that responds tocall:match 'photos/:id', to: -> (hash) { [200, {}, ["Coming soon"]] }, via: :get
+match 'photos/:id', to: PhotoRackApp, via: :get
+# Yes, controller actions are just rack endpoints
+match 'photos/:id', to: PhotosController.action(:show), via: :getBecause requesting various HTTP verbs with a single action has security implications, you must either specify the actions in the via options or use one of theHttpHelpersinsteadmatchOptionsAny options not seen here are passed on as params with the URL.:controllerThe routeâs controller.:actionThe routeâs action.:paramOverrides the default resource identifier:id(name of the dynamic segment used to generate the routes). You can access that segment from your controller usingparams[<:param>]. In your router:resources :users, param: :name
+
+The `users` resource here will have the following routes generated for it:
+
+    GET       /users(.:format)
+    POST      /users(.:format)
+    GET       /users/new(.:format)
+    GET       /users/:name/edit(.:format)
+    GET       /users/:name(.:format)
+    PATCH/PUT /users/:name(.:format)
+    DELETE    /users/:name(.:format)
+
+You can override `ActiveRecord::Base#to_param` of a related model to
+construct a URL:
+
+    class User < ActiveRecord::Base
+      def to_param
+        name
+      end
+    end
+
+    user = User.find_by(name: 'Phusion')
+    user_path(user)  # => "/users/Phusion":pathThe path prefix for the routes.:moduleThe namespace for :controller.match 'path', to: 'c#a', module: 'sekret', controller: 'posts', via: :get
+    # => Sekret::PostsController
+
+See `Scoping#namespace` for its scope equivalent.:asThe name used to generate routing helpers.:viaAllowed HTTP verb(s) for route.match 'path', to: 'c#a', via: :get
+    match 'path', to: 'c#a', via: [:get, :post]
+    match 'path', to: 'c#a', via: :all:toPoints to aRackendpoint. Can be an object that responds tocallor a string representing a controllerâs action.match 'path', to: 'controller#action', via: :get
+    match 'path', to: -> (env) { [200, {}, ["Success!"]] }, via: :get
+    match 'path', to: RackApp, via: :get:onShorthand for wrapping routes in a specific RESTful context. Valid values are:member,:collection, and:new. Only use withinresource(s)block. For example:resource :bar do
+      match 'foo', to: 'c#a', on: :member, via: [:get, :post]
+    end
+
+Is equivalent to:
+
+    resource :bar do
+      member do
+        match 'foo', to: 'c#a', via: [:get, :post]
+      end
+    end:constraintsConstrains parameters with a hash of regular expressions or an object that responds tomatches?. In addition, constraints other than path can also be specified with any object that responds to===(e.g.String,Array,Range, etc.).match 'path/:id', constraints: { id: /[A-Z]\d{5}/ }, via: :get
+
+    match 'json_only', constraints: { format: 'json' }, via: :get
+
+    class PermitList
+      def matches?(request) request.remote_ip == '1.2.3.4' end
+    end
+    match 'path', to: 'c#a', constraints: PermitList.new, via: :get
+
+See `Scoping#constraints` for more examples with its scope equivalent.:defaultsSets defaults for parameters# Sets params[:format] to 'jpg' by default
+    match 'path', to: 'c#a', defaults: { format: 'jpg' }, via: :get
+
+See `Scoping#defaults` for its scope equivalent.:anchorBoolean to anchor amatchpattern. Default is true. When set to false, the pattern matches any request prefixed with the given path.# Matches any request starting with 'path'
+    match 'path', to: 'c#a', anchor: false, via: :get:formatAllows you to specify the default value for optionalformatsegment or disable it by supplyingfalse.Source:show|on GitHub# File actionpack/lib/action_dispatch/routing/mapper.rb, line 610defmatch(path,options=nil)endmount(app, options = nil)LinkMount a Rack-based application to be used within the application.mount SomeRackApp, at: "some_route"Alternatively:mount(SomeRackApp => "some_route")For options, seematch, asmountuses it internally.All mounted applications come with routing helpers to access them. These are named after the class specified, so for the above example the helper is eithersome_rack_app_pathorsome_rack_app_url. To customize this helperâs name, use the:asoption:mount(SomeRackApp => "some_route", as: "exciting")This will generate theexciting_pathandexciting_urlhelpers which can be used to navigate to this mounted app.Source:show|on GitHub# File actionpack/lib/action_dispatch/routing/mapper.rb, line 632defmount(app,options=nil)ifoptionspath=options.delete(:at)elsifHash===appoptions=appapp,path=options.find{|k,_|k.respond_to?(:call) }options.delete(app)ifappendraiseArgumentError,"A rack application must be specified"unlessapp.respond_to?(:call)raiseArgumentError,<<~MSGunlesspathMust be called with mount point
+
+              mount SomeRackApp, at: "some_route"
+              or
+              mount(SomeRackApp => "some_route")MSGrails_app=rails_app?appoptions[:as]||=app_name(app,rails_app)target_as=name_for_action(options[:as],path)options[:via]||=:allmatch(path, {to:app,anchor:false,format:false}.merge(options))define_generate_prefix(app,target_as)ifrails_appselfendwith_default_scope(scope, &block)LinkSource:show|on GitHub# File actionpack/lib/action_dispatch/routing/mapper.rb, line 667defwith_default_scope(scope,&block)scope(scope)doinstance_exec(&block)endend

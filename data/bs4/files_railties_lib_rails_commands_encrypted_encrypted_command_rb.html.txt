@@ -1,0 +1,1 @@
+Required Filespathnameactive_supportrails/command/helpers/editorrails/generatorsrails/generators/rails/encryption_key_file/encryption_key_file_generatorrails/generatorsrails/generators/rails/encrypted_file/encrypted_file_generatorNamespaceMODULERailsMODULERails::CommandMODULERails::Generators

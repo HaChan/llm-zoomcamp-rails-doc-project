@@ -1,0 +1,3 @@
+Raised when aParametersinstance is not marked as permitted and an operation to transform it to hash is called.params = ActionController::Parameters.new(a: "123", b: "456")
+params.to_h
+# => ActionController::UnfilteredParameters: unable to convert unpermitted parameters to hash

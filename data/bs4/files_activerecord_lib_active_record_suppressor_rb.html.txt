@@ -1,0 +1,1 @@
+NamespaceMODULEActiveRecordMODULEActiveRecord::SuppressorMODULEActiveRecord::Suppressor::ClassMethodsMODULEActiveSupport

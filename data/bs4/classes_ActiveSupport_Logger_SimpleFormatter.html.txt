@@ -1,0 +1,1 @@
+Simple formatter which only displays the message.MethodsCcallInstance Public methodscall(severity, timestamp, progname, msg)LinkThis method is invoked when a log event occursSource:show|on GitHub# File activesupport/lib/active_support/logger.rb, line 41defcall(severity,timestamp,progname,msg)"#{String === msg ? msg : msg.inspect}\n"end

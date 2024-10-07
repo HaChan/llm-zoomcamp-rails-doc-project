@@ -1,0 +1,1 @@
+NamespaceMODULEActiveRecord::ConnectionAdapters::Trilogy::DatabaseStatements

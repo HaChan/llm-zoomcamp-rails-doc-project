@@ -1,0 +1,1 @@
+Required Filesactive_support/core_ext/string/inflectionsNamespaceMODULEActiveJobMODULEActiveJob::QueueAdapterMODULEActiveJob::QueueAdapter::ClassMethods

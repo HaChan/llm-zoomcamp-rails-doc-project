@@ -1,0 +1,1 @@
+MethodsCcloseNnewClass Public methodsnew(*)LinkSource:show|on GitHub# File activesupport/lib/active_support/gzip.rb, line 19definitialize(*)superset_encoding"BINARY"endInstance Public methodsclose()LinkSource:show|on GitHub# File activesupport/lib/active_support/gzip.rb, line 23defclose;rewind;end

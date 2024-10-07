@@ -1,0 +1,29 @@
+MethodsDdirectRresolveInstance Public methodsdirect(name, options = {}, &block)LinkDefine custom URL helpers that will be added to the applicationâs routes. This allows you to override and/or replace the default behavior of routing helpers, e.g:direct :homepage do
+  "https://rubyonrails.org"
+end
+
+direct :commentable do |model|
+  [ model, anchor: model.dom_id ]
+end
+
+direct :main do
+  { controller: "pages", action: "index", subdomain: "www" }
+endThe return value from the block passed todirectmust be a valid set of arguments forurl_forwhich will actually build the URL string. This can be one of the following:A string, which is treated as a generated URLA hash, e.g.{ controller: "pages", action: "index" }An array, which is passed topolymorphic_urlAn Active Model instanceAn Active Model classNOTE: Other URL helpers can be called in the block but be careful not to invoke your custom URL helper again otherwise it will result in a stack overflow error.You can also specify default options that will be passed through to your URL helper definition, e.g:direct :browse, page: 1, size: 10 do |options|
+  [ :products, options.merge(params.permit(:page, :size).to_h.symbolize_keys) ]
+endIn this instance theparamsobject comes from the context in which the block is executed, e.g. generating a URL inside a controller action or a view. If the block is executed where there isnât aparamsobject such as this:Rails.application.routes.url_helpers.browse_paththen it will raise aNameError. Because of this you need to be aware of the context in which you will use your custom URL helper when defining it.NOTE: Thedirectmethod canât be used inside of a scope block such asnamespaceorscopeand will raise an error if it detects that it is.Source:show|on GitHub# File actionpack/lib/action_dispatch/routing/mapper.rb, line 2193defdirect(name,options= {},&block)unless@scope.root?raiseRuntimeError,"The direct method can't be used inside a routes scope block"end@set.add_url_helper(name,options,&block)endresolve(*args, &block)LinkDefine custom polymorphic mappings of models to URLs. This alters the behavior ofpolymorphic_urland consequently the behavior oflink_toandform_forwhen passed a model instance, e.g:resource :basket
+
+resolve "Basket" do
+  [:basket]
+endThis will now generate â/basketâ when aBasketinstance is passed tolink_toorform_forinstead of the standard â/baskets/:idâ.NOTE: This custom behavior only applies to simple polymorphic URLs where a single model instance is passed and not more complicated forms, e.g:# config/routes.rb
+resource :profile
+namespace :admin do
+  resources :users
+end
+
+resolve("User") { [:profile] }
+
+# app/views/application/_menu.html.erb
+link_to "Profile", @current_user
+link_to "Profile", [:admin, @current_user]The firstlink_towill generate â/profileâ but the second will generate the standard polymorphic URL of â/admin/users/1â.You can pass options to a polymorphic mapping - the arity for the block needs to be two as the instance is passed as the first argument, e.g:resolve "Basket", anchor: "items" do |basket, options|
+  [:basket, options]
+endThis generates the URL â/basket#itemsâ because when the last item in an array passed topolymorphic_urlis a hash then itâs treated as options to the URL helper that gets called.NOTE: Theresolvemethod canât be used inside of a scope block such asnamespaceorscopeand will raise an error if it detects that it is.Source:show|on GitHub# File actionpack/lib/action_dispatch/routing/mapper.rb, line 2245defresolve(*args,&block)unless@scope.root?raiseRuntimeError,"The resolve method can't be used inside a routes scope block"endoptions=args.extract_options!args=args.flatten(1)args.eachdo|klass|@set.add_polymorphic_mapping(klass,options,&block)endend

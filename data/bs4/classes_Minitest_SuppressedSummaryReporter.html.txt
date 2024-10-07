@@ -1,0 +1,1 @@
+MethodsAaggregated_resultsInstance Public methodsaggregated_results(*)LinkDisable extra failure output after a run if output is inline.Source:show|on GitHub# File railties/lib/minitest/rails_plugin.rb, line 23defaggregated_results(*)superunlessoptions[:output_inline]end

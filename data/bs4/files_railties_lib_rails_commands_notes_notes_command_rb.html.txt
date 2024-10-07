@@ -1,0 +1,1 @@
+Required Filesrails/source_annotation_extractorNamespaceMODULERailsMODULERails::Command

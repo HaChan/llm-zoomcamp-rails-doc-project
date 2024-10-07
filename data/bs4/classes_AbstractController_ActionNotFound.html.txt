@@ -1,0 +1,1 @@
+Raised when a non-existing controller action is triggered.

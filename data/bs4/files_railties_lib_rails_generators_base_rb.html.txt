@@ -1,0 +1,1 @@
+Required Filesthor/groupNamespaceMODULERailsMODULERails::GeneratorsCLASSRails::Generators::Base

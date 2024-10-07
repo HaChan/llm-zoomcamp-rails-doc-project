@@ -1,0 +1,1 @@
+MethodsSserializeIncluded ModulesActiveRecord::Type::Internal::TimezoneInstance Public methodsserialize(value)LinkSource:show|on GitHub# File activerecord/lib/active_record/type/time.rb, line 11defserialize(value)casevalue=superwhen::TimeValue.new(value)elsevalueendend

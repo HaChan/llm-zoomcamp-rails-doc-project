@@ -1,0 +1,132 @@
+Active Record MigrationsMigrations can manage the evolution of a schema used by several physical databases. Itâs a solution to the common problem of adding a field to make a new feature work in your local database, but being unsure of how to push that change to other developers and to the production server. With migrations, you can describe the transformations in self-contained classes that can be checked into version control systems and executed against another database that might be one, two, or five versions behind.Example of a simple migration:class AddSsl < ActiveRecord::Migration[7.2]
+  def up
+    add_column :accounts, :ssl_enabled, :boolean, default: true
+  end
+
+  def down
+    remove_column :accounts, :ssl_enabled
+  end
+endThis migration will add a boolean flag to the accounts table and remove it if youâre backing out of the migration. It shows how all migrations have two methodsupanddownthat describes the transformations required to implement or remove the migration. These methods can consist of both the migration specific methods likeadd_columnandremove_column, but may also contain regular Ruby code for generating data needed for the transformations.Example of a more complex migration that also needs to initialize data:class AddSystemSettings < ActiveRecord::Migration[7.2]
+  def up
+    create_table :system_settings do |t|
+      t.string  :name
+      t.string  :label
+      t.text    :value
+      t.string  :type
+      t.integer :position
+    end
+
+    SystemSetting.create  name:  'notice',
+                          label: 'Use notice?',
+                          value: 1
+  end
+
+  def down
+    drop_table :system_settings
+  end
+endThis migration first adds thesystem_settingstable, then creates the very first row in it using the Active Record model that relies on the table. It also uses the more advancedcreate_tablesyntax where you can specify a complete table schema in one block call.Available transformationsCreationcreate_join_table(table_1, table_2, options): Creates a join table having its name as the lexical order of the first two arguments. SeeActiveRecord::ConnectionAdapters::SchemaStatements#create_join_tablefor details.create_table(name, options): Creates a table callednameand makes the table object available to a block that can then add columns to it, following the same format asadd_column. See example above. The options hash is for fragments like âDEFAULT CHARSET=UTF-8â that are appended to the create table definition.add_column(table_name, column_name, type, options): Adds a new column to the table calledtable_namenamedcolumn_namespecified to be one of the following types::string,:text,:integer,:float,:decimal,:datetime,:timestamp,:time,:date,:binary,:boolean. A default value can be specified by passing anoptionshash like{ default: 11 }. Other options include:limitand:null(e.g.{ limit: 50, null: false }) â seeActiveRecord::ConnectionAdapters::TableDefinition#columnfor details.add_foreign_key(from_table, to_table, options): Adds a new foreign key.from_tableis the table with the key column,to_tablecontains the referenced primary key.add_index(table_name, column_names, options): Adds a new index with the name of the column. Other options include:name,:unique(e.g.{ name: 'users_name_index', unique: true }) and:order(e.g.{ order: { name: :desc } }).add_reference(:table_name, :reference_name): Adds a new columnreference_name_idby default an integer. SeeActiveRecord::ConnectionAdapters::SchemaStatements#add_referencefor details.add_timestamps(table_name, options): Adds timestamps (created_atandupdated_at) columns totable_name.Modificationchange_column(table_name, column_name, type, options):  Changes the column to a different type using the same parameters as add_column.change_column_default(table_name, column_name, default_or_changes): Sets a default value forcolumn_namedefined bydefault_or_changesontable_name. Passing a hash containing:fromand:toasdefault_or_changeswill make this change reversible in the migration.change_column_null(table_name, column_name, null, default = nil): Sets or removes aNOT NULLconstraint oncolumn_name. Thenullflag indicates whether the value can beNULL. SeeActiveRecord::ConnectionAdapters::SchemaStatements#change_column_nullfor details.change_table(name, options): Allows to make column alterations to the table calledname. It makes the table object available to a block that can then add/remove columns, indexes, or foreign keys to it.rename_column(table_name, column_name, new_column_name): Renames a column but keeps the type and content.rename_index(table_name, old_name, new_name): Renames an index.rename_table(old_name, new_name): Renames the table calledold_nametonew_name.Deletiondrop_table(name): Drops the table calledname.drop_join_table(table_1, table_2, options): Drops the join table specified by the given arguments.remove_column(table_name, column_name, type, options): Removes the column namedcolumn_namefrom the table calledtable_name.remove_columns(table_name, *column_names): Removes the given columns from the table definition.remove_foreign_key(from_table, to_table = nil, **options): Removes the given foreign key from the table calledtable_name.remove_index(table_name, column: column_names): Removes the index specified bycolumn_names.remove_index(table_name, name: index_name): Removes the index specified byindex_name.remove_reference(table_name, ref_name, options): Removes the reference(s) ontable_namespecified byref_name.remove_timestamps(table_name, options): Removes the timestamp columns (created_atandupdated_at) from the table definition.Irreversible transformationsSome transformations are destructive in a manner that cannot be reversed. Migrations of that kind should raise anActiveRecord::IrreversibleMigrationexception in theirdownmethod.Running migrations from within RailsThe Rails package has several tools to help create and apply migrations.To generate a new migration, you can use$ bin/rails generate migration MyNewMigrationwhere MyNewMigration is the name of your migration. The generator will create an empty migration filetimestamp_my_new_migration.rbin thedb/migrate/directory wheretimestampis the UTC formatted date and time that the migration was generated.There is a special syntactic shortcut to generate migrations that add fields to a table.$ bin/rails generate migration add_fieldname_to_tablename fieldname:stringThis will generate the filetimestamp_add_fieldname_to_tablename.rb, which will look like this:class AddFieldnameToTablename < ActiveRecord::Migration[7.2]
+  def change
+    add_column :tablenames, :fieldname, :string
+  end
+endTo run migrations against the currently configured database, usebin/rails db:migrate. This will update the database by running all of the pending migrations, creating theschema_migrationstable (see âAbout the schema_migrations tableâ section below) if missing. It will also invoke the db:schema:dump command, which will update your db/schema.rb file to match the structure of your database.To roll the database back to a previous migration version, usebin/rails db:rollback VERSION=XwhereXis the version to which you wish to downgrade. Alternatively, you can also use the STEP option if you wish to rollback last few migrations.bin/rails db:rollback STEP=2will rollback the latest two migrations.If any of the migrations throw anActiveRecord::IrreversibleMigrationexception, that step will fail and youâll have some manual work to do.More examplesNot all migrations change the schema. Some just fix the data:class RemoveEmptyTags < ActiveRecord::Migration[7.2]
+  def up
+    Tag.all.each { |tag| tag.destroy if tag.pages.empty? }
+  end
+
+  def down
+    # not much we can do to restore deleted data
+    raise ActiveRecord::IrreversibleMigration, "Can't recover the deleted tags"
+  end
+endOthers remove columns when they migrate up instead of down:class RemoveUnnecessaryItemAttributes < ActiveRecord::Migration[7.2]
+  def up
+    remove_column :items, :incomplete_items_count
+    remove_column :items, :completed_items_count
+  end
+
+  def down
+    add_column :items, :incomplete_items_count
+    add_column :items, :completed_items_count
+  end
+endAnd sometimes you need to do something in SQL not abstracted directly by migrations:class MakeJoinUnique < ActiveRecord::Migration[7.2]
+  def up
+    execute "ALTER TABLE `pages_linked_pages` ADD UNIQUE `page_id_linked_page_id` (`page_id`,`linked_page_id`)"
+  end
+
+  def down
+    execute "ALTER TABLE `pages_linked_pages` DROP INDEX `page_id_linked_page_id`"
+  end
+endUsing a model after changing its tableSometimes youâll want to add a column in a migration and populate it immediately after. In that case, youâll need to make a call toBase#reset_column_informationin order to ensure that the model has the latest column data from after the new column was added. Example:class AddPeopleSalary < ActiveRecord::Migration[7.2]
+  def up
+    add_column :people, :salary, :integer
+    Person.reset_column_information
+    Person.all.each do |p|
+      p.update_attribute :salary, SalaryCalculator.compute(p)
+    end
+  end
+endControlling verbosityBy default, migrations will describe the actions they are taking, writing them to the console as they happen, along with benchmarks describing how long each step took.You can quiet them down by settingActiveRecord::Migration.verbose = false.You can also insert your own messages and benchmarks by using thesay_with_timemethod:def up
+  ...
+  say_with_time "Updating salaries..." do
+    Person.all.each do |p|
+      p.update_attribute :salary, SalaryCalculator.compute(p)
+    end
+  end
+  ...
+endThe phrase âUpdating salariesâ¦â would then be printed, along with the benchmark for the block when the block completes.Timestamped MigrationsBy default, Rails generates migrations that look like:20080717013526_your_migration_name.rbThe prefix is a generation timestamp (in UTC). Timestamps should not be modified manually. To validate that migration timestamps adhere to the format Active Record expects, you can use the following configuration option:config.active_record.validate_migration_timestamps = trueIf youâd prefer to use numeric prefixes, you can turn timestamped migrations off by setting:config.active_record.timestamped_migrations = falseIn application.rb.Reversible MigrationsReversible migrations are migrations that know how to godownfor you. You simply supply theuplogic, and theMigrationsystem figures out how to execute the down commands for you.To define a reversible migration, define thechangemethod in your migration like this:class TenderloveMigration < ActiveRecord::Migration[7.2]
+  def change
+    create_table(:horses) do |t|
+      t.column :content, :text
+      t.column :remind_at, :datetime
+    end
+  end
+endThis migration will create the horses table for you on the way up, and automatically figure out how to drop the table on the way down.Some commands cannot be reversed. If you care to define how to move up and down in these cases, you should define theupanddownmethods as before.If a command cannot be reversed, anActiveRecord::IrreversibleMigrationexception will be raised when the migration is moving down.For a list of commands that are reversible, please seeActiveRecord::Migration::CommandRecorder.Transactional MigrationsIf the database adapter supports DDL transactions, all migrations will automatically be wrapped in a transaction. There are queries that you canât execute inside a transaction though, and for these situations you can turn the automatic transactions off.class ChangeEnum < ActiveRecord::Migration[7.2]
+  disable_ddl_transaction!
+
+  def up
+    execute "ALTER TYPE model_size ADD VALUE 'new_value'"
+  end
+endRemember that you can still open your own transactions, even if you are in aMigrationwithself.disable_ddl_transaction!.NamespaceMODULEActiveRecord::Migration::CompatibilityCLASSActiveRecord::Migration::CheckPendingCLASSActiveRecord::Migration::CommandRecorderMethods#[]AannounceCcheck_all_pending!,connection,connection_pool,copy,current_versionDdisable_ddl_transaction!,downEexec_migration,execution_strategyLload_schema_if_pending!Mmethod_missing,migrate,migrateNnew,next_migration_numberPproper_table_nameRreversible,revert,reverting?,runSsay,say_with_time,suppress_messagesUup,up_onlyVverboseWwriteAttributes[RW]name[RW]versionClass Public methods[](version)LinkSource:show|on GitHub# File activerecord/lib/active_record/migration.rb, line 632defself.[](version)Compatibility.find(version)endcheck_all_pending!()LinkRaises ActiveRecord::PendingMigrationError error if any migrations are pending for all database configurations in an environment.Source:show|on GitHub# File activerecord/lib/active_record/migration.rb, line 700defcheck_all_pending!pending_migrations= []ActiveRecord::Tasks::DatabaseTasks.with_temporary_pool_for_each(env:env)do|pool|ifpending=pool.migration_context.open.pending_migrationspending_migrations<<pendingendendmigrations=pending_migrations.flattenifmigrations.any?raiseActiveRecord::PendingMigrationError.new(pending_migrations:migrations)endendcurrent_version()LinkSource:show|on GitHub# File activerecord/lib/active_record/migration.rb, line 636defself.current_versionActiveRecord::VERSION::STRING.to_fenddisable_ddl_transaction!()LinkDisable the transaction wrapping this migration. You can still create your own transactions even after calling disable_ddl_transaction!For more details read theâTransactional Migrationsâ section above.Source:show|on GitHub# File activerecord/lib/active_record/migration.rb, line 748defdisable_ddl_transaction!@disable_ddl_transaction=trueendload_schema_if_pending!()LinkSource:show|on GitHub# File activerecord/lib/active_record/migration.rb, line 716defload_schema_if_pending!ifany_schema_needs_update?# Roundtrip to Rake to allow plugins to hook into database initialization.root=defined?(ENGINE_ROOT)?ENGINE_ROOT:Rails.rootFileUtils.cd(root)doBase.connection_handler.clear_all_connections!(:all)system("bin/rails db:test:prepare")endendcheck_pending_migrationsendmigrate(direction)LinkSource:show|on GitHub# File activerecord/lib/active_record/migration.rb, line 740defmigrate(direction)new.migratedirectionendnew(name = self.class.name, version = nil)LinkSource:show|on GitHub# File activerecord/lib/active_record/migration.rb, line 803definitialize(name=self.class.name,version=nil)@name=name@version=version@connection=nil@pool=nilendverboseLinkSpecifies if migrations will write the actions they are taking to the console as they happen, along with benchmarks describing how long each step took. Defaults to true.Source:show|on GitHub# File activerecord/lib/active_record/migration.rb, line 800cattr_accessor:verboseInstance Public methodsannounce(message)LinkSource:show|on GitHub# File activerecord/lib/active_record/migration.rb, line 1008defannounce(message)text="#{version} #{name}: #{message}"length= [0,75-text.length].maxwrite"== %s %s"%[text,"="*length]endconnection()LinkSource:show|on GitHub# File activerecord/lib/active_record/migration.rb, line 1039defconnection@connection||ActiveRecord::Tasks::DatabaseTasks.migration_connectionendconnection_pool()LinkSource:show|on GitHub# File activerecord/lib/active_record/migration.rb, line 1043defconnection_pool@pool||ActiveRecord::Tasks::DatabaseTasks.migration_connection_poolendcopy(destination, sources, options = {})LinkSource:show|on GitHub# File activerecord/lib/active_record/migration.rb, line 1064defcopy(destination,sources,options= {})copied= []FileUtils.mkdir_p(destination)unlessFile.exist?(destination)schema_migration=SchemaMigration::NullSchemaMigration.newinternal_metadata=InternalMetadata::NullInternalMetadata.newdestination_migrations=ActiveRecord::MigrationContext.new(destination,schema_migration,internal_metadata).migrationslast=destination_migrations.lastsources.eachdo|scope,path|source_migrations=ActiveRecord::MigrationContext.new(path,schema_migration,internal_metadata).migrationssource_migrations.eachdo|migration|source=File.binread(migration.filename)inserted_comment="# This migration comes from #{scope} (originally #{migration.version})\n"magic_comments=+""loopdo# If we have a magic comment in the original migration,# insert our comment after the first newline(end of the magic comment line)# so the magic keep working.# Note that magic comments must be at the first line(except sh-bang).source.sub!(/\A(?:#.*\b(?:en)?coding:\s*\S+|#\s*frozen_string_literal:\s*(?:true|false)).*\n/)do|magic_comment|magic_comments<<magic_comment;""end||breakendif!magic_comments.empty?&&source.start_with?("\n")magic_comments<<"\n"source=source[1..-1]endsource="#{magic_comments}#{inserted_comment}#{source}"ifduplicate=destination_migrations.detect{|m|m.name==migration.name}ifoptions[:on_skip]&&duplicate.scope!=scope.to_soptions[:on_skip].call(scope,migration)endnextendmigration.version=next_migration_number(last?last.version+1:0).to_inew_path=File.join(destination,"#{migration.version}_#{migration.name.underscore}.#{scope}.rb")old_path,migration.filename=migration.filename,new_pathlast=migrationFile.binwrite(migration.filename,source)copied<<migrationoptions[:on_copy].call(scope,migration,old_path)ifoptions[:on_copy]destination_migrations<<migrationendendcopiedenddown()LinkSource:show|on GitHub# File activerecord/lib/active_record/migration.rb, line 960defdownself.class.delegate=selfreturnunlessself.class.respond_to?(:down)self.class.downendexec_migration(conn, direction)LinkSource:show|on GitHub# File activerecord/lib/active_record/migration.rb, line 988defexec_migration(conn,direction)@connection=connifrespond_to?(:change)ifdirection==:downrevert{change}elsechangeendelsepublic_send(direction)endensure@connection=nil@execution_strategy=nilendexecution_strategy()LinkSource:show|on GitHub# File activerecord/lib/active_record/migration.rb, line 810defexecution_strategy@execution_strategy||=ActiveRecord.migration_strategy.new(self)endmethod_missing(method, *arguments, &block)LinkSource:show|on GitHub# File activerecord/lib/active_record/migration.rb, line 1047defmethod_missing(method,*arguments,&block)say_with_time"#{method}(#{format_arguments(arguments)})"dounlessconnection.respond_to?:revertunlessarguments.empty?||[:execute,:enable_extension,:disable_extension].include?(method)arguments[0] =proper_table_name(arguments.first,table_name_options)ifmethod==:rename_table||(method==:remove_foreign_key&&!arguments.second.is_a?(Hash))arguments[1] =proper_table_name(arguments.second,table_name_options)endendendreturnsuperunlessexecution_strategy.respond_to?(method)execution_strategy.send(method,*arguments,&block)endendmigrate(direction)LinkExecute this migration in the named directionSource:show|on GitHub# File activerecord/lib/active_record/migration.rb, line 967defmigrate(direction)returnunlessrespond_to?(direction)casedirectionwhen:upthenannounce"migrating"when:downthenannounce"reverting"endtime=nilActiveRecord::Tasks::DatabaseTasks.migration_connection.pool.with_connectiondo|conn|time=Benchmark.measuredoexec_migration(conn,direction)endendcasedirectionwhen:upthenannounce"migrated (%.4fs)"%time.real;writewhen:downthenannounce"reverted (%.4fs)"%time.real;writeendendnext_migration_number(number)LinkDetermines the version number of the next migration.Source:show|on GitHub# File activerecord/lib/active_record/migration.rb, line 1131defnext_migration_number(number)ifActiveRecord.timestamped_migrations[Time.now.utc.strftime("%Y%m%d%H%M%S"),"%.14d"%number].maxelse"%.3d"%number.to_iendendproper_table_name(name, options = {})LinkFinds the correct table name given an Active Record object. Uses the Active Record objectâs own table_name, or pre/suffix from the options passed in.Source:show|on GitHub# File activerecord/lib/active_record/migration.rb, line 1122defproper_table_name(name,options= {})ifname.respond_to?:table_namename.table_nameelse"#{options[:table_name_prefix]}#{name}#{options[:table_name_suffix]}"endendreversible()LinkUsed to specify an operation that can be run in one direction or another. Call the methodsupanddownof the yielded object to run a block only in one given direction. The whole block will be called in the right order within the migration.In the following example, the looping on users will always be done when the three columns âfirst_nameâ, âlast_nameâ and âfull_nameâ exist, even when migrating down:class SplitNameMigration < ActiveRecord::Migration[7.2]
+  def change
+    add_column :users, :first_name, :string
+    add_column :users, :last_name, :string
+
+    reversible do |dir|
+      User.reset_column_information
+      User.all.each do |u|
+        dir.up   { u.first_name, u.last_name = u.full_name.split(' ') }
+        dir.down { u.full_name = "#{u.first_name} #{u.last_name}" }
+        u.save
+      end
+    end
+
+    revert { add_column :users, :full_name, :string }
+  end
+endSource:show|on GitHub# File activerecord/lib/active_record/migration.rb, line 912defreversiblehelper=ReversibleBlockHelper.new(reverting?)execute_block{yieldhelper}endrevert(*migration_classes, &block)LinkReverses the migration commands for the given block and the given migrations.The following migration will remove the table âhorsesâ and create the table âapplesâ on the way up, and the reverse on the way down.class FixTLMigration < ActiveRecord::Migration[7.2]
+  def change
+    revert do
+      create_table(:horses) do |t|
+        t.text :content
+        t.datetime :remind_at
+      end
+    end
+    create_table(:apples) do |t|
+      t.string :variety
+    end
+  end
+endOr equivalently, ifTenderloveMigrationis defined as in the documentation for Migration:require_relative "20121212123456_tenderlove_migration"
+
+class FixupTLMigration < ActiveRecord::Migration[7.2]
+  def change
+    revert TenderloveMigration
+
+    create_table(:apples) do |t|
+      t.string :variety
+    end
+  end
+endThis command can be nested.Source:show|on GitHub# File activerecord/lib/active_record/migration.rb, line 855defrevert(*migration_classes,&block)run(*migration_classes.reverse,revert:true)unlessmigration_classes.empty?ifblock_given?ifconnection.respond_to?:revertconnection.revert(&block)elserecorder=command_recorder@connection=recordersuppress_messagesdoconnection.revert(&block)end@connection=recorder.delegaterecorder.replay(self)endendendreverting?()LinkSource:show|on GitHub# File activerecord/lib/active_record/migration.rb, line 872defreverting?connection.respond_to?(:reverting)&&connection.revertingendrun(*migration_classes)LinkRuns the given migration classes. Last argument can specify options::direction- Default is:up.:revert- Default isfalse.Source:show|on GitHub# File activerecord/lib/active_record/migration.rb, line 940defrun(*migration_classes)opts=migration_classes.extract_options!dir=opts[:direction]||:updir= (dir==:down?:up::down)ifopts[:revert]ifreverting?# If in revert and going :up, say, we want to execute :down without reverting, sorevert{run(*migration_classes,direction:dir,revert:true) }elsemigration_classes.eachdo|migration_class|migration_class.new.exec_migration(connection,dir)endendendsay(message, subitem = false)LinkTakes a message argument and outputs it as is. A second boolean argument can be passed to specify whether to indent or not.Source:show|on GitHub# File activerecord/lib/active_record/migration.rb, line 1016defsay(message,subitem=false)write"#{subitem ? "   ->" : "--"} #{message}"endsay_with_time(message)LinkOutputs text along with how long it took to run its block. If the block returns an integer it assumes it is the number of rows affected.Source:show|on GitHub# File activerecord/lib/active_record/migration.rb, line 1022defsay_with_time(message)say(message)result=niltime=Benchmark.measure{result=yield}say"%.4fs"%time.real,:subitemsay("#{result} rows",:subitem)ifresult.is_a?(Integer)resultendsuppress_messages()LinkTakes a block as an argument and suppresses any output generated by the block.Source:show|on GitHub# File activerecord/lib/active_record/migration.rb, line 1032defsuppress_messagessave,self.verbose=verbose,falseyieldensureself.verbose=saveendup()LinkSource:show|on GitHub# File activerecord/lib/active_record/migration.rb, line 954defupself.class.delegate=selfreturnunlessself.class.respond_to?(:up)self.class.upendup_only(&block)LinkUsed to specify an operation that is only run when migrating up (for example, populating a new column with its initial values).In the following example, the new columnpublishedwill be given the valuetruefor all existing records.class AddPublishedToPosts < ActiveRecord::Migration[7.2]
+  def change
+    add_column :posts, :published, :boolean, default: false
+    up_only do
+      execute "update posts set published = 'true'"
+    end
+  end
+endSource:show|on GitHub# File activerecord/lib/active_record/migration.rb, line 931defup_only(&block)execute_block(&block)unlessreverting?endwrite(text = "")LinkSource:show|on GitHub# File activerecord/lib/active_record/migration.rb, line 1004defwrite(text="")puts(text)ifverboseend

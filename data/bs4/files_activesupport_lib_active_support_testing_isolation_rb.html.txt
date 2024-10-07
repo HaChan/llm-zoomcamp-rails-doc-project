@@ -1,0 +1,1 @@
+Required FilesthreadtempfileNamespaceMODULEActiveSupportMODULEActiveSupport::TestingMODULEActiveSupport::Testing::IsolationMODULEActiveSupport::Testing::Isolation::ForkingMODULEActiveSupport::Testing::Isolation::SubprocessMODULEMinitest

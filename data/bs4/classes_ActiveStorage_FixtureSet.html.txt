@@ -1,0 +1,18 @@
+Active Storage FixtureSetFixtures are a way of organizing data that you want to test against; in short, sample data.To learn more about fixtures, read theActiveRecord::FixtureSetdocumentation.YAMLLike other Active Record-backed models,ActiveStorage::AttachmentandActiveStorage::Blobrecords inherit fromActiveRecord::Baseinstances and therefore can be populated by fixtures.Consider a hypotheticalArticlemodel class, its related fixture data, as well as fixture data for relatedActiveStorage::AttachmentandActiveStorage::Blobrecords:# app/models/article.rb
+class Article < ApplicationRecord
+  has_one_attached :thumbnail
+end# fixtures/active_storage/blobs.yml
+first_thumbnail_blob: <%= ActiveStorage::FixtureSet.blob filename: "first.png" %># fixtures/active_storage/attachments.yml
+first_thumbnail_attachment:
+  name: thumbnail
+  record: first (Article)
+  blob: first_thumbnail_blobWhen processed, Active Record will insert database records for each fixture entry and will ensure the Active Storage relationship is intact.MethodsBblobPprepareIncluded ModulesActiveSupport::Testing::FileFixturesActiveRecord::SecureTokenClass Public methodsblob(filename:, **attributes)LinkGenerate a YAML-encoded representation of anActiveStorage::Blobinstanceâs attributes, resolve the file relative to the directory mentioned byActiveSupport::Testing::FileFixtures.file_fixture, and upload the file to theServiceExamples# tests/fixtures/active_storage/blobs.yml
+second_thumbnail_blob: <%= ActiveStorage::FixtureSet.blob(
+  filename: "second.svg",
+) %>
+
+third_thumbnail_blob: <%= ActiveStorage::FixtureSet.blob(
+  filename: "third.svg",
+  content_type: "image/svg+xml",
+  service_name: "public"
+) %>Source:show|on GitHub# File activestorage/lib/active_storage/fixture_set.rb, line 66defself.blob(filename:,**attributes)new.prepareBlob.new(filename:filename,key:generate_unique_secure_token),**attributesendInstance Public methodsprepare(instance, **attributes)LinkSource:show|on GitHub# File activestorage/lib/active_storage/fixture_set.rb, line 70defprepare(instance,**attributes)io=file_fixture(instance.filename.to_s).openinstance.unfurl(io)instance.assign_attributes(attributes)instance.upload_without_unfurling(io)instance.attributes.transform_values{|value|value.is_a?(Hash)?value.to_json:value}.compact.to_jsonend

@@ -1,0 +1,31 @@
+Methods#[],[]=Cclear_rotationsIinitializeOon_rotationRrotate,rotate_defaultsAttributes[RW]transitionalIf true, the first two rotation option sets are swapped when building message encryptors. For example, with the following configuration, message encryptors will encrypt messages usingserializer: Marshal, url_safe: true, and will able to decrypt messages that were encrypted using any of the three option sets:encryptors = ActiveSupport::MessageEncryptors.new { ... }
+encryptors.rotate(serializer: JSON, url_safe: true)
+encryptors.rotate(serializer: Marshal, url_safe: true)
+encryptors.rotate(serializer: Marshal, url_safe: false)
+encryptors.transitional = trueThis can be useful when performing a rolling deploy of an application, wherein servers that have not yet been updated must still be able to decrypt messages from updated servers. In such a scenario, first perform a rolling deploy with the new rotation (e.g.serializer: JSON, url_safe: true) as the first rotation andtransitional = true. Then, after all servers have been updated, perform a second rolling deploy withtransitional = false.Instance Public methods[](salt)LinkReturns aMessageEncryptorconfigured with a secret derived from the givensalt, and options fromrotate.MessageEncryptorinstances will be memoized, so the samesaltwill return the same instance.Source:on GitHub# File activesupport/lib/active_support/message_encryptors.rb, line 48[]=(salt, encryptor)LinkOverrides aMessageEncryptorinstance associated with a givensalt.Source:on GitHub# File activesupport/lib/active_support/message_encryptors.rb, line 56clear_rotationsLinkClears the list of option sets.Source:on GitHub# File activesupport/lib/active_support/message_encryptors.rb, line 117initialize(&secret_generator)LinkInitializes a new instance.secret_generatormust accept a salt and asecret_lengthkwarg, and return a suitable secret (string) or secrets (array of strings).secret_generatormay also accept other arbitrary kwargs. Ifrotateis called with any options matching those kwargs, those options will be passed tosecret_generatorinstead of to the message encryptor.encryptors = ActiveSupport::MessageEncryptors.new do |salt, secret_length:, base:|
+  MySecretGenerator.new(base).generate(salt, secret_length)
+end
+
+encryptors.rotate(base: "...")Source:on GitHub# File activesupport/lib/active_support/message_encryptors.rb, line 31on_rotation(&callback)LinkSets a callback to invoke when a message is decrypted using an option set other than the first.For example, this callback could log each time it is called, and thus indicate whether old option sets are still in use or can be removed from rotation.Source:on GitHub# File activesupport/lib/active_support/message_encryptors.rb, line 123rotate(**options)rotate(█)LinkAddsoptionsto the list of option sets.Messageswill be encrypted using the first set in the list. When decrypting, however, each set will be tried, in order, until one succeeds.Notably, the:secret_generatoroption can specify a different secret generator than the one initially specified. The secret generator must respond tocall, accept a salt and asecret_lengthkwarg, and return a suitable secret (string) or secrets (array of strings). The secret generator may also accept other arbitrary kwargs.If any options match the kwargs of the operative secret generator, those options will be passed to the secret generator instead of to the message encryptor.For fine-grained per-salt rotations, a block form is supported. The block will receive the salt, and should return an appropriate optionsHash. The block may also returnnilto indicate that the rotation does not apply to the given salt. For example:encryptors = ActiveSupport::MessageEncryptors.new { ... }
+
+encryptors.rotate do |salt|
+  case salt
+  when :foo
+    { serializer: JSON, url_safe: true }
+  when :bar
+    { serializer: Marshal, url_safe: true }
+  end
+end
+
+encryptors.rotate(serializer: Marshal, url_safe: false)
+
+# Uses `serializer: JSON, url_safe: true`.
+# Falls back to `serializer: Marshal, url_safe: false`.
+encryptors[:foo]
+
+# Uses `serializer: Marshal, url_safe: true`.
+# Falls back to `serializer: Marshal, url_safe: false`.
+encryptors[:bar]
+
+# Uses `serializer: Marshal, url_safe: false`.
+encryptors[:baz]Source:on GitHub# File activesupport/lib/active_support/message_encryptors.rb, line 62rotate_defaultsLinkInvokesrotatewith the default options.Source:on GitHub# File activesupport/lib/active_support/message_encryptors.rb, line 111

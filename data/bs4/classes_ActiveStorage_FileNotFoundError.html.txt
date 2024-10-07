@@ -1,0 +1,1 @@
+Raised whenActiveStorage::Blob#downloadis called on a blob where the backing file is no longer present in its service.

@@ -1,0 +1,1 @@
+NamespaceCLASSActiveSupport::XMLConverter::DisallowedType

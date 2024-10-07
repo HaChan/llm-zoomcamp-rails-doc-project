@@ -1,0 +1,10 @@
+MethodsEexceptMmergeOonlyInstance Public methodsexcept(*skips)LinkRemoves from the query the condition(s) specified inskips.Post.order('id asc').except(:order)                  # discards the order condition
+Post.where('id > 10').order('id asc').except(:where) # discards the where condition but keeps the orderSource:show|on GitHub# File activerecord/lib/active_record/relation/spawn_methods.rb, line 59defexcept(*skips)relation_withvalues.except(*skips)endmerge(other, *rest)LinkMerges in the conditions fromother, ifotheris anActiveRecord::Relation. Returns an array representing the intersection of the resulting records withother, ifotheris an array.Post.where(published: true).joins(:comments).merge( Comment.where(spam: false) )
+# Performs a single join query with both where conditions.
+
+recent_posts = Post.order('created_at DESC').first(5)
+Post.where(published: true).merge(recent_posts)
+# Returns the intersection of all published posts with the 5 most recently created posts.
+# (This is just an example. You'd probably want to do this with a single query!)Procs will be evaluated by merge:Post.where(published: true).merge(-> { joins(:comments) })
+# => Post.where(published: true).joins(:comments)This is mainly intended for sharing common conditions between multiple associations.For conditions that exist in both relations, those fromotherwill take precedence. To find the intersection of two relations, useQueryMethods#and.Source:show|on GitHub# File activerecord/lib/active_record/relation/spawn_methods.rb, line 33defmerge(other,*rest)ifother.is_a?(Array)records&otherelsifotherspawn.merge!(other,*rest)elseraiseArgumentError,"invalid argument: #{other.inspect}."endendonly(*onlies)LinkRemoves any condition from the query other than the one(s) specified inonlies.Post.order('id asc').only(:where)         # discards the order condition
+Post.order('id asc').only(:where, :order) # uses the specified orderSource:show|on GitHub# File activerecord/lib/active_record/relation/spawn_methods.rb, line 67defonly(*onlies)relation_withvalues.slice(*onlies)end

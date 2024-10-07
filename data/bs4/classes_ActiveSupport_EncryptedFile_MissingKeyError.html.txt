@@ -1,0 +1,1 @@
+MethodsNnewClass Public methodsnew(key_path:, env_key:)LinkSource:show|on GitHub# File activesupport/lib/active_support/encrypted_file.rb, line 16definitialize(key_path:,env_key:)super\"Missing encryption key to decrypt file with. "+"Ask your team for your master key and write it to #{key_path} or put it in the ENV['#{env_key}']."end

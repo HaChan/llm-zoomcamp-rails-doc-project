@@ -1,0 +1,1 @@
+Required Filesactive_support/core_ext/string/multibyteactive_support/i18nNamespaceMODULEActiveSupportMODULEActiveSupport::Inflector

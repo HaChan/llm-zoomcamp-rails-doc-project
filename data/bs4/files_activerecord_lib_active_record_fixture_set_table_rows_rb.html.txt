@@ -1,0 +1,1 @@
+Required Filesactive_record/fixture_set/table_rowactive_record/fixture_set/model_metadataNamespaceMODULEActiveRecordCLASSActiveRecord::FixtureSet

@@ -1,0 +1,56 @@
+Active Record Connection Adapters TableRepresents an SQL table in an abstract way for updating a table. Also seeTableDefinitionandconnection.create_tableAvailable transformations are:change_table :table do |t|
+  t.primary_key
+  t.column
+  t.index
+  t.rename_index
+  t.timestamps
+  t.change
+  t.change_default
+  t.change_null
+  t.rename
+  t.references
+  t.belongs_to
+  t.check_constraint
+  t.string
+  t.text
+  t.integer
+  t.bigint
+  t.float
+  t.decimal
+  t.numeric
+  t.datetime
+  t.timestamp
+  t.time
+  t.date
+  t.binary
+  t.blob
+  t.boolean
+  t.foreign_key
+  t.json
+  t.virtual
+  t.remove
+  t.remove_foreign_key
+  t.remove_references
+  t.remove_belongs_to
+  t.remove_index
+  t.remove_check_constraint
+  t.remove_timestamps
+endMethodsBbelongs_toCchange,change_default,change_null,check_constraint,check_constraint_exists?,column,column_exists?Fforeign_key,foreign_key_exists?Iindex,index_exists?NnewRreferences,remove,remove_belongs_to,remove_check_constraint,remove_foreign_key,remove_index,remove_references,remove_timestamps,rename,rename_indexTtimestampsIncluded ModulesActiveRecord::ConnectionAdapters::ColumnMethodsAttributes[R]nameClass Public methodsnew(table_name, base)LinkSource:show|on GitHub# File activerecord/lib/active_record/connection_adapters/abstract/schema_definitions.rb, line 711definitialize(table_name,base)@name=table_name@base=baseendInstance Public methodsbelongs_to(*args, **options)LinkAlias for:referenceschange(column_name, type, **options)LinkChanges the columnâs definition according to the new options.t.change(:name, :string, limit: 80)
+t.change(:description, :text)SeeTableDefinition#columnfor details of the options you can use.Source:show|on GitHub# File activerecord/lib/active_record/connection_adapters/abstract/schema_definitions.rb, line 788defchange(column_name,type,**options)raise_on_if_exist_options(options)@base.change_column(name,column_name,type,**options)endchange_default(column_name, default_or_changes)LinkSets a new default value for a column.t.change_default(:qualification, 'new')
+t.change_default(:authorized, 1)
+t.change_default(:status, from: nil, to: "draft")Seeconnection.change_column_defaultSource:show|on GitHub# File activerecord/lib/active_record/connection_adapters/abstract/schema_definitions.rb, line 800defchange_default(column_name,default_or_changes)@base.change_column_default(name,column_name,default_or_changes)endchange_null(column_name, null, default = nil)LinkSets or removes a NOT NULL constraint on a column.t.change_null(:qualification, true)
+t.change_null(:qualification, false, 0)Seeconnection.change_column_nullSource:show|on GitHub# File activerecord/lib/active_record/connection_adapters/abstract/schema_definitions.rb, line 810defchange_null(column_name,null,default=nil)@base.change_column_null(name,column_name,null,default)endcheck_constraint(*args, **options)LinkAdds a check constraint.t.check_constraint("price > 0", name: "price_check")Seeconnection.add_check_constraintSource:show|on GitHub# File activerecord/lib/active_record/connection_adapters/abstract/schema_definitions.rb, line 920defcheck_constraint(*args,**options)@base.add_check_constraint(name,*args,**options)endcheck_constraint_exists?(*args, **options)LinkChecks if acheck_constraintexists on a table.unless t.check_constraint_exists?(name: "price_check")
+  t.check_constraint("price > 0", name: "price_check")
+endSeeconnection.check_constraint_exists?Source:show|on GitHub# File activerecord/lib/active_record/connection_adapters/abstract/schema_definitions.rb, line 940defcheck_constraint_exists?(*args,**options)@base.check_constraint_exists?(name,*args,**options)endcolumn(column_name, type, index: nil, **options)LinkAdds a new column to the named table.t.column(:name, :string)SeeTableDefinition#columnfor details of the options you can use.Source:show|on GitHub# File activerecord/lib/active_record/connection_adapters/abstract/schema_definitions.rb, line 721defcolumn(column_name,type,index:nil,**options)raise_on_if_exist_options(options)@base.add_column(name,column_name,type,**options)ifindexindex_options=index.is_a?(Hash)?index:{}index(column_name,**index_options)endendcolumn_exists?(column_name, type = nil, **options)LinkChecks to see if a column exists.t.string(:name) unless t.column_exists?(:name, :string)Seeconnection.column_exists?Source:show|on GitHub# File activerecord/lib/active_record/connection_adapters/abstract/schema_definitions.rb, line 735defcolumn_exists?(column_name,type=nil,**options)@base.column_exists?(name,column_name,type,**options)endforeign_key(*args, **options)LinkAdds a foreign key to the table using a supplied table name.t.foreign_key(:authors)
+t.foreign_key(:authors, column: :author_id, primary_key: "id")Seeconnection.add_foreign_keySource:show|on GitHub# File activerecord/lib/active_record/connection_adapters/abstract/schema_definitions.rb, line 890defforeign_key(*args,**options)raise_on_if_exist_options(options)@base.add_foreign_key(name,*args,**options)endforeign_key_exists?(*args, **options)LinkChecks to see if a foreign key exists.t.foreign_key(:authors) unless t.foreign_key_exists?(:authors)Seeconnection.foreign_key_exists?Source:show|on GitHub# File activerecord/lib/active_record/connection_adapters/abstract/schema_definitions.rb, line 911defforeign_key_exists?(*args,**options)@base.foreign_key_exists?(name,*args,**options)endindex(column_name, **options)LinkAdds a new index to the table.column_namecan be a singleSymbol, or anArrayof Symbols.t.index(:name)
+t.index([:branch_id, :party_id], unique: true)
+t.index([:branch_id, :party_id], unique: true, name: 'by_branch_party')Seeconnection.add_indexfor details of the options you can use.Source:show|on GitHub# File activerecord/lib/active_record/connection_adapters/abstract/schema_definitions.rb, line 747defindex(column_name,**options)raise_on_if_exist_options(options)@base.add_index(name,column_name,**options)endindex_exists?(column_name, **options)LinkChecks to see if an index exists.unless t.index_exists?(:branch_id)
+  t.index(:branch_id)
+endSeeconnection.index_exists?Source:show|on GitHub# File activerecord/lib/active_record/connection_adapters/abstract/schema_definitions.rb, line 759defindex_exists?(column_name,**options)@base.index_exists?(name,column_name,**options)endreferences(*args, **options)LinkAdds a reference.t.references(:user)
+t.belongs_to(:supplier, foreign_key: true)Seeconnection.add_referencefor details of the options you can use.Also aliased as:belongs_toSource:show|on GitHub# File activerecord/lib/active_record/connection_adapters/abstract/schema_definitions.rb, line 862defreferences(*args,**options)raise_on_if_exist_options(options)args.eachdo|ref_name|@base.add_reference(name,ref_name,**options)endendremove(*column_names, **options)LinkRemoves the column(s) from the table definition.t.remove(:qualification)
+t.remove(:qualification, :experience)Seeconnection.remove_columnsSource:show|on GitHub# File activerecord/lib/active_record/connection_adapters/abstract/schema_definitions.rb, line 820defremove(*column_names,**options)raise_on_if_exist_options(options)@base.remove_columns(name,*column_names,**options)endremove_belongs_to(*args, **options)LinkAlias for:remove_referencesremove_check_constraint(*args, **options)LinkRemoves the given check constraint from the table.t.remove_check_constraint(name: "price_check")Seeconnection.remove_check_constraintSource:show|on GitHub# File activerecord/lib/active_record/connection_adapters/abstract/schema_definitions.rb, line 929defremove_check_constraint(*args,**options)@base.remove_check_constraint(name,*args,**options)endremove_foreign_key(*args, **options)LinkRemoves the given foreign key from the table.t.remove_foreign_key(:authors)
+t.remove_foreign_key(column: :author_id)Seeconnection.remove_foreign_keySource:show|on GitHub# File activerecord/lib/active_record/connection_adapters/abstract/schema_definitions.rb, line 901defremove_foreign_key(*args,**options)raise_on_if_exist_options(options)@base.remove_foreign_key(name,*args,**options)endremove_index(column_name = nil, **options)LinkRemoves the given index from the table.t.remove_index(:branch_id)
+t.remove_index(column: [:branch_id, :party_id])
+t.remove_index(name: :by_branch_party)
+t.remove_index(:branch_id, name: :by_branch_party)Seeconnection.remove_indexSource:show|on GitHub# File activerecord/lib/active_record/connection_adapters/abstract/schema_definitions.rb, line 833defremove_index(column_name=nil,**options)raise_on_if_exist_options(options)@base.remove_index(name,column_name,**options)endremove_references(*args, **options)LinkRemoves a reference. Optionally removes atypecolumn.t.remove_references(:user)
+t.remove_belongs_to(:supplier, polymorphic: true)Seeconnection.remove_referenceAlso aliased as:remove_belongs_toSource:show|on GitHub# File activerecord/lib/active_record/connection_adapters/abstract/schema_definitions.rb, line 876defremove_references(*args,**options)raise_on_if_exist_options(options)args.eachdo|ref_name|@base.remove_reference(name,ref_name,**options)endendremove_timestamps(**options)LinkRemoves the timestamp columns (created_atandupdated_at) from the table.t.remove_timestampsSeeconnection.remove_timestampsSource:show|on GitHub# File activerecord/lib/active_record/connection_adapters/abstract/schema_definitions.rb, line 843defremove_timestamps(**options)@base.remove_timestamps(name,**options)endrename(column_name, new_column_name)LinkRenames a column.t.rename(:description, :name)Seeconnection.rename_columnSource:show|on GitHub# File activerecord/lib/active_record/connection_adapters/abstract/schema_definitions.rb, line 852defrename(column_name,new_column_name)@base.rename_column(name,column_name,new_column_name)endrename_index(index_name, new_index_name)LinkRenames the given index on the table.t.rename_index(:user_id, :account_id)Seeconnection.rename_indexSource:show|on GitHub# File activerecord/lib/active_record/connection_adapters/abstract/schema_definitions.rb, line 768defrename_index(index_name,new_index_name)@base.rename_index(name,index_name,new_index_name)endtimestamps(**options)LinkAdds timestamps (created_atandupdated_at) columns to the table.t.timestamps(null: false)Seeconnection.add_timestampsSource:show|on GitHub# File activerecord/lib/active_record/connection_adapters/abstract/schema_definitions.rb, line 777deftimestamps(**options)raise_on_if_exist_options(options)@base.add_timestamps(name,**options)end

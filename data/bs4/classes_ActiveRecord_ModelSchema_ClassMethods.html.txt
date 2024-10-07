@@ -1,0 +1,70 @@
+MethodsCcolumn_defaults,column_for_attribute,column_names,columns,content_columnsIignored_columns,ignored_columns=,initialize_load_schema_monitorLload_schemaNnext_sequence_valuePprefetch_primary_key?,protected_environments,protected_environments=Qquoted_table_nameRreload_schema_from_cache,reset_column_informationSsequence_name,sequence_name=Ttable_exists?,table_name,table_name=Instance Public methodscolumn_defaults()LinkReturns a hash where the keys are column names and the values are default values when instantiating the Active Record object for this table.Source:show|on GitHub# File activerecord/lib/active_record/model_schema.rb, line 474defcolumn_defaultsload_schema@column_defaults||=_default_attributes.deep_dup.to_hash.freezeendcolumn_for_attribute(name)LinkReturns the column object for the named attribute. Returns an ActiveRecord::ConnectionAdapters::NullColumn if the named attribute does not exist.class Person < ActiveRecord::Base
+end
+
+person = Person.new
+person.column_for_attribute(:name) # the result depends on the ConnectionAdapter
+# => #<ActiveRecord::ConnectionAdapters::Column:0x007ff4ab083980 @name="name", @sql_type="varchar(255)", @null=true, ...>
+
+person.column_for_attribute(:nothing)
+# => #<ActiveRecord::ConnectionAdapters::NullColumn:0xXXX @name=nil, @sql_type=nil, @cast_type=#<Type::Value>, ...>Source:show|on GitHub# File activerecord/lib/active_record/model_schema.rb, line 465defcolumn_for_attribute(name)name=name.to_scolumns_hash.fetch(name)doConnectionAdapters::NullColumn.new(name)endendcolumn_names()LinkReturns an array of column names as strings.Source:show|on GitHub# File activerecord/lib/active_record/model_schema.rb, line 480defcolumn_names@column_names||=columns.map(&:name).freezeendcolumns()LinkSource:show|on GitHub# File activerecord/lib/active_record/model_schema.rb, line 433defcolumnsload_schemaunless@columns@columns||=columns_hash.values.freezeendcontent_columns()LinkReturns an array of column objects where the primary id, all columns ending in â_idâ or â_countâ, and columns used for single table inheritance have been removed.Source:show|on GitHub# File activerecord/lib/active_record/model_schema.rb, line 491defcontent_columns@content_columns||=columns.rejectdo|c|c.name==primary_key||c.name==inheritance_column||c.name.end_with?("_id","_count")end.freezeendignored_columns()LinkThe list of columns names the model should ignore. Ignored columns wonât have attribute accessors defined, and wonât be referenced in SQL queries.Source:show|on GitHub# File activerecord/lib/active_record/model_schema.rb, line 332defignored_columns@ignored_columns||superclass.ignored_columnsendignored_columns=(columns)LinkSets the columns names the model should ignore. Ignored columns wonât have attribute accessors defined, and wonât be referenced in SQL queries.A common usage pattern for this method is to ensure all references to an attribute have been removed and deployed, before a migration to drop the column from the database has been deployed and run. Using this two step approach to dropping columns ensures there is no code that raises errors due to having a cached schema in memory at the time the schema migration is run.For example, given a model where you want to drop the âcategoryâ attribute, first mark it as ignored:class Project < ActiveRecord::Base
+  # schema:
+  #   id         :bigint
+  #   name       :string, limit: 255
+  #   category   :string, limit: 255
+
+  self.ignored_columns += [:category]
+endThe schema still contains âcategoryâ, but now the model omits it, so any meta-driven code or schema caching will not attempt to use the column:Project.columns_hash["category"] => nilYou will get an error if accessing that attribute directly, so ensure all usages of the column are removed (automated tests can help you find any usages).user = Project.create!(name: "First Project")
+user.category # => raises NoMethodErrorSource:show|on GitHub# File activerecord/lib/active_record/model_schema.rb, line 367defignored_columns=(columns)reload_schema_from_cache@ignored_columns=columns.map(&:to_s).freezeendload_schema()LinkLoad the modelâs schema information either from the schema cache or directly from the database.Source:show|on GitHub# File activerecord/lib/active_record/model_schema.rb, line 536defload_schemareturnifschema_loaded?@load_schema_monitor.synchronizedoreturnifschema_loaded?load_schema!@schema_loaded=truerescuereload_schema_from_cache# If the schema loading failed half way through, we must reset the state.raiseendendnext_sequence_value()LinkReturns the next value that will be used as the primary key on an insert statement.Source:show|on GitHub# File activerecord/lib/active_record/model_schema.rb, line 412defnext_sequence_valuewith_connection{|c|c.next_sequence_value(sequence_name) }endprefetch_primary_key?()LinkDetermines if the primary key values should be selected from their corresponding sequence before the insert statement.Source:show|on GitHub# File activerecord/lib/active_record/model_schema.rb, line 406defprefetch_primary_key?with_connection{|c|c.prefetch_primary_key?(table_name) }endprotected_environments()LinkThe array of names of environments where destructive actions should be prohibited. By default, the value is["production"].Source:show|on GitHub# File activerecord/lib/active_record/model_schema.rb, line 313defprotected_environmentsifdefined?(@protected_environments)@protected_environmentselsesuperclass.protected_environmentsendendprotected_environments=(environments)LinkSets an array of names of environments where destructive actions should be prohibited.Source:show|on GitHub# File activerecord/lib/active_record/model_schema.rb, line 322defprotected_environments=(environments)@protected_environments=environments.map(&:to_s)endquoted_table_name()LinkReturns a quoted version of the table name, used to construct SQL statements.Source:show|on GitHub# File activerecord/lib/active_record/model_schema.rb, line 286defquoted_table_name@quoted_table_name||=adapter_class.quote_table_name(table_name)endreset_column_information()LinkResets all the cached information about columns, which will cause them to be reloaded on the next request.The most common usage pattern for this method is probably in a migration, when just after creating a table you want to populate it with some default values, e.g.:class CreateJobLevels < ActiveRecord::Migration[7.2]
+  def up
+    create_table :job_levels do |t|
+      t.integer :id
+      t.string :name
+
+      t.timestamps
+    end
+
+    JobLevel.reset_column_information
+    %w{assistant executive manager director}.each do |type|
+      JobLevel.create(name: type)
+    end
+  end
+
+  def down
+    drop_table :job_levels
+  end
+endSource:show|on GitHub# File activerecord/lib/active_record/model_schema.rb, line 525defreset_column_informationconnection_pool.active_connection&.clear_cache!([self]+descendants).each(&:undefine_attribute_methods)schema_cache.clear_data_source_cache!(table_name)reload_schema_from_cacheinitialize_find_by_cacheendsequence_name()LinkSource:show|on GitHub# File activerecord/lib/active_record/model_schema.rb, line 372defsequence_nameifbase_class?@sequence_name||=reset_sequence_nameelse(@sequence_name||=nil)||base_class.sequence_nameendendsequence_name=(value)LinkSets the name of the sequence to use when generating ids to the given value, or (if the value isnilorfalse) to the value returned by the given block. This is required for Oracle and is useful for any database which relies on sequences for primary key generation.If a sequence name is not explicitly set when using Oracle, it will default to the commonly used pattern of: #{table_name}_seqIf a sequence name is not explicitly set when using PostgreSQL, it will discover the sequence corresponding to your primary key for you.class Project < ActiveRecord::Base
+  self.sequence_name = "projectseq"   # default would have been "project_seq"
+endSource:show|on GitHub# File activerecord/lib/active_record/model_schema.rb, line 399defsequence_name=(value)@sequence_name=value.to_s@explicit_sequence_name=trueendtable_exists?()LinkIndicates whether the table associated with this class existsSource:show|on GitHub# File activerecord/lib/active_record/model_schema.rb, line 417deftable_exists?schema_cache.data_source_exists?(table_name)endtable_name()LinkGuesses the table name (in forced lower-case) based on the name of the class in the inheritance hierarchy descending directly fromActiveRecord::Base. So if the hierarchy looks like: Reply < Message <ActiveRecord::Base, then Message is used to guess the table name even when called on Reply. The rules used to do the guess are handled by the Inflector class in Active Support, which knows almost all common English inflections. You can add new inflections in config/initializers/inflections.rb.Nested classes are given table names prefixed by the singular form of the parentâs table name. Enclosing modules are not considered.Examplesclass Invoice < ActiveRecord::Base
+end
+
+file                  class               table_name
+invoice.rb            Invoice             invoices
+
+class Invoice < ActiveRecord::Base
+  class Lineitem < ActiveRecord::Base
+  end
+end
+
+file                  class               table_name
+invoice.rb            Invoice::Lineitem   invoice_lineitems
+
+module Invoice
+  class Lineitem < ActiveRecord::Base
+  end
+end
+
+file                  class               table_name
+invoice/lineitem.rb   Invoice::Lineitem   lineitemsAdditionally, the class-leveltable_name_prefixis prepended and thetable_name_suffixis appended. So if you have âmyapp_â as a prefix, the table name guess for an Invoice class becomes âmyapp_invoicesâ. Invoice::Lineitem becomes âmyapp_invoice_lineitemsâ.Active Model Namingâsmodel_nameis the base name used to guess the table name. In case a custom Active Model Name is defined, it will be used for the table name as well:class PostRecord < ActiveRecord::Base
+  class << self
+    def model_name
+      ActiveModel::Name.new(self, nil, "Post")
+    end
+  end
+end
+
+PostRecord.table_name
+# => "posts"You can also set your own table name explicitly:class Mouse < ActiveRecord::Base
+  self.table_name = "mice"
+endSource:show|on GitHub# File activerecord/lib/active_record/model_schema.rb, line 260deftable_namereset_table_nameunlessdefined?(@table_name)@table_nameendtable_name=(value)LinkSets the table name explicitly. Example:class Project < ActiveRecord::Base
+  self.table_name = "project"
+endSource:show|on GitHub# File activerecord/lib/active_record/model_schema.rb, line 270deftable_name=(value)value=value&&value.to_sifdefined?(@table_name)returnifvalue==@table_namereset_column_informationifconnected?end@table_name=value@quoted_table_name=nil@arel_table=nil@sequence_name=nilunless@explicit_sequence_name@predicate_builder=nilendInstance Protected methodsinitialize_load_schema_monitor()LinkSource:show|on GitHub# File activerecord/lib/active_record/model_schema.rb, line 551definitialize_load_schema_monitor@load_schema_monitor=Monitor.newendreload_schema_from_cache(recursive = true)LinkSource:show|on GitHub# File activerecord/lib/active_record/model_schema.rb, line 555defreload_schema_from_cache(recursive=true)@_returning_columns_for_insert=nil@arel_table=nil@column_names=nil@symbol_column_to_string_name_hash=nil@content_columns=nil@column_defaults=nil@attributes_builder=nil@columns=nil@columns_hash=nil@schema_loaded=false@attribute_names=nil@yaml_encoder=nilifrecursivesubclasses.eachdo|descendant|descendant.send(:reload_schema_from_cache)endendend

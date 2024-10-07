@@ -1,0 +1,13 @@
+Action CableChannelCallbacksAction CableChannelprovides callback hooks that are invoked during the life cycle of a channel:before_subscribeafter_subscribe(aliased ason_subscribe)before_unsubscribeafter_unsubscribe(aliased ason_unsubscribe)Exampleclass ChatChannel < ApplicationCable::Channel
+  after_subscribe :send_welcome_message, unless: :subscription_rejected?
+  after_subscribe :track_subscription
+
+  private
+    def send_welcome_message
+      broadcast_to(...)
+    end
+
+    def track_subscription
+      # ...
+    end
+endNamespaceMODULEActionCable::Channel::Callbacks::ClassMethodsIncluded ModulesActiveSupport::Callbacks

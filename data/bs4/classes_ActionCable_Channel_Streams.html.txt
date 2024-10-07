@@ -1,0 +1,29 @@
+Action CableChannelStreamsStreamsallow channels to route broadcastings to the subscriber. A broadcasting is, as discussed elsewhere, a pubsub queue where any data placed into it is automatically sent to the clients that are connected at that time. Itâs purely an online queue, though. If youâre not streaming a broadcasting at the very moment it sends out an update, you will not get that update, even if you connect after it has been sent.Most commonly, the streamed broadcast is sent straight to the subscriber on the client-side. The channel just acts as a connector between the two parties (the broadcaster and the channel subscriber). Hereâs an example of a channel that allows subscribers to get all new comments on a given page:class CommentsChannel < ApplicationCable::Channel
+  def follow(data)
+    stream_from "comments_for_#{data['recording_id']}"
+  end
+
+  def unfollow
+    stop_all_streams
+  end
+endBased on the above example, the subscribers of this channel will get whatever data is put into the, letâs say,comments_for_45broadcasting as soon as itâs put there.An example broadcasting for this channel looks like so:ActionCable.server.broadcast "comments_for_45", { author: 'DHH', content: 'Rails is just swell' }If you have a stream that is related to a model, then the broadcasting used can be generated from the model and channel. The following example would subscribe to a broadcasting likecomments:Z2lkOi8vVGVzdEFwcC9Qb3N0LzE.class CommentsChannel < ApplicationCable::Channel
+  def subscribed
+    post = Post.find(params[:id])
+    stream_for post
+  end
+endYou can then broadcast to this channel using:CommentsChannel.broadcast_to(@post, @comment)If you donât just want to parlay the broadcast unfiltered to the subscriber, you can also supply a callback that lets you alter what is sent out. The below example shows how you can use this to provide performance introspection in the process:class ChatChannel < ApplicationCable::Channel
+  def subscribed
+    @room = Chat::Room[params[:room_number]]
+
+    stream_for @room, coder: ActiveSupport::JSON do |message|
+      if message['originated_at'].present?
+        elapsed_time = (Time.now.to_f - message['originated_at']).round(2)
+
+        ActiveSupport::Notifications.instrument :performance, measurement: 'Chat.message_delay', value: elapsed_time, action: :timing
+        logger.info "Message took #{elapsed_time}s to arrive"
+      end
+
+      transmit message
+    end
+  end
+endYou can stop streaming from all broadcasts by callingstop_all_streams.MethodsSstop_all_streams,stop_stream_for,stop_stream_from,stream_for,stream_from,stream_or_reject_forInstance Public methodsstop_all_streams()LinkUnsubscribes all streams associated with this channel from the pubsub queue.Source:show|on GitHub# File actioncable/lib/action_cable/channel/streams.rb, line 135defstop_all_streamsstreams.eachdo|broadcasting,callback|pubsub.unsubscribebroadcasting,callbacklogger.info"#{self.class.name} stopped streaming from #{broadcasting}"end.clearendstop_stream_for(model)LinkUnsubscribes streams for themodel.Source:show|on GitHub# File actioncable/lib/action_cable/channel/streams.rb, line 130defstop_stream_for(model)stop_stream_from(broadcasting_for(model))endstop_stream_from(broadcasting)LinkUnsubscribes streams from the namedbroadcasting.Source:show|on GitHub# File actioncable/lib/action_cable/channel/streams.rb, line 121defstop_stream_from(broadcasting)callback=streams.delete(broadcasting)ifcallbackpubsub.unsubscribe(broadcasting,callback)logger.info"#{self.class.name} stopped streaming from #{broadcasting}"endendstream_for(model, callback = nil, coder: nil, &block)LinkStart streaming the pubsub queue for themodelin this channel. Optionally, you can pass acallbackthatâll be used instead of the default of just transmitting the updates straight to the subscriber.Passcoder: ActiveSupport::JSONto decode messages as JSON before passing to the callback. Defaults tocoder: nilwhich does no decoding, passes raw messages.Source:show|on GitHub# File actioncable/lib/action_cable/channel/streams.rb, line 116defstream_for(model,callback=nil,coder:nil,&block)stream_from(broadcasting_for(model),callback||block,coder:coder)endstream_from(broadcasting, callback = nil, coder: nil, &block)LinkStart streaming from the namedbroadcastingpubsub queue. Optionally, you can pass acallbackthatâll be used instead of the default of just transmitting the updates straight to the subscriber. Passcoder: ActiveSupport::JSONto decode messages as JSON before passing to the callback. Defaults tocoder: nilwhich does no decoding, passes raw messages.Source:show|on GitHub# File actioncable/lib/action_cable/channel/streams.rb, line 90defstream_from(broadcasting,callback=nil,coder:nil,&block)broadcasting=String(broadcasting)# Don't send the confirmation until pubsub#subscribe is successfuldefer_subscription_confirmation!# Build a stream handler by wrapping the user-provided callback with a decoder# or defaulting to a JSON-decoding retransmitter.handler=worker_pool_stream_handler(broadcasting,callback||block,coder:coder)streams[broadcasting] =handlerconnection.server.event_loop.postdopubsub.subscribe(broadcasting,handler,lambdadoensure_confirmation_sentlogger.info"#{self.class.name} is streaming from #{broadcasting}"end)endendstream_or_reject_for(model)LinkCallsstream_forwith the givenmodelif itâs present to start streaming, otherwise rejects the subscription.Source:show|on GitHub# File actioncable/lib/action_cable/channel/streams.rb, line 144defstream_or_reject_for(model)ifmodelstream_formodelelserejectendend

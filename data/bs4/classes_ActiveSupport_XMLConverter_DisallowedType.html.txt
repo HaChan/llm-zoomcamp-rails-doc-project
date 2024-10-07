@@ -1,0 +1,1 @@
+Raised if the XML contains attributes with type=âyamlâ or type=âsymbolâ. Read Hash#from_xml for more details.MethodsNnewClass Public methodsnew(type)LinkSource:show|on GitHub# File activesupport/lib/active_support/core_ext/hash/conversions.rb, line 144definitialize(type)super"Disallowed type attribute: #{type.inspect}"end

@@ -1,0 +1,1 @@
+Active Job CallbacksActive Job provides hooks during the life cycle of a job.Callbacksallow you to trigger logic during this cycle. Available callbacks are:before_enqueuearound_enqueueafter_enqueuebefore_performaround_performafter_performNamespaceMODULEActiveJob::Callbacks::ClassMethodsIncluded ModulesActiveSupport::Callbacks

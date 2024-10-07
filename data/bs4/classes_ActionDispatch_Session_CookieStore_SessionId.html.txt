@@ -1,0 +1,1 @@
+MethodsNnewAttributes[R]cookie_valueClass Public methodsnew(session_id, cookie_value = {})LinkSource:show|on GitHub# File actionpack/lib/action_dispatch/middleware/session/cookie_store.rb, line 56definitialize(session_id,cookie_value= {})super(session_id)@cookie_value=cookie_valueend

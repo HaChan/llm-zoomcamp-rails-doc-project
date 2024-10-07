@@ -1,0 +1,1 @@
+NamespaceMODULEActiveRecord::Schema::Definition::ClassMethods

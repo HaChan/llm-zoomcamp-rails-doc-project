@@ -1,0 +1,1 @@
+Active Record Attribute Methods SerializationNamespaceMODULEActiveRecord::AttributeMethods::Serialization::ClassMethodsCLASSActiveRecord::AttributeMethods::Serialization::ColumnNotSerializableError

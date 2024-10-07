@@ -1,0 +1,13 @@
+ActiveModelDate TypeAttribute type for date representation. It is registered under the:datekey.class Person
+  include ActiveModel::Attributes
+
+  attribute :birthday, :date
+end
+
+person = Person.new
+person.birthday = "1989-07-13"
+
+person.birthday.class # => Date
+person.birthday.year  # => 1989
+person.birthday.month # => 7
+person.birthday.day   # => 13Stringvalues are parsed using the ISO 8601 date format. Any other values are cast using theirto_datemethod, if it exists.MethodsTtype,type_cast_for_schemaIncluded ModulesActiveModel::Type::Helpers::TimezoneConstantsISO_DATE=/\A(\d{4})-(\d\d)-(\d\d)\z/Instance Public methodstype()LinkSource:show|on GitHub# File activemodel/lib/active_model/type/date.rb, line 30deftype:dateendtype_cast_for_schema(value)LinkSource:show|on GitHub# File activemodel/lib/active_model/type/date.rb, line 34deftype_cast_for_schema(value)value.to_fs(:db).inspectend

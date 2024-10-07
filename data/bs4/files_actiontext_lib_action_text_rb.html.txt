@@ -1,0 +1,1 @@
+Required Filesactive_supportactive_support/railsaction_text/versionaction_text/deprecatornokogiriNamespaceMODULEActionTextMODULEActionText::AttachablesMODULEActionText::Attachments

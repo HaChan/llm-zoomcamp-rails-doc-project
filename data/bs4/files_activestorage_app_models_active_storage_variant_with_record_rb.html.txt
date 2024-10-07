@@ -1,0 +1,1 @@
+Active Storage Variant With RecordLike anActiveStorage::Variant, but keeps detail about the variant in the database as anActiveStorage::VariantRecord. This is only used ifActiveStorage.track_variantsis enabled.NamespaceMODULEActiveRecordMODULEActiveStorageCLASSActiveStorage::VariantWithRecord

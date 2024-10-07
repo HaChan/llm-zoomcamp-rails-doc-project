@@ -1,0 +1,70 @@
+NamespaceMODULEActiveRecord::Type::InternalCLASSActiveRecord::Type::BigIntegerCLASSActiveRecord::Type::BinaryCLASSActiveRecord::Type::BooleanCLASSActiveRecord::Type::DateCLASSActiveRecord::Type::DateTimeCLASSActiveRecord::Type::DecimalCLASSActiveRecord::Type::FloatCLASSActiveRecord::Type::ImmutableStringCLASSActiveRecord::Type::IntegerCLASSActiveRecord::Type::JsonCLASSActiveRecord::Type::StringCLASSActiveRecord::Type::TimeCLASSActiveRecord::Type::ValueMethodsRregisterConstantsBigInteger=ActiveModel::Type::BigIntegerActive Model BigInteger TypeAttribute type for integers that can be serialized to an unlimited number of bytes. This type is registered under the:big_integerkey.class Person
+  include ActiveModel::Attributes
+
+  attribute :id, :big_integer
+end
+
+person = Person.new
+person.id = "18_000_000_000"
+
+person.id # => 18000000000All casting and serialization are performed in the same way as the standardActiveModel::Type::Integertype.Binary=ActiveModel::Type::BinaryActive Model Binary TypeAttribute type for representation of binary data. This type is registered under the:binarykey.Non-string values are coerced to strings using theirto_smethod.Boolean=ActiveModel::Type::BooleanActive Model Boolean TypeA class that behaves like a boolean type, including rules for coercion of user input."false","f","0",0or any other value inFALSE_VALUESwill be coerced tofalse.Empty strings are coerced tonil.All other values will be coerced totrue.Decimal=ActiveModel::Type::DecimalActive Model Decimal TypeAttribute type for decimal, high-precision floating point numeric representation. It is registered under the:decimalkey.class BagOfCoffee
+  include ActiveModel::Attributes
+
+  attribute :weight, :decimal
+endNumericinstances are converted toBigDecimalinstances. Any other objects are cast using theirto_dmethod, except for blank strings, which are cast tonil. If ato_dmethod is not defined, the object is converted to a string usingto_s, which is then cast usingto_d.bag = BagOfCoffee.new
+
+bag.weight = 0.01
+bag.weight # => 0.1e-1
+
+bag.weight = "0.01"
+bag.weight # => 0.1e-1
+
+bag.weight = ""
+bag.weight # => nil
+
+bag.weight = :arbitrary
+bag.weight # => nil (the result of `.to_s.to_d`)Decimalprecision defaults to 18, and can be customized when declaring an attribute:class BagOfCoffee
+  include ActiveModel::Attributes
+
+  attribute :weight, :decimal, precision: 24
+endFloat=ActiveModel::Type::FloatActive Model Float TypeAttribute type for floating point numeric values. It is registered under the:floatkey.class BagOfCoffee
+  include ActiveModel::Attributes
+
+  attribute :weight, :float
+endValues are cast using theirto_fmethod, except for the following strings:Blank strings are cast tonil."Infinity"is cast toFloat::INFINITY."-Infinity"is cast to-Float::INFINITY."NaN"is cast toFloat::NAN.bag = BagOfCoffee.newbag.weight = â0.25â bag.weight # => 0.25bag.weight = ââ bag.weight # => nilbag.weight = âNaNâ bag.weight # => Float::NANImmutableString=ActiveModel::Type::ImmutableStringActive Model ImmutableString TypeAttribute type to represent immutable strings. It casts incoming values to frozen strings.class Person
+  include ActiveModel::Attributes
+
+  attribute :name, :immutable_string
+end
+
+person = Person.new
+person.name = 1
+
+person.name # => "1"
+person.name.frozen? # => trueValues are coerced to strings using theirto_smethod.Booleanvalues are treated differently, however:truewill be cast to"t"andfalsewill be cast to"f". These strings can be customized when declaring an attribute:class Person
+  include ActiveModel::Attributes
+
+  attribute :active, :immutable_string, true: "aye", false: "nay"
+end
+
+person = Person.new
+person.active = true
+
+person.active # => "aye"Integer=ActiveModel::Type::IntegerActive Model Integer TypeAttribute type for integer representation. This type is registered under the:integerkey.class Person
+  include ActiveModel::Attributes
+
+  attribute :age, :integer
+endValues are cast using theirto_imethod, except for blank strings, which are cast tonil. If ato_imethod is not defined or raises an error, the value will be cast tonil.person = Person.new
+
+person.age = "18"
+person.age # => 18
+
+person.age = ""
+person.age # => nil
+
+person.age = :not_an_integer
+person.age # => nil (because Symbol does not define #to_i)Serializationalso works under the same principle. Non-numeric strings are serialized asnil, for example.Serializationalso validates that the integer can be stored using a limited number of bytes. If it cannot, anActiveModel::RangeErrorwill be raised. The default limit is 4 bytes, and can be customized when declaring an attribute:class Person
+  include ActiveModel::Attributes
+
+  attribute :age, :integer, limit: 6
+endString=ActiveModel::Type::StringActive Model String TypeAttribute type for strings. It is registered under the:stringkey.This class is a specialization ofActiveModel::Type::ImmutableString. It performs coercion in the same way, and can be configured in the same way. However, it accounts for mutable strings, so dirty tracking can properly check if a string has changed.Value=ActiveModel::Type::ValueActive Model Value TypeThe base class for all attribute types. This class also serves as the default type for attributes that do not specify a type.Class Public methodsregister(type_name, klass = nil, **options, &block)LinkAdd a new type to the registry, allowing it to be referenced as a symbol byActiveRecord::Base.attribute. If your type is only meant to be used with a specific database adapter, you can do so by passingadapter: :postgresql. If your type has the same name as a native type for the current adapter, an exception will be raised unless you specify an:overrideoption.override: truewill cause your type to be used instead of the native type.override: falsewill cause the native type to be used over yours if one exists.Source:show|on GitHub# File activerecord/lib/active_record/type.rb, line 37defregister(type_name,klass=nil,**options,&block)registry.register(type_name,klass,**options,&block)end

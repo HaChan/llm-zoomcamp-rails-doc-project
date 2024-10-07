@@ -1,0 +1,1 @@
+Required FilesopensslNamespaceMODULEActiveRecordMODULEActiveRecord::EncryptionMODULEDigestCLASSActiveRecord::Encryption::Config

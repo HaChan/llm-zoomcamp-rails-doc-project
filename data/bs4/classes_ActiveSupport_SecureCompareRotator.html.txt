@@ -1,0 +1,14 @@
+Secure Compare RotatorTheActiveSupport::SecureCompareRotatoris a wrapper aroundActiveSupport::SecurityUtils.secure_compareand allows you to rotate a previously defined value to a new one.It can be used as follow:rotator = ActiveSupport::SecureCompareRotator.new('new_production_value')
+rotator.rotate('previous_production_value')
+rotator.secure_compare!('previous_production_value')One real use case example would be to rotate a basic auth credentials:class MyController < ApplicationController
+  def authenticate_request
+    rotator = ActiveSupport::SecureCompareRotator.new('new_password')
+    rotator.rotate('old_password')
+
+    authenticate_or_request_with_http_basic do |username, password|
+      rotator.secure_compare!(password)
+    rescue ActiveSupport::SecureCompareRotator::InvalidMatch
+      false
+    end
+  end
+endMethodsNnewRrotateSsecure_compare!Included ModulesActiveSupport::SecurityUtilsConstantsInvalidMatch=Class.new(StandardError)Class Public methodsnew(value, on_rotation: nil)LinkSource:show|on GitHub# File activesupport/lib/active_support/secure_compare_rotator.rb, line 37definitialize(value,on_rotation:nil)@value=value@rotate_values= []@on_rotation=on_rotationendInstance Public methodsrotate(previous_value)LinkSource:show|on GitHub# File activesupport/lib/active_support/secure_compare_rotator.rb, line 43defrotate(previous_value)@rotate_values<<previous_valueendsecure_compare!(other_value, on_rotation: @on_rotation)LinkSource:show|on GitHub# File activesupport/lib/active_support/secure_compare_rotator.rb, line 47defsecure_compare!(other_value,on_rotation:@on_rotation)ifsecure_compare(@value,other_value)trueelsif@rotate_values.any?{|value|secure_compare(value,other_value) }on_rotation&.calltrueelseraiseInvalidMatchendend

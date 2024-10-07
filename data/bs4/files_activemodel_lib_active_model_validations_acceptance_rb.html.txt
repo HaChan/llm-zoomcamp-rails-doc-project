@@ -1,0 +1,1 @@
+NamespaceMODULEActiveModelMODULEActiveModel::ValidationsMODULEActiveModel::Validations::HelperMethodsCLASSActiveModel::Validations::AcceptanceValidatorCLASSActiveModel::Validations::AcceptanceValidator::LazilyDefineAttributes

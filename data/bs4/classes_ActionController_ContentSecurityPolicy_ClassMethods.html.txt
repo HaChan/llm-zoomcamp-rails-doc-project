@@ -1,0 +1,15 @@
+MethodsCcontent_security_policy,content_security_policy_report_onlyInstance Public methodscontent_security_policy(enabled = true, **options, &block)LinkOverrides parts of the globally configuredContent-Security-Policyheader:class PostsController < ApplicationController
+  content_security_policy do |policy|
+    policy.base_uri "https://www.example.com"
+  end
+endOptions can be passed similar tobefore_action. For example, passonly: :indexto override the header on the index action only:class PostsController < ApplicationController
+  content_security_policy(only: :index) do |policy|
+    policy.default_src :self, :https
+  end
+endPassfalseto remove theContent-Security-Policyheader:class PostsController < ApplicationController
+  content_security_policy false, only: :index
+endSource:show|on GitHub# File actionpack/lib/action_controller/metal/content_security_policy.rb, line 40defcontent_security_policy(enabled=true,**options,&block)before_action(options)doifblock_given?policy=current_content_security_policyinstance_exec(policy,&block)request.content_security_policy=policyendunlessenabledrequest.content_security_policy=nilendendendcontent_security_policy_report_only(report_only = true, **options)LinkOverrides the globally configuredContent-Security-Policy-Report-Onlyheader:class PostsController < ApplicationController
+  content_security_policy_report_only only: :index
+endPassfalseto remove theContent-Security-Policy-Report-Onlyheader:class PostsController < ApplicationController
+  content_security_policy_report_only false, only: :index
+endSource:show|on GitHub# File actionpack/lib/action_controller/metal/content_security_policy.rb, line 66defcontent_security_policy_report_only(report_only=true,**options)before_action(options)dorequest.content_security_policy_report_only=report_onlyendend

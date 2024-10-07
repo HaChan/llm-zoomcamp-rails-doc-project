@@ -1,0 +1,1 @@
+Raised when the number of placeholders in an SQL fragment passed toActiveRecord::Base.wheredoes not match the number of values supplied.For example, when there are two placeholders with only one value supplied:Location.where("lat = ? AND lng = ?", 53.7362)

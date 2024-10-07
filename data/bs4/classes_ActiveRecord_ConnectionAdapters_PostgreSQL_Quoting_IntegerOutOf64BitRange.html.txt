@@ -1,0 +1,1 @@
+MethodsNnewClass Public methodsnew(msg)LinkSource:show|on GitHub# File activerecord/lib/active_record/connection_adapters/postgresql/quoting.rb, line 64definitialize(msg)super(msg)end

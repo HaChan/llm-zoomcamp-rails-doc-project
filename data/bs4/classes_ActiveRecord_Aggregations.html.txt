@@ -1,0 +1,1 @@
+SeeActiveRecord::Aggregations::ClassMethodsfor documentationNamespaceMODULEActiveRecord::Aggregations::ClassMethods

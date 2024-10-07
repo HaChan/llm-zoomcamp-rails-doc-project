@@ -1,0 +1,5 @@
+MethodsMmultiline?Instance Public methodsmultiline?()LinkReturnstrueif the regexp has the multiline flag set.(/./).multiline?  # => false
+(/./m).multiline? # => true
+
+Regexp.new(".").multiline?                    # => false
+Regexp.new(".", Regexp::MULTILINE).multiline? # => trueSource:show|on GitHub# File activesupport/lib/active_support/core_ext/regexp.rb, line 11defmultiline?options&MULTILINE==MULTILINEend

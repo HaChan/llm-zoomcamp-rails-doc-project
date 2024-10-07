@@ -1,0 +1,1 @@
+Required Filesactive_support/core_ext/module/attribute_accessors_per_threadactive_record/query_logs_formatterNamespaceMODULEActiveRecordMODULEActiveRecord::QueryLogsMODULEActiveSupport

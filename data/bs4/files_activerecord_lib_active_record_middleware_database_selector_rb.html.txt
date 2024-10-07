@@ -1,0 +1,1 @@
+Required Filesactive_record/middleware/database_selector/resolverNamespaceMODULEActionDispatchMODULEActiveRecordMODULEActiveRecord::MiddlewareCLASSActiveRecord::Middleware::DatabaseSelector

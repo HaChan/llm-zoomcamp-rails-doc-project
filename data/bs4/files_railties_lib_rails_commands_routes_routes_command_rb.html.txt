@@ -1,0 +1,1 @@
+Required Filesrails/commandaction_dispatch/routing/inspectorNamespaceMODULEActionDispatchMODULEActionDispatch::RoutingMODULEActionDispatch::Routing::ConsoleFormatterMODULERailsMODULERails::Command

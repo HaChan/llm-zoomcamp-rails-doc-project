@@ -1,0 +1,1 @@
+NamespaceMODULEActiveRecordMODULEActiveRecord::ConnectionAdaptersMODULEActiveRecord::ConnectionAdapters::Mysql2MODULEActiveRecord::ConnectionAdapters::Mysql2::DatabaseStatementsMODULEActiveSupport

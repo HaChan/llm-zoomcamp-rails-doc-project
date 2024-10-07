@@ -1,0 +1,1 @@
+Provides asynchronous purging ofActiveStorage::Blobrecords viaActiveStorage::Blob#purge_later.NamespaceMODULEActiveRecordMODULEActiveStorageCLASSActiveStorage::PurgeJob

@@ -1,0 +1,96 @@
+Active Model DirtyProvides a way to track changes in your object in the same way as Active Record does.The requirements for implementingActiveModel::Dirtyare:include ActiveModel::Dirtyin your object.Calldefine_attribute_methodspassing each method you want to track.Call*_will_change!before each change to the tracked attribute.Callchanges_appliedafter the changes are persisted.Callclear_changes_informationwhen you want to reset the changes information.Callrestore_attributeswhen you want to restore previous data.A minimal implementation could be:class Person
+  include ActiveModel::Dirty
+
+  define_attribute_methods :name
+
+  def initialize
+    @name = nil
+  end
+
+  def name
+    @name
+  end
+
+  def name=(val)
+    name_will_change! unless val == @name
+    @name = val
+  end
+
+  def save
+    # do persistence work
+
+    changes_applied
+  end
+
+  def reload!
+    # get the values from the persistence layer
+
+    clear_changes_information
+  end
+
+  def rollback!
+    restore_attributes
+  end
+endA newly instantiatedPersonobject is unchanged:person = Person.new
+person.changed? # => falseChange the name:person.name = 'Bob'
+person.changed?       # => true
+person.name_changed?  # => true
+person.name_changed?(from: nil, to: "Bob") # => true
+person.name_was       # => nil
+person.name_change    # => [nil, "Bob"]
+person.name = 'Bill'
+person.name_change    # => [nil, "Bill"]Save the changes:person.save
+person.changed?      # => false
+person.name_changed? # => falseReset the changes:person.previous_changes         # => {"name" => [nil, "Bill"]}
+person.name_previously_changed? # => true
+person.name_previously_changed?(from: nil, to: "Bill") # => true
+person.name_previous_change     # => [nil, "Bill"]
+person.name_previously_was      # => nil
+person.reload!
+person.previous_changes         # => {}Rollback the changes:person.name = "Uncle Bob"
+person.rollback!
+person.name          # => "Bill"
+person.name_changed? # => falseAssigning the same value leaves the attribute unchanged:person.name = 'Bill'
+person.name_changed? # => false
+person.name_change   # => nilWhich attributes have changed?person.name = 'Bob'
+person.changed # => ["name"]
+person.changes # => {"name" => ["Bill", "Bob"]}If an attribute is modified in-place then make use of*_will_change!to mark that the attribute is changing. Otherwise Active Model canât track changes to in-place attributes. Note that Active Record can detect in-place modifications automatically. You do not need to call*_will_change!on Active Record models.person.name_will_change!
+person.name_change # => ["Bill", "Bill"]
+person.name << 'y'
+person.name_change # => ["Bill", "Billy"]Methods can be invoked asname_changed?or by passing an argument to the generic methodattribute_changed?("name").Methods#*_change,*_changed?,*_previous_change,*_previously_changed?,*_previously_was,*_was,*_will_change!Aattribute_changed?,attribute_previously_changed?,attribute_previously_was,attribute_wasCchanged,changed?,changed_attributes,changes,changes_applied,clear_*_change,clear_attribute_changes,clear_changes_informationPprevious_changesRrestore_*!,restore_attributesIncluded ModulesActiveModel::AttributeMethodsInstance Public methods*_changeLinkThis method is generated for each attribute.Returns the old and the new value of the attribute.person = Person.new
+person.name = 'Nick'
+person.name_change # => [nil, 'Nick']Source:on GitHub# File activemodel/lib/active_model/dirty.rb, line 155*_changed?LinkThis method is generated for each attribute.Returns true if the attribute has unsaved changes.person = Person.new
+person.name = 'Andrew'
+person.name_changed? # => trueSource:on GitHub# File activemodel/lib/active_model/dirty.rb, line 144*_previous_changeLinkThis method is generated for each attribute.Returns the old and the new value of the attribute before the last save.person = Person.new
+person.name = 'Emmanuel'
+person.save
+person.name_previous_change # => [nil, 'Emmanuel']Source:on GitHub# File activemodel/lib/active_model/dirty.rb, line 193*_previously_changed?(**options)LinkThis method is generated for each attribute.Returns true if the attribute previously had unsaved changes.person = Person.new
+person.name = 'Britanny'
+person.save
+person.name_previously_changed? # => true
+person.name_previously_changed?(from: nil, to: 'Britanny') # => trueSource:on GitHub# File activemodel/lib/active_model/dirty.rb, line 129*_previously_wasLinkThis method is generated for each attribute.Returns the old value of the attribute before the last save.person = Person.new
+person.name = 'Sage'
+person.save
+person.name_previously_was  # => nilSource:on GitHub# File activemodel/lib/active_model/dirty.rb, line 205*_wasLinkThis method is generated for each attribute.Returns the old value of the attribute.person = Person.new(name: 'Steph')
+person.name = 'Stephanie'
+person.name_was # => 'Steph'Source:on GitHub# File activemodel/lib/active_model/dirty.rb, line 182*_will_change!LinkThis method is generated for each attribute.If an attribute is modified in-place then make use of*_will_change!to mark that the attribute is changing. Otherwise ActiveModelcanât track changes to in-place attributes. Note that Active Record can detect in-place modifications automatically. You do not need to call*_will_change!on Active Record models.person = Person.new('Sandy')
+person.name_will_change!
+person.name_change # => ['Sandy', 'Sandy']Source:on GitHub# File activemodel/lib/active_model/dirty.rb, line 166attribute_changed?(attr_name, **options)LinkDispatch target for*_changed?attribute methods.Source:show|on GitHub# File activemodel/lib/active_model/dirty.rb, line 293defattribute_changed?(attr_name,**options)mutations_from_database.changed?(attr_name.to_s,**options)endattribute_previously_changed?(attr_name, **options)LinkDispatch target for*_previously_changed?attribute methods.Source:show|on GitHub# File activemodel/lib/active_model/dirty.rb, line 303defattribute_previously_changed?(attr_name,**options)mutations_before_last_save.changed?(attr_name.to_s,**options)endattribute_previously_was(attr_name)LinkDispatch target for*_previously_wasattribute methods.Source:show|on GitHub# File activemodel/lib/active_model/dirty.rb, line 308defattribute_previously_was(attr_name)mutations_before_last_save.original_value(attr_name.to_s)endattribute_was(attr_name)LinkDispatch target for*_wasattribute methods.Source:show|on GitHub# File activemodel/lib/active_model/dirty.rb, line 298defattribute_was(attr_name)mutations_from_database.original_value(attr_name.to_s)endchanged()LinkReturns an array with the name of the attributes with unsaved changes.person.changed # => []
+person.name = 'bob'
+person.changed # => ["name"]Source:show|on GitHub# File activemodel/lib/active_model/dirty.rb, line 288defchangedmutations_from_database.changed_attribute_namesendchanged?()LinkReturnstrueif any of the attributes has unsaved changes,falseotherwise.person.changed? # => false
+person.name = 'bob'
+person.changed? # => trueSource:show|on GitHub# File activemodel/lib/active_model/dirty.rb, line 279defchanged?mutations_from_database.any_changes?endchanged_attributes()LinkReturns a hash of the attributes with unsaved changes indicating their original values likeattr => original value.person.name # => "bob"
+person.name = 'robert'
+person.changed_attributes # => {"name" => "bob"}Source:show|on GitHub# File activemodel/lib/active_model/dirty.rb, line 336defchanged_attributesmutations_from_database.changed_valuesendchanges()LinkReturns a hash of changed attributes indicating their original and new values likeattr => [original value, new value].person.changes # => {}
+person.name = 'bob'
+person.changes # => { "name" => ["bill", "bob"] }Source:show|on GitHub# File activemodel/lib/active_model/dirty.rb, line 346defchangesmutations_from_database.changesendchanges_applied()LinkClears dirty data and moveschangestoprevious_changesandmutations_from_databasetomutations_before_last_saverespectively.Source:show|on GitHub# File activemodel/lib/active_model/dirty.rb, line 265defchanges_appliedunlessdefined?(@attributes)mutations_from_database.finalize_changesend@mutations_before_last_save=mutations_from_databaseforget_attribute_assignments@mutations_from_database=nilendclear_*_changeLinkThis method is generated for each attribute.Clears all dirty data of the attribute: current changes and previous changes.person = Person.new(name: 'Chris')
+person.name = 'Jason'
+person.name_change # => ['Chris', 'Jason']
+person.clear_name_change
+person.name_change # => nilSource:show|on GitHub# File activemodel/lib/active_model/dirty.rb, line 241attribute_method_suffix"_previously_changed?","_changed?",parameters:"**options"clear_attribute_changes(attr_names)LinkSource:show|on GitHub# File activemodel/lib/active_model/dirty.rb, line 324defclear_attribute_changes(attr_names)attr_names.eachdo|attr_name|clear_attribute_change(attr_name)endendclear_changes_information()LinkClears all dirty data: current changes and previous changes.Source:show|on GitHub# File activemodel/lib/active_model/dirty.rb, line 318defclear_changes_information@mutations_before_last_save=nilforget_attribute_assignments@mutations_from_database=nilendprevious_changes()LinkReturns a hash of attributes that were changed before the model was saved.person.name # => "bob"
+person.name = 'robert'
+person.save
+person.previous_changes # => {"name" => ["bob", "robert"]}Source:show|on GitHub# File activemodel/lib/active_model/dirty.rb, line 356defprevious_changesmutations_before_last_save.changesendrestore_*!LinkThis method is generated for each attribute.Restores the attribute to the old value.person = Person.new
+person.name = 'Amanda'
+person.restore_name!
+person.name # => nilSource:on GitHub# File activemodel/lib/active_model/dirty.rb, line 217restore_attributes(attr_names = changed)LinkRestore all previous data of the provided attributes.Source:show|on GitHub# File activemodel/lib/active_model/dirty.rb, line 313defrestore_attributes(attr_names=changed)attr_names.each{|attr_name|restore_attribute!(attr_name) }end

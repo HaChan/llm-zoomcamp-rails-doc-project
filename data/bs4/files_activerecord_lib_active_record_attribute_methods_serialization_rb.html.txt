@@ -1,0 +1,1 @@
+NamespaceMODULEActiveRecordMODULEActiveRecord::AttributeMethodsMODULEActiveRecord::AttributeMethods::SerializationMODULEActiveRecord::AttributeMethods::Serialization::ClassMethodsMODULEActiveRecord::CodersCLASSActiveRecord::AttributeMethods::Serialization::ColumnNotSerializableError

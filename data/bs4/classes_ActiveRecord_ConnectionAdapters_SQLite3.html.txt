@@ -1,0 +1,1 @@
+NamespaceMODULEActiveRecord::ConnectionAdapters::SQLite3::DatabaseStatementsCLASSActiveRecord::ConnectionAdapters::SQLite3::TableDefinition

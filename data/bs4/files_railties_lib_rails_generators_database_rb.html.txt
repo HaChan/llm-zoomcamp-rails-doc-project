@@ -1,0 +1,1 @@
+NamespaceMODULERailsMODULERails::GeneratorsMODULERails::Generators::Database::MySqlSocketCLASSRails::Generators::DatabaseCLASSRails::Generators::Database::MariaDBCLASSRails::Generators::Database::MySQLCLASSRails::Generators::Database::NullCLASSRails::Generators::Database::PostgreSQLCLASSRails::Generators::Database::SQLite3

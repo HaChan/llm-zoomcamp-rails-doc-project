@@ -1,0 +1,13 @@
+Action Mailer MailHelperProvides helper methods forActionMailer::Basethat can be used for easily formatting messages, accessing mailer or message instances, and the attachments list.MethodsAattachmentsBblock_formatFformat_paragraphMmailer,messageInstance Public methodsattachments()LinkAccess the message attachments list.Source:show|on GitHub# File actionmailer/lib/action_mailer/mail_helper.rb, line 45defattachmentsmailer.attachmentsendblock_format(text)LinkTake the text and format it, indented two spaces for each line, and wrapped at 72 columns:text = <<-TEXT
+  This is
+  the      paragraph.
+
+  * item1 * item2
+TEXT
+
+block_format text
+# => "  This is the paragraph.\n\n  * item1\n  * item2\n"Source:show|on GitHub# File actionmailer/lib/action_mailer/mail_helper.rb, line 22defblock_format(text)formatted=text.split(/\n\r?\n/).collect{|paragraph|format_paragraph(paragraph)
+  }.join("\n\n")# Make list points stand on their own lineformatted.gsub!(/[ ]*([*]+) ([^*]*)/) {"  #{$1} #{$2.strip}\n"}formatted.gsub!(/[ ]*([#]+) ([^#]*)/) {"  #{$1} #{$2.strip}\n"}formattedendformat_paragraph(text, len = 72, indent = 2)LinkReturnstextwrapped atlencolumns and indentedindentspaces. By default column lengthlenequals 72 characters and indentindentequal two spaces.my_text = 'Here is a sample text with more than 40 characters'
+
+format_paragraph(my_text, 25, 4)
+# => "    Here is a sample text with\n    more than 40 characters"Source:show|on GitHub# File actionmailer/lib/action_mailer/mail_helper.rb, line 57defformat_paragraph(text,len=72,indent=2)sentences= [[]]text.split.eachdo|word|ifsentences.first.present?&&(sentences.last+[word]).join(" ").length>lensentences<<[word]elsesentences.last<<wordendendindentation=" "*indentsentences.map!{|sentence|"#{indentation}#{sentence.join(' ')}"}.join"\n"endmailer()LinkAccess the mailer instance.Source:show|on GitHub# File actionmailer/lib/action_mailer/mail_helper.rb, line 35defmailer@_controllerendmessage()LinkAccess the message instance.Source:show|on GitHub# File actionmailer/lib/action_mailer/mail_helper.rb, line 40defmessage@_messageend

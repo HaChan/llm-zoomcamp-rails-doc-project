@@ -1,0 +1,1 @@
+Required Filesshellwordsactive_support/encrypted_fileNamespaceMODULERailsMODULERails::CommandMODULERails::Command::HelpersMODULERails::Command::Helpers::Editor

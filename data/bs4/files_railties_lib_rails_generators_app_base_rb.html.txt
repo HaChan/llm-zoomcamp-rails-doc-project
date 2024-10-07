@@ -1,0 +1,1 @@
+Required Filesfileutilsdigest/md5rails/versionopen-uritsorturirails/generatorsactive_support/core_ext/array/extract_optionsbundlershellwordsNamespaceMODULERailsMODULERails::GeneratorsCLASSFileCLASSRails::Generators::AppBaseCLASSRails::Generators::AppBase::GemfileEntry

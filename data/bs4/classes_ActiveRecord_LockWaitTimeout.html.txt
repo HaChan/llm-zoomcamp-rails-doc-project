@@ -1,0 +1,1 @@
+LockWaitTimeoutwill be raised when lock wait timeout exceeded.

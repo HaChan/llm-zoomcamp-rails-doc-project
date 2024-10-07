@@ -1,0 +1,1 @@
+MethodsMmake_response!Instance Public methodsmake_response!(request)LinkSource:show|on GitHub# File actionpack/lib/action_controller/metal/live.rb, line 60defmake_response!(request)ifrequest.get_header("HTTP_VERSION")=="HTTP/1.0"superelseLive::Response.new.tapdo|res|res.request=requestendendend

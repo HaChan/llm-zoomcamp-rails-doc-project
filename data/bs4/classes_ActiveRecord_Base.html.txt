@@ -1,0 +1,67 @@
+Active RecordActive Record objects donât specify their attributes directly, but rather infer them from the table definition with which theyâre linked. Adding, removing, and changing attributes and their type is done directly in the database. Any change is instantly reflected in the Active Record objects. The mapping that binds a given Active Record class to a certain database table will happen automatically in most common cases, but can be overwritten for the uncommon ones.See the mapping rules in table_name and the full example infiles/activerecord/README_rdoc.htmlfor more insight.CreationActive Records accept constructor parameters either in a hash or as a block. The hash method is especially useful when youâre receiving the data from somewhere else, like an HTTP request. It works like this:user = User.new(name: "David", occupation: "Code Artist")
+user.name # => "David"You can also use block initialization:user = User.new do |u|
+  u.name = "David"
+  u.occupation = "Code Artist"
+endAnd of course you can just create a bare object and specify the attributes after the fact:user = User.new
+user.name = "David"
+user.occupation = "Code Artist"ConditionsConditions can either be specified as a string, array, or hash representing the WHERE-part of an SQL statement. The array form is to be used when the condition input is tainted and requires sanitization. The string form can be used for statements that donât involve tainted data. The hash form works much like the array form, except only equality and range is possible. Examples:class User < ActiveRecord::Base
+  def self.authenticate_unsafely(user_name, password)
+    where("user_name = '#{user_name}' AND password = '#{password}'").first
+  end
+
+  def self.authenticate_safely(user_name, password)
+    where("user_name = ? AND password = ?", user_name, password).first
+  end
+
+  def self.authenticate_safely_simply(user_name, password)
+    where(user_name: user_name, password: password).first
+  end
+endTheauthenticate_unsafelymethod inserts the parameters directly into the query and is thus susceptible to SQL-injection attacks if theuser_nameandpasswordparameters come directly from an HTTP request. Theauthenticate_safelyandauthenticate_safely_simplyboth will sanitize theuser_nameandpasswordbefore inserting them in the query, which will ensure that an attacker canât escape the query and fake the login (or worse).When using multiple parameters in the conditions, it can easily become hard to read exactly what the fourth or fifth question mark is supposed to represent. In those cases, you can resort to named bind variables instead. Thatâs done by replacing the question marks with symbols and supplying a hash with values for the matching symbol keys:Company.where(
+  "id = :id AND name = :name AND division = :division AND created_at > :accounting_date",
+  { id: 3, name: "37signals", division: "First", accounting_date: '2005-01-01' }
+).firstSimilarly, a simple hash without a statement will generate conditions based on equality with the SQL AND operator. For instance:Student.where(first_name: "Harvey", status: 1)
+Student.where(params[:student])A range may be used in the hash to use the SQL BETWEEN operator:Student.where(grade: 9..12)An array may be used in the hash to use the SQL IN operator:Student.where(grade: [9,11,12])When joining tables, nested hashes or keys written in the form âtable_name.column_nameâ can be used to qualify the table name of a particular condition. For instance:Student.joins(:schools).where(schools: { category: 'public' })
+Student.joins(:schools).where('schools.category' => 'public' )Overwriting default accessorsAll column values are automatically available through basic accessors on the Active Record object, but sometimes you want to specialize this behavior. This can be done by overwriting the default accessors (using the same name as the attribute) and callingsuperto actually change things.class Song < ActiveRecord::Base
+  # Uses an integer of seconds to hold the length of the song
+
+  def length=(minutes)
+    super(minutes.to_i * 60)
+  end
+
+  def length
+    super / 60
+  end
+endAttribute query methodsIn addition to the basic accessors, query methods are also automatically available on the Active Record object. Query methods allow you to test whether an attribute value is present. Additionally, when dealing with numeric values, a query method will return false if the value is zero.For example, an Active Record User with thenameattribute has aname?method that you can call to determine whether the user has a name:user = User.new(name: "David")
+user.name? # => true
+
+anonymous = User.new(name: "")
+anonymous.name? # => falseQuery methods will also respect any overrides of default accessors:class User
+  # Has admin boolean column
+  def admin
+    false
+  end
+end
+
+user.update(admin: true)
+
+user.read_attribute(:admin)  # => true, gets the column value
+user[:admin] # => true, also gets the column value
+
+user.admin   # => false, due to the getter override
+user.admin?  # => false, due to the getter overrideAccessing attributes before they have been typecastedSometimes you want to be able to read the raw attribute data without having the column-determined typecast run its course first. That can be done by using the<attribute>_before_type_castaccessors that all attributes have. For example, if your Account model has abalanceattribute, you can callaccount.balance_before_type_castoraccount.id_before_type_cast.This is especially useful in validation situations where the user might supply a string for an integer field and you want to display the original string back in an error message. Accessing the attribute normally would typecast the string to 0, which isnât what you want.Dynamic attribute-based findersDynamic attribute-based finders are a mildly deprecated way of getting (and/or creating) objects by simple queries without turning to SQL. They work by appending the name of an attribute tofind_by_likePerson.find_by_user_name. Instead of writingPerson.find_by(user_name: user_name), you can usePerson.find_by_user_name(user_name).Itâs possible to add an exclamation point (!) on the end of the dynamic finders to get them to raise anActiveRecord::RecordNotFounderror if they do not return any records, likePerson.find_by_last_name!.Itâs also possible to use multiple attributes in the samefind_by_by separating them with âandâ.Person.find_by(user_name: user_name, password: password)
+Person.find_by_user_name_and_password(user_name, password) # with dynamic finderItâs even possible to call these dynamic finder methods on relations and named scopes.Payment.order("created_on").find_by_amount(50)Saving arrays, hashes, and other non-mappable objects in text columnsActive Record can serialize any object in text columns using YAML. To do so, you must specify this with a call to the class methodserialize. This makes it possible to store arrays, hashes, and other non-mappable objects without doing any additional work.class User < ActiveRecord::Base
+  serialize :preferences
+end
+
+user = User.create(preferences: { "background" => "black", "display" => large })
+User.find(user.id).preferences # => { "background" => "black", "display" => large }You can also specify a class option as the second parameter thatâll raise an exception if a serialized object is retrieved as a descendant of a class not in the hierarchy.class User < ActiveRecord::Base
+  serialize :preferences, Hash
+end
+
+user = User.create(preferences: %w( one two three ))
+User.find(user.id).preferences    # raises SerializationTypeMismatchWhen you specify a class option, the default value for that attribute will be a new instance of that class.class User < ActiveRecord::Base
+  serialize :preferences, OpenStruct
+end
+
+user = User.new
+user.preferences.theme_color = "red"Single table inheritanceActive Record allows inheritance by storing the name of the class in a column that is named âtypeâ by default. SeeActiveRecord::Inheritancefor more details.Connection to multiple databases in different modelsConnections are usually created throughActiveRecord::Base.establish_connectionand retrieved by ActiveRecord::Base.lease_connection. All classes inheriting fromActiveRecord::Basewill use this connection. But you can also set a class-specific connection. For example, if Course is anActiveRecord::Base, but resides in a different database, you can just sayCourse.establish_connectionand Course and all of its subclasses will use this connection instead.This feature is implemented by keeping a connection pool inActiveRecord::Basethat is a hash indexed by the class. If a connection is requested, theActiveRecord::Base.retrieve_connectionmethod will go up the class-hierarchy until a connection is found in the connection pool.ExceptionsActiveRecordError- Generic error class and superclass of all other errors raised by Active Record.AdapterNotSpecified- The configuration hash used inActiveRecord::Base.establish_connectiondidnât include an:adapterkey.AdapterNotFound- The:adapterkey used inActiveRecord::Base.establish_connectionspecified a non-existent adapter (or a bad spelling of an existing one).AssociationTypeMismatch- The object assigned to the association wasnât of the type specified in the association definition.AttributeAssignmentError- An error occurred while doing a mass assignment through the ActiveRecord::Base#attributes= method. You can inspect theattributeproperty of the exception object to determine which attribute triggered the error.ConnectionNotEstablished- No connection has been established. UseActiveRecord::Base.establish_connectionbefore querying.MultiparameterAssignmentErrors- Collection of errors that occurred during a mass assignment using the ActiveRecord::Base#attributes= method. Theerrorsproperty of this exception contains an array ofAttributeAssignmentErrorobjects that should be inspected to determine which attributes triggered the errors.RecordInvalid- raised byActiveRecord::Base#save!andActiveRecord::Base.create!when the record is invalid.RecordNotFound- No record responded to theActiveRecord::Base.findmethod. Either the row with the given ID doesnât exist or the row didnât meet the additional restrictions. SomeActiveRecord::Base.findcalls do not raise this exception to signal nothing was found, please check its documentation for further details.SerializationTypeMismatch- The serialized object wasnât of the class specified as the second parameter.StatementInvalid- The database server rejected the SQL statement. The precise error is added in the message.Note: The attributes listed are class-level attributes (accessible from both the class and instance level). So itâs possible to assign a logger to the class throughBase.logger=which will then be used by all instances in the current object space.Included ModulesActiveModel::APIActiveRecord::CoreActiveRecord::PersistenceActiveRecord::ReadonlyAttributesActiveRecord::ModelSchemaActiveRecord::InheritanceActiveRecord::ScopingActiveRecord::SanitizationActiveRecord::AttributeAssignmentActiveRecord::IntegrationActiveRecord::ValidationsActiveRecord::CounterCacheActiveRecord::AttributesActiveRecord::Locking::OptimisticActiveRecord::Locking::PessimisticActiveRecord::Encryption::EncryptableRecordActiveRecord::AttributeMethodsActiveRecord::CallbacksActiveRecord::TimestampActiveRecord::AssociationsActiveRecord::SecurePasswordActiveRecord::AutosaveAssociationActiveRecord::NestedAttributesActiveRecord::TransactionsActiveRecord::NoTouchingActiveRecord::ReflectionActiveRecord::AttributeMethods::SerializationActiveRecord::StoreActiveRecord::SecureTokenActiveRecord::TokenForActiveRecord::SignedIdActiveRecord::SuppressorActiveRecord::NormalizationActiveRecord::Marshalling::Methods

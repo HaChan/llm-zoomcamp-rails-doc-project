@@ -1,0 +1,1 @@
+NamespaceMODULEActiveRecordMODULEActiveRecord::Schema::DefinitionMODULEActiveRecord::Schema::Definition::ClassMethodsCLASSActiveRecord::MigrationCLASSActiveRecord::Schema

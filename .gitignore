@@ -1,0 +1,4 @@
+__pycache__/
+data/*
+my-venv/
+!data/bs4

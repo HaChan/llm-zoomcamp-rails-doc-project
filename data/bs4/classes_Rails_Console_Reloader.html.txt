@@ -1,0 +1,1 @@
+MethodsEexecuteIncluded ModulesRails::ConsoleMethodsInstance Public methodsexecute(*)LinkSource:show|on GitHub# File railties/lib/rails/commands/console/irb_console.rb, line 60defexecute(*)puts"Reloading..."Rails.application.reloader.reload!end

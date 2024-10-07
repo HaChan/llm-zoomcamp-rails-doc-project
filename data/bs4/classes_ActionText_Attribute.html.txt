@@ -1,0 +1,20 @@
+MethodsHhas_rich_textRrich_text_association_namesWwith_all_rich_textInstance Public methodshas_rich_text(name, encrypted: false, strict_loading: strict_loading_by_default)LinkProvides access to a dependentRichTextmodel that holds the body and attachments for a single named rich text attribute. This dependent attribute is lazily instantiated and will be auto-saved when itâs been changed. Example:class Message < ActiveRecord::Base
+  has_rich_text :content
+end
+
+message = Message.create!(content: "<h1>Funny times!</h1>")
+message.content? #=> true
+message.content.to_s # => "<h1>Funny times!</h1>"
+message.content.to_plain_text # => "Funny times!"The dependentRichTextmodel will also automatically process attachments links as sent via the Trix-powered editor. These attachments are associated with theRichTextmodel using Active Storage.If you wish to preload the dependentRichTextmodel, you can use the named scope:Message.all.with_rich_text_content # Avoids N+1 queries when you just want the body, not the attachments.
+Message.all.with_rich_text_content_and_embeds # Avoids N+1 queries when you just want the body and attachments.
+Message.all.with_all_rich_text # Loads all rich text associations.Options:encrypted- Pass true to encrypt the rich text attribute. The encryption will be non-deterministic. SeeActiveRecord::Encryption::EncryptableRecord.encrypts. Default: false.:strict_loading- Pass true to force strict loading. When omitted,strict_loading:will be set to the value of thestrict_loading_by_defaultclass attribute (false by default).Note: Action Text relies on polymorphic associations, which in turn store class names in the database. When renaming classes that usehas_rich_text, make sure to also update the class names in theaction_text_rich_texts.record_typepolymorphic type column of the corresponding rows.Source:show|on GitHub# File actiontext/lib/action_text/attribute.rb, line 50defhas_rich_text(name,encrypted:false,strict_loading:strict_loading_by_default)class_eval<<-CODE,__FILE__,__LINE__+1def #{name}
+            rich_text_#{name} || build_rich_text_#{name}
+          end
+
+          def #{name}?
+            rich_text_#{name}.present?
+          end
+
+          def #{name}=(body)
+            self.#{name}.body = body
+          endCODErich_text_class_name=encrypted?"ActionText::EncryptedRichText":"ActionText::RichText"has_one:"rich_text_#{name}",->{where(name:name) },class_name:rich_text_class_name,as::record,inverse_of::record,autosave:true,dependent::destroy,strict_loading:strict_loadingscope:"with_rich_text_#{name}",->{includes("rich_text_#{name}") }scope:"with_rich_text_#{name}_and_embeds",->{includes("rich_text_#{name}":{embeds_attachments::blob}) }endrich_text_association_names()LinkReturns the names of all rich text associations.Source:show|on GitHub# File actiontext/lib/action_text/attribute.rb, line 80defrich_text_association_namesreflect_on_all_associations(:has_one).collect(&:name).select{|n|n.start_with?("rich_text_") }endwith_all_rich_text()LinkEager load all dependentRichTextmodels in bulk.Source:show|on GitHub# File actiontext/lib/action_text/attribute.rb, line 75defwith_all_rich_textincludes(rich_text_association_names)end

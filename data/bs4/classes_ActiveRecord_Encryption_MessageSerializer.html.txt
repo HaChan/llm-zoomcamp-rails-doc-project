@@ -1,0 +1,8 @@
+A message serializer that serializesMessageswith JSON.The generated structure is pretty simple:{
+  p: <payload>,
+  h: {
+    header1: value1,
+    header2: value2,
+    ...
+  }
+}Both the payload and the header values are encoded with Base64 to prevent JSON parsing errors and encoding issues when storing the resulting serialized data.MethodsBbinary?DdumpLloadInstance Public methodsbinary?()LinkSource:show|on GitHub# File activerecord/lib/active_record/encryption/message_serializer.rb, line 36defbinary?falseenddump(message)LinkSource:show|on GitHub# File activerecord/lib/active_record/encryption/message_serializer.rb, line 31defdump(message)raiseActiveRecord::Encryption::Errors::ForbiddenClassunlessmessage.is_a?(ActiveRecord::Encryption::Message)JSON.dumpmessage_to_json(message)endload(serialized_content)LinkSource:show|on GitHub# File activerecord/lib/active_record/encryption/message_serializer.rb, line 24defload(serialized_content)data=JSON.parse(serialized_content)parse_message(data,1)rescueJSON::ParserErrorraiseActiveRecord::Encryption::Errors::Encodingend

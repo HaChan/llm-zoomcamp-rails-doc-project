@@ -1,0 +1,1 @@
+NamespaceMODULEActiveRecordMODULEActiveRecord::Relation::RecordFetchWarningMODULEActiveSupportCLASSActiveRecord::Relation

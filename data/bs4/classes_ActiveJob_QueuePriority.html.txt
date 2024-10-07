@@ -1,0 +1,1 @@
+NamespaceMODULEActiveJob::QueuePriority::ClassMethodsMethodsPpriorityInstance Public methodspriority()LinkReturns the priority that the job will be created withSource:show|on GitHub# File activejob/lib/active_job/queue_priority.rb, line 53defpriorityif@priority.is_a?(Proc)@priority=instance_exec(&@priority)end@priorityend

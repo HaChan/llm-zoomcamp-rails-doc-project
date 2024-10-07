@@ -1,0 +1,84 @@
+MethodsAadd_source,applicationEenvironment,execute_commandGgem,gem_group,generate,git,githubIindentation,initializerLlib,logOoptimize_indentationQquoteRrails_command,rake,rakefile,readme,routeVvendorWwith_indentationInstance Public methodsadd_source(source, options = {}, &block)LinkAdd the given source toGemfileIf block is given, gem entries in block are wrapped into the source group.add_source "http://gems.github.com/"
+
+add_source "http://gems.github.com/" do
+  gem "rspec-rails"
+endSource:show|on GitHub# File railties/lib/rails/generators/actions.rb, line 151defadd_source(source,options= {},&block)log:source,sourcein_rootdoifblockappend_file_with_newline"Gemfile","\nsource #{quote(source)} do",force:truewith_indentation(&block)append_file_with_newline"Gemfile","end",force:trueelseprepend_file"Gemfile","source #{quote(source)}\n",verbose:falseendendendapplication(data = nil, options = {})LinkAlias for:environmentenvironment(data = nil, options = {})LinkAdds configuration code to a Rails runtime environment.By default, adds code inside theApplicationclass inconfig/application.rbso that it applies to all environments.environment %(config.asset_host = "cdn.provider.com")Results in:# config/application.rb
+class Application < Rails::Application
+  config.asset_host = "cdn.provider.com"
+  # ...
+endIf the:envoption is specified, the code will be added to the corresponding file inconfig/environmentsinstead.environment %(config.asset_host = "localhost:3000"), env: "development"Results in:# config/environments/development.rb
+Rails.application.configure do
+  config.asset_host = "localhost:3000"
+  # ...
+end:envcan also be an array. In which case, the code is added to each corresponding file inconfig/environments.The code can also be specified as the return value of the block:environment do
+  %(config.asset_host = "cdn.provider.com")
+end
+
+environment(nil, env: "development") do
+  %(config.asset_host = "localhost:3000")
+endAlso aliased as:applicationSource:show|on GitHub# File railties/lib/rails/generators/actions.rb, line 206defenvironment(data=nil,options= {})sentinel="class Application < Rails::Application\n"env_file_sentinel="Rails.application.configure do\n"data||=yieldifblock_given?in_rootdoifoptions[:env].nil?inject_into_file"config/application.rb",optimize_indentation(data,4),after:sentinel,verbose:falseelseArray(options[:env]).eachdo|env|inject_into_file"config/environments/#{env}.rb",optimize_indentation(data,2),after:env_file_sentinel,verbose:falseendendendendgem(*args)LinkAdds agemdeclaration to theGemfilefor the specified gem.gem "rspec", group: :test
+gem "technoweenie-restful-authentication", lib: "restful-authentication", source: "http://gems.github.com/"
+gem "rails", "3.0", git: "https://github.com/rails/rails"
+gem "RedCloth", ">= 4.1.0", "< 4.2.0"
+gem "rspec", comment: "Put this comment above the gem declaration"Note that this method only adds the gem to theGemfile; it does not install the gem.Options:versionThe version constraints for the gem, specified as a string or an array of strings:gem "my_gem", version: "~> 1.1"
+gem "my_gem", version: [">= 1.1", "< 2.0"]Alternatively, can be specified as one or more arguments following the gem name:gem "my_gem", ">= 1.1", "< 2.0":commentOutputs a comment above thegemdeclaration in theGemfile.gem "my_gem", comment: "First line.\nSecond line."Outputs:# First line.
+# Second line.
+gem "my_gem":groupThe gem group in theGemfilethat the gem belongs to.:gitThe URL of the git repository for the gem.Any additional options passed to this method will be appended to thegemdeclaration in theGemfile. For example:gem "my_gem", comment: "Edge my_gem", git: "https://example.com/my_gem.git", branch: "master"Outputs:# Edge my_gem
+gem "my_gem", git: "https://example.com/my_gem.git", branch: "master"Source:show|on GitHub# File railties/lib/rails/generators/actions.rb, line 67defgem(*args)options=args.extract_options!name,*versions=args# Set the message to be shown in logs. Uses the git repo if one is given,# otherwise use name (version).parts,message= [quote(name) ],name.dup# Output a comment above the gem declaration.comment=options.delete(:comment)ifversions=versions.any??versions:options.delete(:version)_versions=Array(versions)_versions.eachdo|version|parts<<quote(version)endmessage<<" (#{_versions.join(", ")})"endmessage=options[:git]ifoptions[:git]log:gemfile,messageparts<<quote(options)unlessoptions.empty?in_rootdostr= []ifcommentcomment.each_linedo|comment_line|str<<indentationstr<<"# #{comment_line}"endstr<<"\n"endstr<<indentationstr<<"gem #{parts.join(", ")}"append_file_with_newline"Gemfile",str.join,verbose:falseendendgem_group(*names, &block)LinkWraps gem entries inside a group.gem_group :development, :test do
+  gem "rspec-rails"
+endSource:show|on GitHub# File railties/lib/rails/generators/actions.rb, line 111defgem_group(*names,&block)options=names.extract_options!str=names.map(&:inspect)str<<quote(options)unlessoptions.empty?str=str.join(", ")log:gemfile,"group #{str}"in_rootdoappend_file_with_newline"Gemfile","\ngroup #{str} do",force:truewith_indentation(&block)append_file_with_newline"Gemfile","end",force:trueendendgenerate(what, *args)LinkRuns another generator.generate "scaffold", "Post title:string body:text"
+generate "scaffold", "Post", "title:string", "body:text"The first argument is the generator name, and the remaining arguments are joined together and passed to the generator.Source:show|on GitHub# File railties/lib/rails/generators/actions.rb, line 332defgenerate(what,*args)log:generate,whatoptions=args.extract_options!options[:abort_on_failure] =!options[:inline]rails_command"generate #{what} #{args.join(" ")}",optionsendgit(commands = {})LinkRuns one or more git commands.git :init
+# => runs `git init`
+
+git add: "this.file that.rb"
+# => runs `git add this.file that.rb`
+
+git commit: "-m 'First commit'"
+# => runs `git commit -m 'First commit'`
+
+git add: "good.rb", rm: "bad.cxx"
+# => runs `git add good.rb; git rm bad.cxx`Source:show|on GitHub# File railties/lib/rails/generators/actions.rb, line 237defgit(commands= {})ifcommands.is_a?(Symbol)run"git #{commands}"elsecommands.eachdo|cmd,options|run"git #{cmd} #{options}"endendendgithub(repo, options = {}, &block)LinkSource:show|on GitHub# File railties/lib/rails/generators/actions.rb, line 125defgithub(repo,options= {},&block)str= [quote(repo)]str<<quote(options)unlessoptions.empty?str=str.join(", ")log:github,"github #{str}"in_rootdoif@indentation.zero?append_file_with_newline"Gemfile","\ngithub #{str} do",force:trueelseappend_file_with_newline"Gemfile","#{indentation}github #{str} do",force:trueendwith_indentation(&block)append_file_with_newline"Gemfile","#{indentation}end",force:trueendendinitializer(filename, data = nil)LinkCreates an initializer file inconfig/initializers/. The code can be specified as an argument or as the return value of the block.initializer "api.rb", <<~RUBY
+  API_KEY = "123456"
+RUBY
+
+initializer "api.rb" do
+  %(API_KEY = "123456")
+endSource:show|on GitHub# File railties/lib/rails/generators/actions.rb, line 319definitializer(filename,data=nil)log:initializer,filenamedata||=yieldifblock_given?create_file("config/initializers/#{filename}",optimize_indentation(data),verbose:false)endlib(filename, data = nil)LinkCreates a file inlib/. The contents can be specified as an argument or as the return value of the block.lib "foreign.rb", <<~RUBY
+  # Foreign code is fun
+RUBY
+
+lib "foreign.rb" do
+  "# Foreign code is fun"
+endSource:show|on GitHub# File railties/lib/rails/generators/actions.rb, line 275deflib(filename,data=nil)log:lib,filenamedata||=yieldifblock_given?create_file("lib/#{filename}",optimize_indentation(data),verbose:false)endrails_command(command, options = {})LinkRuns the specified Rails command.rails_command "db:migrate"
+rails_command "db:migrate", env: "production"
+rails_command "db:migrate", abort_on_failure: true
+rails_command "stats", capture: true
+rails_command "gems:install", sudo: trueOptions:envThe Rails environment in which to run the command. Defaults toENV["RAILS_ENV"] || "development".:abort_on_failureWhether to halt the generator if the command exits with a non-success exit status.:captureWhether to capture and return the output of the command.:sudoWhether to run the command usingsudo.Source:show|on GitHub# File railties/lib/rails/generators/actions.rb, line 391defrails_command(command,options= {})ifoptions[:inline]log:rails,commandcommand,*args=Shellwords.split(command)in_rootdosilence_warningsdo::Rails::Command.invoke(command,args,**options)endendelseexecute_command:rails,command,optionsendendrake(command, options = {})LinkRuns the specified Rake task.rake "db:migrate"
+rake "db:migrate", env: "production"
+rake "db:migrate", abort_on_failure: true
+rake "stats", capture: true
+rake "gems:install", sudo: trueOptions:envThe Rails environment in which to run the task. Defaults toENV["RAILS_ENV"] || "development".:abort_on_failureWhether to halt the generator if the task exits with a non-success exit status.:captureWhether to capture and return the output of the task.:sudoWhether to run the task usingsudo.Source:show|on GitHub# File railties/lib/rails/generators/actions.rb, line 364defrake(command,options= {})execute_command:rake,command,optionsendrakefile(filename, data = nil)LinkCreates a Rake tasks file inlib/tasks/. The code can be specified as an argument or as the return value of the block.rakefile "bootstrap.rake", <<~RUBY
+  task :bootstrap do
+    puts "Boots! Boots! Boots!"
+  end
+RUBY
+
+rakefile "bootstrap.rake" do
+  project = ask("What is the UNIX name of your project?")
+
+  <<~RUBY
+    namespace :#{project} do
+      task :bootstrap do
+        puts "Boots! Boots! Boots!"
+      end
+    end
+  RUBY
+endSource:show|on GitHub# File railties/lib/rails/generators/actions.rb, line 302defrakefile(filename,data=nil)log:rakefile,filenamedata||=yieldifblock_given?create_file("lib/tasks/#{filename}",optimize_indentation(data),verbose:false)endreadme(path)LinkReads the given file at the source root and prints it in the console.readme "README"Source:show|on GitHub# File railties/lib/rails/generators/actions.rb, line 442defreadme(path)logFile.read(find_in_source_paths(path))endroute(routing_code, namespace: nil)LinkMake an entry in Rails routing fileconfig/routes.rbroute "root 'welcome#index'"
+route "root 'admin#index'", namespace: :adminSource:show|on GitHub# File railties/lib/rails/generators/actions.rb, line 409defroute(routing_code,namespace:nil)namespace=Array(namespace)namespace_pattern=route_namespace_pattern(namespace)routing_code=namespace.reverse.reduce(routing_code)do|code,name|"namespace :#{name} do\n#{rebase_indentation(code, 2)}end"endlog:route,routing_codein_rootdoifnamespace_match=match_file("config/routes.rb",namespace_pattern)base_indent,*,existing_block_indent=namespace_match.captures.compact.map(&:length)existing_line_pattern=/^[ ]{,#{existing_block_indent}}\S.+\n?/routing_code=rebase_indentation(routing_code,base_indent+2).gsub(existing_line_pattern,"")namespace_pattern=/#{Regexp.escape namespace_match.to_s}/endinject_into_file"config/routes.rb",routing_code,after:namespace_pattern,verbose:false,force:falseifbehavior==:revoke&&namespace.any?&&namespace_matchempty_block_pattern=/(#{namespace_pattern})((?:\s*end\n){1,#{namespace.size}})/gsub_file"config/routes.rb",empty_block_pattern,verbose:false,force:truedo|matched|beginning,ending=empty_block_pattern.match(matched).capturesending.sub!(/\A\s*end\n/,"")while!ending.empty?&&beginning.sub!(/^[ ]*namespace .+ do\n\s*\z/,"")beginning+endingendendendendvendor(filename, data = nil)LinkCreates a file invendor/. The contents can be specified as an argument or as the return value of the block.vendor "foreign.rb", <<~RUBY
+  # Foreign code is fun
+RUBY
+
+vendor "foreign.rb" do
+  "# Foreign code is fun"
+endSource:show|on GitHub# File railties/lib/rails/generators/actions.rb, line 258defvendor(filename,data=nil)log:vendor,filenamedata||=yieldifblock_given?create_file("vendor/#{filename}",optimize_indentation(data),verbose:false)endInstance Private methodsexecute_command(executor, command, options = {})LinkRuns the supplied command using either ârake â¦â or ârails â¦â based on the executor parameter provided.Source:show|on GitHub# File railties/lib/rails/generators/actions.rb, line 461defexecute_command(executor,command,options= {})# :doc:logexecutor,commandsudo=options[:sudo]&&!Gem.win_platform??"sudo ":""config= {env:{"RAILS_ENV"=>(options[:env]||ENV["RAILS_ENV"]||"development") },verbose:false,capture:options[:capture],abort_on_failure:options[:abort_on_failure],
+  }in_root{run("#{sudo}#{Shellwords.escape Gem.ruby} bin/#{executor} #{command}",config) }endindentation()LinkIndent theGemfileto the depth of @indentationSource:show|on GitHub# File railties/lib/rails/generators/actions.rb, line 494defindentation# :doc:"  "*@indentationendlog(*args)LinkDefine log for backwards compatibility. If just one argument is sent, invoke say, otherwise invoke say_status. Differently from say and similarly to say_status, this method respects the quiet? option given.Source:show|on GitHub# File railties/lib/rails/generators/actions.rb, line 450deflog(*args)# :doc:ifargs.size==1sayargs.first.to_sunlessoptions.quiet?elseargs<<(behavior==:invoke?:green::red)say_status(*args)endendoptimize_indentation(value, amount = 0)LinkReturns optimized string with indentationAlso aliased as:rebase_indentationSource:show|on GitHub# File railties/lib/rails/generators/actions.rb, line 487defoptimize_indentation(value,amount=0)# :doc:return"#{value}\n"unlessvalue.is_a?(String)"#{value.strip_heredoc.indent(amount).chomp}\n"endquote(value)LinkAlways returns value in double quotes.Source:show|on GitHub# File railties/lib/rails/generators/actions.rb, line 475defquote(value)# :doc:ifvalue.respond_to?:each_pairreturnvalue.mapdo|k,v|"#{k}: #{quote(v)}"end.join(", ")endreturnvalue.inspectunlessvalue.is_a?String"\"#{value.tr("'", '"')}\""endwith_indentation(&block)LinkManageGemfileindentation for a DSL action blockSource:show|on GitHub# File railties/lib/rails/generators/actions.rb, line 499defwith_indentation(&block)# :doc:@indentation+=1instance_eval(&block)ensure@indentation-=1end

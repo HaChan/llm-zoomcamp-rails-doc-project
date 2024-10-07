@@ -1,0 +1,1 @@
+Required Filesrails/commandrails/commands/rake/rake_commandrails/test_unit/runnerrails/test_unit/reporterNamespaceMODULERailsMODULERails::Command

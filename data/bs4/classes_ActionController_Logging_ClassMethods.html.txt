@@ -1,0 +1,4 @@
+MethodsLlog_atInstance Public methodslog_at(level, **options)LinkSet a different log level per request.# Use the debug log level if a particular cookie is set.
+class ApplicationController < ActionController::Base
+  log_at :debug, if: -> { cookies[:debug] }
+endSource:show|on GitHub# File actionpack/lib/action_controller/metal/logging.rb, line 17deflog_at(level,**options)around_action->(_,action) {logger.log_at(level,&action) },**optionsend

@@ -1,0 +1,1 @@
+MethodsPpretty_printInstance Public methodspretty_print(pp)LinkSource:show|on GitHub# File activerecord/lib/active_record/core.rb, line 800defpretty_print(pp)pp.text__getobj__end

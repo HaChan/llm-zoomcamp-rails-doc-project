@@ -1,0 +1,1 @@
+NamespaceMODULEActiveRecordMODULEActiveRecord::DynamicMatchersCLASSActiveRecord::DynamicMatchers::FindByCLASSActiveRecord::DynamicMatchers::FindByBangCLASSActiveRecord::DynamicMatchers::Method

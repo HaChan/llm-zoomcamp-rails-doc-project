@@ -1,0 +1,1 @@
+MethodsPperformInstance Public methodsperform(blob, variations)LinkSource:show|on GitHub# File activestorage/app/jobs/active_storage/preview_image_job.rb, line 9defperform(blob,variations)blob.preview({}).processedvariations.eachdo|transformations|blob.preprocessed(transformations)endend

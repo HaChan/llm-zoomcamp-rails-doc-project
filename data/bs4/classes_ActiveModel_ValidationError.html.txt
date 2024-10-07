@@ -1,0 +1,5 @@
+Active Model ValidationErrorRaised byvalidate!when the model is invalid. Use themodelmethod to retrieve the record which did not validate.begin
+  complex_operation_that_internally_calls_validate!
+rescue ActiveModel::ValidationError => invalid
+  puts invalid.model.errors
+endMethodsNnewAttributes[R]modelClass Public methodsnew(model)LinkSource:show|on GitHub# File activemodel/lib/active_model/validations.rb, line 463definitialize(model)@model=modelerrors=@model.errors.full_messages.join(", ")super(I18n.t(:"#{@model.class.i18n_scope}.errors.messages.model_invalid",errors:errors,default::"errors.messages.model_invalid"))end

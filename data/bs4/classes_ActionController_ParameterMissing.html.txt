@@ -1,0 +1,5 @@
+Raised when a required parameter is missing.params = ActionController::Parameters.new(a: {})
+params.fetch(:b)
+# => ActionController::ParameterMissing: param is missing or the value is empty: b
+params.require(:a)
+# => ActionController::ParameterMissing: param is missing or the value is empty: a

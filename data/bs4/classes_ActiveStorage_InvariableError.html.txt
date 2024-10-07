@@ -1,0 +1,1 @@
+Raised whenActiveStorage::Blob#variantis called on a blob that isnât variable. UseActiveStorage::Blob#variable?to determine whether a blob is variable.

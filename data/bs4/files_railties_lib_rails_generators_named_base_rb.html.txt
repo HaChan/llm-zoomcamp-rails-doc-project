@@ -1,0 +1,1 @@
+Required Filesrails/generators/baserails/generators/generated_attributeNamespaceMODULEActiveRecordMODULERailsMODULERails::GeneratorsCLASSRails::Generators::NamedBase

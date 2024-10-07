@@ -1,0 +1,1 @@
+Ensure that theInboundEmailis automatically scheduled for later incineration if the status has been changed toprocessed. The later incineration will be invoked at the time specified by theActionMailbox.incinerate_aftertime using theIncinerationJob.NamespaceMODULEActionMailboxMODULEActionMailbox::InboundEmail::IncineratableCLASSActionMailbox::InboundEmail

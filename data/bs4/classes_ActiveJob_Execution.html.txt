@@ -1,0 +1,7 @@
+Active Job ExecutionProvides methods to execute jobs immediately, and wraps job execution so that exceptions configured withrescue_fromare handled.NamespaceMODULEActiveJob::Execution::ClassMethodsMethodsPperform,perform_nowIncluded ModulesActiveSupport::RescuableInstance Public methodsperform(*)LinkSource:show|on GitHub# File activejob/lib/active_job/execution.rb, line 60defperform(*)failNotImplementedErrorendperform_now()LinkPerforms the job immediately. The job is not sent to the queuing adapter but directly executed by blocking the execution of others until itâs finished.perform_nowreturns the value of your jobâsperformmethod.class MyJob < ActiveJob::Base
+  def perform
+    "Hello World!"
+  end
+end
+
+puts MyJob.new(*args).perform_now # => "Hello World!"Source:show|on GitHub# File activejob/lib/active_job/execution.rb, line 45defperform_now# Guard against jobs that were persisted before we started counting executions by zeroing out nil countersself.executions= (executions||0)+1deserialize_arguments_if_needed_perform_jobrescueException=>exceptionhandled=rescue_with_handler(exception)returnhandledifhandledrun_after_discard_procs(exception)raiseend

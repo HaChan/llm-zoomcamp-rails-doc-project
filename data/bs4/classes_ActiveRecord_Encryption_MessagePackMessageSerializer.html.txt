@@ -1,0 +1,8 @@
+A message serializer that serializesMessageswithMessagePack.The message is converted to a hash with this structure:{
+  p: <payload>,
+  h: {
+    header1: value1,
+    header2: value2,
+    ...
+  }
+}Then it is converted to theMessagePackformat.MethodsBbinary?DdumpLloadInstance Public methodsbinary?()LinkSource:show|on GitHub# File activerecord/lib/active_record/encryption/message_pack_message_serializer.rb, line 34defbinary?trueenddump(message)LinkSource:show|on GitHub# File activerecord/lib/active_record/encryption/message_pack_message_serializer.rb, line 22defdump(message)raiseErrors::ForbiddenClassunlessmessage.is_a?(Message)ActiveSupport::MessagePack.dump(message_to_hash(message))endload(serialized_content)LinkSource:show|on GitHub# File activerecord/lib/active_record/encryption/message_pack_message_serializer.rb, line 27defload(serialized_content)data=ActiveSupport::MessagePack.load(serialized_content)hash_to_message(data,1)rescueRuntimeErrorraiseErrors::Decryptionend

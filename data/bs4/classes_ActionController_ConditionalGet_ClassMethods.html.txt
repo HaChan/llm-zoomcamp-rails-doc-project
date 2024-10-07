@@ -1,0 +1,9 @@
+MethodsEetagInstance Public methodsetag(&etagger)LinkAllows you to consider additional controller-wide information when generating an ETag. For example, if you serve pages tailored depending on whoâs logged in at the moment, you may want to add the current user id to be part of the ETag to prevent unauthorized displaying of cached pages.class InvoicesController < ApplicationController
+  etag { current_user&.id }
+
+  def show
+    # Etag will differ even for the same invoice when it's viewed by a different current_user
+    @invoice = Invoice.find(params[:id])
+    fresh_when etag: @invoice
+  end
+endSource:show|on GitHub# File actionpack/lib/action_controller/metal/conditional_get.rb, line 33defetag(&etagger)self.etaggers+=[etagger]end

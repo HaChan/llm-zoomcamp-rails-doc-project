@@ -1,0 +1,5 @@
+Active Record RecordInvalidRaised byActiveRecord::Base#save!andActiveRecord::Base#create!when the record is invalid. Use therecordmethod to retrieve the record which did not validate.begin
+  complex_operation_that_internally_calls_save!
+rescue ActiveRecord::RecordInvalid => invalid
+  puts invalid.record.errors
+endMethodsNnewAttributes[R]recordClass Public methodsnew(record = nil)LinkSource:show|on GitHub# File activerecord/lib/active_record/validations.rb, line 18definitialize(record=nil)ifrecord@record=recorderrors=@record.errors.full_messages.join(", ")message=I18n.t(:"#{@record.class.i18n_scope}.errors.messages.record_invalid",errors:errors,default::"errors.messages.record_invalid")elsemessage="Record invalid"endsuper(message)end

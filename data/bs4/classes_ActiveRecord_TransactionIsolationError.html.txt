@@ -1,0 +1,1 @@
+TransactionIsolationErrorwill be raised under the following conditions:The adapter does not support setting the isolation levelYou are joining an existing open transactionYou are creating a nested (savepoint) transactionThe mysql2, trilogy, and postgresql adapters support setting the transaction isolation level.

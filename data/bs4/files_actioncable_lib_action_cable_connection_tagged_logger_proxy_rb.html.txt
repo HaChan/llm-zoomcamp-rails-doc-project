@@ -1,0 +1,1 @@
+NamespaceMODULEActionCableMODULEActionCable::ConnectionCLASSActionCable::Connection::TaggedLoggerProxy

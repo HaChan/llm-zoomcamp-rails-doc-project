@@ -1,0 +1,45 @@
+XmlMiniTo use the much faster libxml parser:gem "libxml-ruby"
+XmlMini.backend = 'LibXML'MethodsBbackend,backend=Rrename_keyTto_tagWwith_backendConstantsDEFAULT_ENCODINGS={
+"binary" => "base64"
+} unless defined?(DEFAULT_ENCODINGS)FORMATTING={
+"symbol"   => Proc.new { |symbol| symbol.to_s },
+"date"     => Proc.new { |date| date.to_fs(:db) },
+"dateTime" => Proc.new { |time| time.xmlschema },
+"duration" => Proc.new { |duration| duration.iso8601 },
+"binary"   => Proc.new { |binary| ::Base64.encode64(binary) },
+"yaml"     => Proc.new { |yaml| yaml.to_yaml }
+} unless defined?(FORMATTING)PARSING={
+"symbol"       => Proc.new { |symbol|  symbol.to_s.to_sym },
+"date"         => Proc.new { |date|    ::Date.parse(date) },
+"datetime"     => Proc.new { |time|    Time.xmlschema(time).utc rescue ::DateTime.parse(time).utc },
+"duration"     => Proc.new { |duration| Duration.parse(duration) },
+"integer"      => Proc.new { |integer| integer.to_i },
+"float"        => Proc.new { |float|   float.to_f },
+"decimal"      => Proc.new do |number|
+if String === number
+number.to_d
+else
+BigDecimal(number)
+end
+end,
+"boolean"      => Proc.new { |boolean| %w(1 true).include?(boolean.to_s.strip) },
+"string"       => Proc.new { |string|  string.to_s },
+"yaml"         => Proc.new { |yaml|    YAML.load(yaml) rescue yaml },
+"base64Binary" => Proc.new { |bin|     ::Base64.decode64(bin) },
+"hexBinary"    => Proc.new { |bin|     _parse_hex_binary(bin) },
+"binary"       => Proc.new { |bin, entity| _parse_binary(bin, entity) },
+"file"         => Proc.new { |file, entity| _parse_file(file, entity) }
+}TYPE_NAMES={
+"Symbol"     => "symbol",
+"Integer"    => "integer",
+"BigDecimal" => "decimal",
+"Float"      => "float",
+"TrueClass"  => "boolean",
+"FalseClass" => "boolean",
+"Date"       => "date",
+"DateTime"   => "dateTime",
+"Time"       => "dateTime",
+"ActiveSupport::Duration" => "duration",
+"Array"      => "array",
+"Hash"       => "hash"
+}Attributes[RW]depthInstance Public methodsbackend()LinkSource:show|on GitHub# File activesupport/lib/active_support/xml_mini.rb, line 101defbackendcurrent_thread_backend||@backendendbackend=(name)LinkSource:show|on GitHub# File activesupport/lib/active_support/xml_mini.rb, line 105defbackend=(name)backend=name&&cast_backend_name_to_module(name)self.current_thread_backend=backendifcurrent_thread_backend@backend=backendendrename_key(key, options = {})LinkSource:show|on GitHub# File activesupport/lib/active_support/xml_mini.rb, line 152defrename_key(key,options= {})camelize=options[:camelize]dasherize=!options.has_key?(:dasherize)||options[:dasherize]ifcamelizekey=true==camelize?key.camelize:key.camelize(camelize)endkey=_dasherize(key)ifdasherizekeyendto_tag(key, value, options)LinkSource:show|on GitHub# File activesupport/lib/active_support/xml_mini.rb, line 119defto_tag(key,value,options)type_name=options.delete(:type)merged_options=options.merge(root:key,skip_instruct:true)ifvalue.is_a?(::Method)||value.is_a?(::Proc)ifvalue.arity==1value.call(merged_options)elsevalue.call(merged_options,key.to_s.singularize)endelsifvalue.respond_to?(:to_xml)value.to_xml(merged_options)elsetype_name||=TYPE_NAMES[value.class.name]type_name||=value.class.nameifvalue&&!value.respond_to?(:to_str)type_name=type_name.to_siftype_nametype_name="dateTime"iftype_name=="datetime"key=rename_key(key.to_s,options)attributes=options[:skip_types]||type_name.nil??{}:{type:type_name}attributes[:nil] =trueifvalue.nil?encoding=options[:encoding]||DEFAULT_ENCODINGS[type_name]attributes[:encoding] =encodingifencodingformatted_value=FORMATTING[type_name]&&!value.nil??FORMATTING[type_name].call(value):valueoptions[:builder].tag!(key,formatted_value,attributes)endendwith_backend(name)LinkSource:show|on GitHub# File activesupport/lib/active_support/xml_mini.rb, line 111defwith_backend(name)old_backend=current_thread_backendself.current_thread_backend=name&&cast_backend_name_to_module(name)yieldensureself.current_thread_backend=old_backendend

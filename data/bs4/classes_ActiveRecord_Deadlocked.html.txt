@@ -1,0 +1,1 @@
+Deadlockedwill be raised when a transaction is rolled back by the database when a deadlock is encountered.This is a subclass ofTransactionRollbackError, please make sure to check its documentation to be aware of its caveats.

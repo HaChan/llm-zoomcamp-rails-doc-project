@@ -1,0 +1,195 @@
+Active Record FixturesFixtures are a way of organizing data that you want to test against; in short, sample data.They are stored in YAML files, one file per model, which are by default placed in either<your-rails-app>/test/fixtures/or in thetest/fixturesfolder under any of your applicationâs engines.The location can also be changed withActiveSupport::TestCase.fixture_paths=, once you haverequire "rails/test_help"in yourtest_helper.rb.The fixture file ends with the.ymlfile extension, for example:<your-rails-app>/test/fixtures/web_sites.yml).The format of a fixture file looks like this:rubyonrails:
+  id: 1
+  name: Ruby on Rails
+  url: http://www.rubyonrails.org
+
+google:
+  id: 2
+  name: Google
+  url: http://www.google.comThis fixture file includes two fixtures. Each YAML fixture (i.e. record) is given a name and is followed by an indented list of key/value pairs in the âkey: valueâ format. Records are separated by a blank line for your viewing pleasure.OrderingFixtures by default are unordered. This is because the maps in YAML are unordered.If you want ordered fixtures, use the omap YAML type. Seeyaml.org/type/omap.htmlfor the specification.You will need ordered fixtures when you have foreign key constraints on keys in the same table. This is commonly needed for tree structures.For example:--- !omap
+- parent:
+    id:         1
+    parent_id:  NULL
+    title:      Parent
+- child:
+    id:         2
+    parent_id:  1
+    title:      ChildUsing Fixtures in Test CasesSince fixtures are a testing construct, we use them in our unit and functional tests. There are two ways to use the fixtures, but first letâs take a look at a sample unit test:require "test_helper"
+
+class WebSiteTest < ActiveSupport::TestCase
+  test "web_site_count" do
+    assert_equal 2, WebSite.count
+  end
+endBy default,test_helper.rbwill load all of your fixtures into your test database, so this test will succeed.The testing environment will automatically load all the fixtures into the database before each test. To ensure consistent data, the environment deletes the fixtures before running the load.In addition to being available in the database, the fixtureâs data may also be accessed by using a special dynamic method, which has the same name as the model.Passing in a fixture name to this dynamic method returns the fixture matching this name:test "find one" do
+  assert_equal "Ruby on Rails", web_sites(:rubyonrails).name
+endPassing in multiple fixture names returns all fixtures matching these names:test "find all by name" do
+  assert_equal 2, web_sites(:rubyonrails, :google).length
+endPassing in no arguments returns all fixtures:test "find all" do
+  assert_equal 2, web_sites.length
+endPassing in any fixture name that does not exist will raiseStandardError:test "find by name that does not exist" do
+  assert_raise(StandardError) { web_sites(:reddit) }
+endIf the model names conflicts with aTestCasemethods, you can use the genericfixtureaccessortest "generic find" do
+  assert_equal "Ruby on Rails", fixture(:web_sites, :rubyonrails).name
+endAlternatively, you may enable auto-instantiation of the fixture data. For instance, take the following tests:test "find_alt_method_1" do
+  assert_equal "Ruby on Rails", @web_sites['rubyonrails']['name']
+end
+
+test "find_alt_method_2" do
+  assert_equal "Ruby on Rails", @rubyonrails.name
+endIn order to use these methods to access fixtured data within your test cases, you must specify one of the following in yourActiveSupport::TestCase-derived class:to fully enable instantiated fixtures (enable alternate methods #1 and #2 above)self.use_instantiated_fixtures = truecreate only the hash for the fixtures, do not âfindâ each instance (enable alternate method #1 only)self.use_instantiated_fixtures = :no_instancesUsing either of these alternate methods incurs a performance hit, as the fixtured data must be fully traversed in the database to create the fixture hash and/or instance variables. This is expensive for large sets of fixtured data.Dynamic fixtures with ERBSometimes you donât care about the content of the fixtures as much as you care about the volume. In these cases, you can mixERBin with your YAML fixtures to create a bunch of fixtures for load testing, like:<% 1.upto(1000) do |i| %>
+fix_<%= i %>:
+  id: <%= i %>
+  name: guy_<%= i %>
+<% end %>This will create 1000 very simple fixtures.UsingERB, you can also inject dynamic values into your fixtures with inserts like<%= Date.today.strftime("%Y-%m-%d") %>. This is however a feature to be used with some caution. The point of fixtures are that theyâre stable units of predictable sample data. If you feel that you need to inject dynamic values, then perhaps you should reexamine whether your application is properly testable. Hence, dynamic values in fixtures are to be considered a code smell.Helper methods defined in a fixture will not be available in other fixtures, to prevent against unwanted inter-test dependencies. Methods used by multiple fixtures should be defined in a module that is included inActiveRecord::FixtureSet.context_class.define a helper method intest_helper.rbmodule FixtureFileHelpers
+  def file_sha(path)
+    OpenSSL::Digest::SHA256.hexdigest(File.read(Rails.root.join('test/fixtures', path)))
+  end
+end
+ActiveRecord::FixtureSet.context_class.include FixtureFileHelpersuse the helper method in a fixturephoto:
+  name: kitten.png
+  sha: <%= file_sha 'files/kitten.png' %>Transactional TestsTest cases can use begin+rollback to isolate their changes to the database instead of having to delete+insert for every test case.class FooTest < ActiveSupport::TestCase
+  self.use_transactional_tests = true
+
+  test "godzilla" do
+    assert_not_empty Foo.all
+    Foo.destroy_all
+    assert_empty Foo.all
+  end
+
+  test "godzilla aftermath" do
+    assert_not_empty Foo.all
+  end
+endIf you preload your test database with all fixture data (probably by runningbin/rails db:fixtures:load) and use transactional tests, then you may omit all fixtures declarations in your test cases since all the dataâs already there and every case rolls back its changes.In order to use instantiated fixtures with preloaded data, setself.pre_loaded_fixturesto true. This will provide access to fixture data for every table that has been loaded through fixtures (depending on the value ofuse_instantiated_fixtures).Whennotto use transactional tests:Youâre testing whether a transaction works correctly. Nested transactions donât commit until all parent transactions commit, particularly, the fixtures transaction which is begun in setup and rolled back in teardown. Thus, you wonât be able to verify the results of your transaction until Active Record supports nested transactions or savepoints (in progress).Your database does not support transactions. Every Active Record database supports transactions except MySQL MyISAM. Use InnoDB, MaxDB, or NDB instead.Advanced FixturesFixtures that donât specify an ID get some extra features:Stable, autogenerated IDsLabel references for associations (belongs_to, has_one, has_many)HABTM associations as inline listsThere are some more advanced features available even if the id is specified:Autofilled timestamp columnsFixture label interpolationSupport for YAML defaultsStable, Autogenerated IDsHere, have a monkey fixture:george:
+  id: 1
+  name: George the Monkey
+
+reginald:
+  id: 2
+  name: Reginald the PirateEach of these fixtures has two unique identifiers: one for the database and one for the humans. Why donât we generate the primary key instead? Hashing each fixtureâs label yields a consistent ID:george: # generated id: 503576764
+  name: George the Monkey
+
+reginald: # generated id: 324201669
+  name: Reginald the PirateActive Record looks at the fixtureâs model class, discovers the correct primary key, and generates it right before inserting the fixture into the database.The generated ID for a given label is constant, so we can discover any fixtureâs ID without loading anything, as long as we know the label.Label references for associations (belongs_to,has_one,has_many)Specifying foreign keys in fixtures can be very fragile, not to mention difficult to read. Since Active Record can figure out the ID of any fixture from its label, you can specify FKâs by label instead of ID.belongs_toLetâs break out some more monkeys and pirates.### in pirates.yml
+
+reginald:
+  id: 1
+  name: Reginald the Pirate
+  monkey_id: 1### in monkeys.yml
+
+george:
+  id: 1
+  name: George the Monkey
+  pirate_id: 1Add a few more monkeys and pirates and break this into multiple files, and it gets pretty hard to keep track of whatâs going on. Letâs use labels instead of IDs:### in pirates.yml
+
+reginald:
+  name: Reginald the Pirate
+  monkey: george### in monkeys.yml
+
+george:
+  name: George the Monkey
+  pirate: reginaldPow! All is made clear. Active Record reflects on the fixtureâs model class, finds all thebelongs_toassociations, and allows you to specify a targetlabelfor theassociation(monkey: george) rather than a targetidfor theFK(monkey_id: 1).Polymorphicbelongs_toSupporting polymorphic relationships is a little bit more complicated, since Active Record needs to know what type your association is pointing at. Something like this should look familiar:### in fruit.rb
+
+belongs_to :eater, polymorphic: true### in fruits.yml
+
+apple:
+  id: 1
+  name: apple
+  eater_id: 1
+  eater_type: MonkeyCan we do better? You bet!apple:
+  eater: george (Monkey)Just provide the polymorphic target type and Active Record will take care of the rest.has_and_belongs_to_manyorhas_many :throughTime to give our monkey some fruit.### in monkeys.yml
+
+george:
+  id: 1
+  name: George the Monkey### in fruits.yml
+
+apple:
+  id: 1
+  name: apple
+
+orange:
+  id: 2
+  name: orange
+
+grape:
+  id: 3
+  name: grape### in fruits_monkeys.yml
+
+apple_george:
+  fruit_id: 1
+  monkey_id: 1
+
+orange_george:
+  fruit_id: 2
+  monkey_id: 1
+
+grape_george:
+  fruit_id: 3
+  monkey_id: 1Letâs make the HABTM fixture go away.### in monkeys.yml
+
+george:
+  id: 1
+  name: George the Monkey
+  fruits: apple, orange, grape### in fruits.yml
+
+apple:
+  name: apple
+
+orange:
+  name: orange
+
+grape:
+  name: grapeZap! No more fruits_monkeys.yml file. Weâve specified the list of fruits on Georgeâs fixture, but we couldâve just as easily specified a list of monkeys on each fruit. As withbelongs_to, Active Record reflects on the fixtureâs model class and discovers thehas_and_belongs_to_manyassociations.Autofilled Timestamp ColumnsIf your table/model specifies any of Active Recordâs standard timestamp columns (created_at,created_on,updated_at,updated_on), they will automatically be set toTime.now.If youâve set specific values, theyâll be left alone.Fixture label interpolationThe label of the current fixture is always available as a column value:geeksomnia:
+  name: Geeksomnia's Account
+  subdomain: $LABEL
+  email: $LABEL@email.comAlso, sometimes (like when porting older join table fixtures) youâll need to be able to get a hold of the identifier for a given label.ERBto the rescue:george_reginald:
+  monkey_id: <%= ActiveRecord::FixtureSet.identify(:reginald) %>
+  pirate_id: <%= ActiveRecord::FixtureSet.identify(:george) %>If the model uses UUID values for identifiers, add the:uuidargument:ActiveRecord::FixtureSet.identify(:boaty_mcboatface, :uuid)Support for YAML defaultsYou can set and reuse defaults in your fixtures YAML file. This is the same technique used in thedatabase.ymlfile to specify defaults:DEFAULTS: &DEFAULTS
+  created_on: <%= 3.weeks.ago.to_fs(:db) %>
+
+first:
+  name: Smurf
+  <<: *DEFAULTS
+
+second:
+  name: Fraggle
+  <<: *DEFAULTSAny fixture labeled âDEFAULTSâ is safely ignored.Besides using âDEFAULTSâ, you can also specify what fixtures will be ignored by setting âignoreâ in â_fixtureâ section.# users.yml
+_fixture:
+  ignore:
+    - base
+  # or use "ignore: base" when there is only one fixture that needs to be ignored.
+
+base: &base
+  admin: false
+  introduction: "This is a default description"
+
+admin:
+  <<: *base
+  admin: true
+
+visitor:
+  <<: *baseIn the above example, âbaseâ will be ignored when creating fixtures. This can be used for common attributes inheriting.Composite Primary Key FixturesFixtures for composite primary key tables are fairly similar to normal tables. When using an id column, the column may be omitted as usual:# app/models/book.rb
+class Book < ApplicationRecord
+  self.primary_key = [:author_id, :id]
+  belongs_to :author
+end# books.yml
+alices_adventure_in_wonderland:
+  author_id: <%= ActiveRecord::FixtureSet.identify(:lewis_carroll) %>
+  title: "Alice's Adventures in Wonderland"However, in order to support composite primary key relationships, you must use the âcomposite_identify` method:# app/models/book_orders.rb
+class BookOrder < ApplicationRecord
+  self.primary_key = [:shop_id, :id]
+  belongs_to :order, foreign_key: [:shop_id, :order_id]
+  belongs_to :book, foreign_key: [:author_id, :book_id]
+end# book_orders.yml
+alices_adventure_in_wonderland_in_books:
+  author: lewis_carroll
+  book_id: <%= ActiveRecord::FixtureSet.composite_identify(
+               :alices_adventure_in_wonderland, Book.primary_key)[:id] %>
+  shop: book_store
+  order_id: <%= ActiveRecord::FixtureSet.composite_identify(
+               :books, Order.primary_key)[:id] %>Configure the fixture model classItâs possible to set the fixtureâs model class directly in the YAML file. This is helpful when fixtures are loaded outside tests andset_fixture_classis not available (e.g. when runningbin/rails db:fixtures:load)._fixture:
+  model_class: User
+david:
+  name: DavidAny fixtures labeled â_fixtureâ are safely ignored.Methods#[],[]=Ccache_fixtures,cache_for_connection_pool,cached_fixtures,composite_identify,context_class,create_fixturesEeachFfixture_is_cached?Iidentify,instantiate_all_loaded_fixtures,instantiate_fixturesNnewRreset_cacheSsizeTtable_rowsConstantsMAX_ID=2**30 - 1Attributes[R]config[R]fixtures[R]ignored_fixtures[R]model_class[R]name[R]table_nameClass Public methodscache_fixtures(connection_pool, fixtures_map)LinkSource:show|on GitHub# File activerecord/lib/active_record/fixtures.rb, line 578defcache_fixtures(connection_pool,fixtures_map)cache_for_connection_pool(connection_pool).update(fixtures_map)endcache_for_connection_pool(connection_pool)LinkSource:show|on GitHub# File activerecord/lib/active_record/fixtures.rb, line 562defcache_for_connection_pool(connection_pool)@@all_cached_fixtures[connection_pool]endcached_fixtures(connection_pool, keys_to_fetch = nil)LinkSource:show|on GitHub# File activerecord/lib/active_record/fixtures.rb, line 570defcached_fixtures(connection_pool,keys_to_fetch=nil)ifkeys_to_fetchcache_for_connection_pool(connection_pool).values_at(*keys_to_fetch)elsecache_for_connection_pool(connection_pool).valuesendendcomposite_identify(label, key)LinkReturns a consistent, platform-independent hash representing a mapping between the label and the subcomponents of the provided composite key.Example:composite_identify("label", [:a, :b, :c]) # => { a: hash_1, b: hash_2, c: hash_3 }Source:show|on GitHub# File activerecord/lib/active_record/fixtures.rb, line 635defcomposite_identify(label,key)key.index_with.with_index{|sub_key,index|(identify(label)<<index)%MAX_ID}
+    .with_indifferent_accessendcontext_class()LinkSuperclass for the evaluation contexts used by ERB fixtures.Source:show|on GitHub# File activerecord/lib/active_record/fixtures.rb, line 643defcontext_class@context_class||=Class.newendcreate_fixtures(fixtures_directories, fixture_set_names, class_names = {}, config = ActiveRecord::Base)LinkSource:show|on GitHub# File activerecord/lib/active_record/fixtures.rb, line 597defcreate_fixtures(fixtures_directories,fixture_set_names,class_names= {},config=ActiveRecord::Base)fixture_set_names=Array(fixture_set_names).map(&:to_s)class_names.stringify_keys!connection_pool=config.connection_poolfixture_files_to_read=fixture_set_names.rejectdo|fs_name|fixture_is_cached?(connection_pool,fs_name)endiffixture_files_to_read.any?fixtures_map=read_and_insert(Array(fixtures_directories),fixture_files_to_read,class_names,connection_pool,
+    )cache_fixtures(connection_pool,fixtures_map)endcached_fixtures(connection_pool,fixture_set_names)endfixture_is_cached?(connection_pool, table_name)LinkSource:show|on GitHub# File activerecord/lib/active_record/fixtures.rb, line 566deffixture_is_cached?(connection_pool,table_name)cache_for_connection_pool(connection_pool)[table_name]endidentify(label, column_type = :integer)LinkReturns a consistent, platform-independent identifier forlabel.Integer identifiers are values less than 2^30. UUIDs are RFC 4122 version 5 SHA-1 hashes.Source:show|on GitHub# File activerecord/lib/active_record/fixtures.rb, line 621defidentify(label,column_type=:integer)ifcolumn_type==:uuidDigest::UUID.uuid_v5(Digest::UUID::OID_NAMESPACE,label.to_s)elseZlib.crc32(label.to_s)%MAX_IDendendinstantiate_all_loaded_fixtures(object, load_instances = true)LinkSource:show|on GitHub# File activerecord/lib/active_record/fixtures.rb, line 591definstantiate_all_loaded_fixtures(object,load_instances=true)all_loaded_fixtures.each_valuedo|fixture_set|instantiate_fixtures(object,fixture_set,load_instances)endendinstantiate_fixtures(object, fixture_set, load_instances = true)LinkSource:show|on GitHub# File activerecord/lib/active_record/fixtures.rb, line 582definstantiate_fixtures(object,fixture_set,load_instances=true)returnunlessload_instancesfixture_set.eachdo|fixture_name,fixture|object.instance_variable_set"@#{fixture_name}",fixture.findrescueFixtureClassNotFoundnilendendnew(_, name, class_name, path, config = ActiveRecord::Base)LinkSource:show|on GitHub# File activerecord/lib/active_record/fixtures.rb, line 715definitialize(_,name,class_name,path,config=ActiveRecord::Base)@name=name@path=path@config=configself.model_class=class_name@fixtures=read_fixture_files(path)@table_name=model_class&.table_name||self.class.default_fixture_table_name(name,config)endreset_cache()LinkSource:show|on GitHub# File activerecord/lib/active_record/fixtures.rb, line 558defreset_cache@@all_cached_fixtures.clearendInstance Public methods[](x)LinkSource:show|on GitHub# File activerecord/lib/active_record/fixtures.rb, line 726def[](x)fixtures[x]end[]=(k, v)LinkSource:show|on GitHub# File activerecord/lib/active_record/fixtures.rb, line 730def[]=(k,v)fixtures[k] =vendeach(&block)LinkSource:show|on GitHub# File activerecord/lib/active_record/fixtures.rb, line 734defeach(&block)fixtures.each(&block)endsize()LinkSource:show|on GitHub# File activerecord/lib/active_record/fixtures.rb, line 738defsizefixtures.sizeendtable_rows()LinkReturns a hash of rows to be inserted. The key is the table, the value is a list of rows to insert to that table.Source:show|on GitHub# File activerecord/lib/active_record/fixtures.rb, line 744deftable_rows# allow specifying fixtures to be ignored by setting `ignore` in `_fixture` sectionfixtures.except!(*ignored_fixtures)TableRows.new(table_name,model_class:model_class,fixtures:fixtures,
+  ).to_hashend

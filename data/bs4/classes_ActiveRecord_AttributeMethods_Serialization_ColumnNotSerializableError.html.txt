@@ -1,0 +1,3 @@
+MethodsNnewClass Public methodsnew(name, type)LinkSource:show|on GitHub# File activerecord/lib/active_record/attribute_methods/serialization.rb, line 10definitialize(name,type)super<<~EOSColumn `#{name}` of type #{type.class} does not support `serialize` feature.
+            Usually it means that you are trying to use `serialize`
+            on a column that already implements serialization natively.EOSend

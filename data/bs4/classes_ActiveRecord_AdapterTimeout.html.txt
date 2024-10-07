@@ -1,0 +1,1 @@
+AdapterTimeoutwill be raised when database clients times out while waiting from the server.

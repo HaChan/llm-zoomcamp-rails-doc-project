@@ -1,0 +1,1 @@
+NamespaceCLASSActiveModel::Validations::AcceptanceValidator::LazilyDefineAttributes

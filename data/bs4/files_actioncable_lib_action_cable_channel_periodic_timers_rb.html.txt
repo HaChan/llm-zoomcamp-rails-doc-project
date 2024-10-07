@@ -1,0 +1,1 @@
+NamespaceMODULEActionCableMODULEActionCable::ChannelMODULEActionCable::Channel::PeriodicTimersMODULEActionCable::Channel::PeriodicTimers::ClassMethods

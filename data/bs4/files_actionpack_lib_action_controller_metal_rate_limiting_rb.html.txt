@@ -1,0 +1,1 @@
+NamespaceMODULEActionControllerMODULEActionController::RateLimitingMODULEActionController::RateLimiting::ClassMethodsMODULEActiveSupport

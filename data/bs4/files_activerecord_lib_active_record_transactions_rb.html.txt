@@ -1,0 +1,1 @@
+NamespaceMODULEActiveRecordMODULEActiveRecord::TransactionsMODULEActiveRecord::Transactions::ClassMethodsCLASSActiveRecord::Transaction

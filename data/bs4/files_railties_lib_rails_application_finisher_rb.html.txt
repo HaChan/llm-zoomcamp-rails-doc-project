@@ -1,0 +1,1 @@
+Required Filessetactive_support/core_ext/string/inflectionsactive_support/core_ext/array/conversionsactive_support/descendants_trackeractive_support/dependenciesNamespaceMODULEActiveSupportMODULERailsMODULERails::Application::FinisherCLASSRails::Application

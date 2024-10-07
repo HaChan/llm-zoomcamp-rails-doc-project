@@ -1,0 +1,109 @@
+MethodsAapi_mainCconfigure_rdoc_files,configure_sdocDdescNnewConstantsRDOC_FILES={
+"activesupport" => {
+include: %w(
+README.rdoc
+lib/active_support.rb
+lib/active_support/**/*.rb
+)
+},
+
+"activerecord" => {
+include: %w(
+README.rdoc
+lib/active_record.rb
+lib/active_record/**/*.rb
+lib/arel.rb
+)
+},
+
+"activemodel" => {
+include: %w(
+README.rdoc
+lib/active_model.rb
+lib/active_model/**/*.rb
+)
+},
+
+"actionpack" => {
+include: %w(
+README.rdoc
+lib/abstract_controller/**/*.rb
+lib/action_controller.rb
+lib/action_controller/**/*.rb
+lib/action_dispatch.rb
+lib/action_dispatch/**/*.rb
+)
+},
+
+"actionview" => {
+include: %w(
+README.rdoc
+lib/action_view.rb
+lib/action_view/**/*.rb
+),
+exclude: "lib/action_view/vendor/*"
+},
+
+"actionmailer" => {
+include: %w(
+README.rdoc
+lib/action_mailer.rb
+lib/action_mailer/**/*.rb
+)
+},
+
+"activejob" => {
+include: %w(
+README.md
+lib/active_job.rb
+lib/active_job/**/*.rb
+)
+},
+
+"actioncable" => {
+include: %w(
+README.md
+lib/action_cable.rb
+lib/action_cable/**/*.rb
+)
+},
+
+"activestorage" => {
+include: %w(
+README.md
+app/**/active_storage/**/*.rb
+lib/active_storage.rb
+lib/active_storage/**/*.rb
+)
+},
+
+"actionmailbox" => {
+include: %w(
+README.md
+app/**/action_mailbox/**/*.rb
+lib/action_mailbox.rb
+lib/action_mailbox/**/*.rb
+)
+},
+
+"actiontext" => {
+include: %w(
+README.md
+app/**/action_text/**/*.rb
+lib/action_text.rb
+lib/action_text/**/*.rb
+)
+},
+
+"railties" => {
+include: %w(
+README.rdoc
+lib/**/*.rb
+),
+exclude: %w(
+lib/rails/generators/**/templates/**/*.rb
+lib/rails/test_unit/*
+lib/rails/api/generator.rb
+)
+}
+}Class Public methodsnew(name)LinkSource:show|on GitHub# File railties/lib/rails/api/task.rb, line 119definitialize(name)super# Every time rake runs this task is instantiated as all the rest.# Be lazy computing stuff to have as light impact as possible to# the rest of tasks.before_running_rdocdoconfigure_sdocconfigure_rdoc_filessetup_horo_variablesendendInstance Public methodsapi_main()LinkSource:show|on GitHub# File railties/lib/rails/api/task.rb, line 187defapi_maincomponent_root_dir("railties")+"/RDOC_MAIN.md"endconfigure_rdoc_files()LinkSource:show|on GitHub# File railties/lib/rails/api/task.rb, line 148defconfigure_rdoc_filesRDOC_FILES.eachdo|component,cfg|cdr=component_root_dir(component)Array(cfg[:include]).eachdo|pattern|rdoc_files.include("#{cdr}/#{pattern}")endArray(cfg[:exclude]).eachdo|pattern|rdoc_files.exclude("#{cdr}/#{pattern}")endend# Only generate documentation for files that have been# changed since the API was generated.timestamp_path="#{api_dir}/created.rid"ifFile.exist?(timestamp_path)&&!File.zero?(timestamp_path)&&!ENV["ALL"]last_generation=DateTime.rfc2822(File.open(timestamp_path,&:readline))rdoc_files.keep_ifdo|file|File.mtime(file).to_datetime>last_generationend# Nothing to doexit(0)ifrdoc_files.empty?end# This must come after the mtime comparison to ensure the main page is not excluded.rdoc_files.include(api_main)endconfigure_sdoc()LinkSource:show|on GitHub# File railties/lib/rails/api/task.rb, line 137defconfigure_sdocself.title="Ruby on Rails API"self.rdoc_dir=api_diroptions<<"-m"<<api_mainoptions<<"-e"<<"UTF-8"options<<"-f"<<"api"options<<"-T"<<"rails"enddesc(description)LinkHack, ignore the desc calls performed by the original initializer.Source:show|on GitHub# File railties/lib/rails/api/task.rb, line 133defdesc(description)# no-opend

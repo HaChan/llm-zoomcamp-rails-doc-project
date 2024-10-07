@@ -1,0 +1,1 @@
+NamespaceCLASSActiveSupport::Notifications::Fanout::Subscribers::Matcher::AllMessages

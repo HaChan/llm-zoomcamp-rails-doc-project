@@ -1,0 +1,1 @@
+Raised whenActiveStorage::Blob#representationis called on a blob that isnât representable. UseActiveStorage::Blob#representable?to determine whether a blob is representable.

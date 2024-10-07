@@ -1,0 +1,1 @@
+NamespaceMODULEActionCable::Server::BroadcastingCLASSActionCable::Server::BaseCLASSActionCable::Server::ConfigurationCLASSActionCable::Server::Worker

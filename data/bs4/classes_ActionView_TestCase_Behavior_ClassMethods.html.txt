@@ -1,0 +1,33 @@
+MethodsDdetermine_default_helper_classHhelper_class,helper_methodNnewRregister_parserTtestsAttributes[W]helper_classInstance Public methodsdetermine_default_helper_class(name)LinkSource:show|on GitHub# File actionview/lib/action_view/test_case.rb, line 164defdetermine_default_helper_class(name)determine_constant_from_test_name(name)do|constant|Module===constant&&!(Class===constant)endendhelper_class()LinkSource:show|on GitHub# File actionview/lib/action_view/test_case.rb, line 183defhelper_class@helper_class||=determine_default_helper_class(name)endhelper_method(*methods)LinkSource:show|on GitHub# File actionview/lib/action_view/test_case.rb, line 170defhelper_method(*methods)# Almost a duplicate from ActionController::Helpersmethods.flatten.eachdo|method|_helpers_for_modification.module_eval<<~end_eval,__FILE__,__LINE__+1def #{method}(...)                    # def current_user(...)
+                _test_case.send(:'#{method}', ...)  #   _test_case.send(:'current_user', ...)
+              end                                   # endend_evalendendnew(*)LinkSource:show|on GitHub# File actionview/lib/action_view/test_case.rb, line 187defnew(*)include_helper_modules!superendregister_parser(format, callable = nil, &block)LinkRegister a callable to parse rendered content for a given template format.Each registered parser will also define a#rendered.[FORMAT]helper method, where[FORMAT]corresponds to the value of theformatargument.By default,ActionView::TestCasedefines parsers for::html- returns an instance ofNokogiri::XML::Node:json- returns an instance ofActiveSupport::HashWithIndifferentAccessThese pre-registered parsers also define corresponding helpers::html- definesrendered.html:json- definesrendered.jsonParametersformatThe name (as aSymbol) of the format used to render the content.callableThe parser. A callable object that accepts the rendered string as its sole argument. Alternatively, the parser can be specified as a block.Examplestest "renders HTML" do
+  article = Article.create!(title: "Hello, world")
+
+  render partial: "articles/article", locals: { article: article }
+
+  assert_pattern { rendered.html.at("main h1") => { content: "Hello, world" } }
+end
+
+test "renders JSON" do
+  article = Article.create!(title: "Hello, world")
+
+  render formats: :json, partial: "articles/article", locals: { article: article }
+
+  assert_pattern { rendered.json => { title: "Hello, world" } }
+endTo parse the rendered content into RSS, register a call toRSS::Parser.parse:register_parser :rss, -> rendered { RSS::Parser.parse(rendered) }
+
+test "renders RSS" do
+  article = Article.create!(title: "Hello, world")
+
+  render formats: :rss, partial: article
+
+  assert_equal "Hello, world", rendered.rss.items.last.title
+endTo parse the rendered content into aCapybara::Simple::Node, re-register an:htmlparser with a call toCapybara.string:register_parser :html, -> rendered { Capybara.string(rendered) }
+
+test "renders HTML" do
+  article = Article.create!(title: "Hello, world")
+
+  render partial: article
+
+  rendered.html.assert_css "h1", text: "Hello, world"
+endSource:show|on GitHub# File actionview/lib/action_view/test_case.rb, line 148defregister_parser(format,callable=nil,&block)parser=callable||block||:itself.to_proccontent_class.redefine_method(format)doparser.call(to_s)endendtests(helper_class)LinkSource:show|on GitHub# File actionview/lib/action_view/test_case.rb, line 155deftests(helper_class)casehelper_classwhenString,Symbolself.helper_class="#{helper_class.to_s.underscore}_helper".camelize.safe_constantizewhenModuleself.helper_class=helper_classendend

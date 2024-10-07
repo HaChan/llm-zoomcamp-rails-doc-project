@@ -1,0 +1,22 @@
+Active Job CoreProvides general behavior that will be included into every Active Job object that inherits fromActiveJob::Base.NamespaceMODULEActiveJob::Core::ClassMethodsMethodsDdeserializeNnewSserialize,successfully_enqueued?Attributes[RW]argumentsJob arguments[RW]enqueue_errorTrack any exceptions raised by the backend so callers can inspect the errors.[RW]enqueued_atTrack when a job was enqueued[RW]exception_executionsHashthat contains the number of times this job handled errors for each specific retry_on declaration. Keys are the string representation of the exceptions listed in the retry_on declaration, while its associated value holds the number of executions where the corresponding retry_on declaration handled one of its listed exceptions.[RW]executionsNumber of times this job has been executed (which increments on every retry, like after an exception).[RW]job_idJob Identifier[RW]localeI18n.locale to be used during the job.[W]priorityPriority that the job will have (lower is more priority).[RW]provider_job_idID optionally provided by adapter[W]queue_nameQueue in which the job will reside.[RW]scheduled_atTimewhen the job should be performed[W]serialized_arguments[RW]timezoneTimezone to be used during the job.Class Public methodsnew(*arguments)LinkCreates a new job instance. Takes the arguments that will be passed to the perform method.Source:show|on GitHub# File activejob/lib/active_job/core.rb, line 93definitialize(*arguments)@arguments=arguments@job_id=SecureRandom.uuid@queue_name=self.class.queue_name@scheduled_at=nil@priority=self.class.priority@executions=0@exception_executions= {}@timezone=Time.zone&.nameendInstance Public methodsdeserialize(job_data)LinkAttaches the stored job data to the current instance. Receives a hash returned fromserializeExamplesclass DeliverWebhookJob < ActiveJob::Base
+  attr_writer :attempt_number
+
+  def attempt_number
+    @attempt_number ||= 0
+  end
+
+  def serialize
+    super.merge('attempt_number' => attempt_number + 1)
+  end
+
+  def deserialize(job_data)
+    super
+    self.attempt_number = job_data['attempt_number']
+  end
+
+  rescue_from(Timeout::Error) do |exception|
+    raise exception if attempt_number > 5
+    retry_job(wait: 10)
+  end
+endSource:show|on GitHub# File activejob/lib/active_job/core.rb, line 150defdeserialize(job_data)self.job_id=job_data["job_id"]self.provider_job_id=job_data["provider_job_id"]self.queue_name=job_data["queue_name"]self.priority=job_data["priority"]self.serialized_arguments=job_data["arguments"]self.executions=job_data["executions"]self.exception_executions=job_data["exception_executions"]self.locale=job_data["locale"]||I18n.locale.to_sself.timezone=job_data["timezone"]||Time.zone&.nameself.enqueued_at=Time.iso8601(job_data["enqueued_at"])ifjob_data["enqueued_at"]self.scheduled_at=Time.iso8601(job_data["scheduled_at"])ifjob_data["scheduled_at"]endserialize()LinkReturns a hash with the job data that can safely be passed to the queuing adapter.Source:show|on GitHub# File activejob/lib/active_job/core.rb, line 107defserialize{"job_class"=>self.class.name,"job_id"=>job_id,"provider_job_id"=>provider_job_id,"queue_name"=>queue_name,"priority"=>priority,"arguments"=>serialize_arguments_if_needed(arguments),"executions"=>executions,"exception_executions"=>exception_executions,"locale"=>I18n.locale.to_s,"timezone"=>timezone,"enqueued_at"=>Time.now.utc.iso8601(9),"scheduled_at"=>scheduled_at?scheduled_at.utc.iso8601(9):nil,
+  }endsuccessfully_enqueued?()LinkSource:show|on GitHub# File activejob/lib/active_job/core.rb, line 51defsuccessfully_enqueued?@successfully_enqueuedend

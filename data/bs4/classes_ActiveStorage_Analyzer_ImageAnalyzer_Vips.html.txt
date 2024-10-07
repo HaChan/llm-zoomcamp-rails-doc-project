@@ -1,0 +1,1 @@
+This analyzer relies on the third-partyruby-vipsgem. Ruby-vips requires thelibvipssystem library.MethodsAaccept?ConstantsROTATIONS=/Right-top|Left-bottom|Top-right|Bottom-left/Class Public methodsaccept?(blob)LinkSource:show|on GitHub# File activestorage/lib/active_storage/analyzer/image_analyzer/vips.rb, line 7defself.accept?(blob)super&&ActiveStorage.variant_processor==:vipsend

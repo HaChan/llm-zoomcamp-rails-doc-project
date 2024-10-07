@@ -1,0 +1,74 @@
+You may wish to organize groups of controllers under a namespace. Most commonly, you might group a number of administrative controllers under anadminnamespace. You would place these controllers under theapp/controllers/admindirectory, and you can group them together in your router:namespace "admin" do
+  resources :posts, :comments
+endThis will create a number of routes for each of the posts and comments controller. ForAdmin::PostsController,Railswill create:GET       /admin/posts
+GET       /admin/posts/new
+POST      /admin/posts
+GET       /admin/posts/1
+GET       /admin/posts/1/edit
+PATCH/PUT /admin/posts/1
+DELETE    /admin/posts/1If you want to route /posts (without the prefix /admin) toAdmin::PostsController, you could usescope module: "admin" do
+  resources :posts
+endor, for a single caseresources :posts, module: "admin"If you want to route /admin/posts toPostsController(without theAdmin::module prefix), you could usescope "/admin" do
+  resources :posts
+endor, for a single caseresources :posts, path: "/admin/posts"In each of these cases, the named routes remain the same as if you did not use scope. In the last case, the following paths map toPostsController:GET       /admin/posts
+GET       /admin/posts/new
+POST      /admin/posts
+GET       /admin/posts/1
+GET       /admin/posts/1/edit
+PATCH/PUT /admin/posts/1
+DELETE    /admin/posts/1MethodsCconstraints,controllerDdefaultsNnamespaceSscopeInstance Public methodsconstraints(constraints = {}, &block)LinkParameter RestrictionAllows you to constrain the nested routes based on a set of rules. For instance, in order to change the routes to allow for a dot character in theidparameter:constraints(id: /\d+\.\d+/) do
+  resources :posts
+endNow routes such as/posts/1will no longer be valid, but/posts/1.1will be. Theidparameter must match the constraint passed in for this example.You may use this to also restrict other parameters:resources :posts do
+  constraints(post_id: /\d+\.\d+/) do
+    resources :comments
+  end
+endRestricting based on IPRoutes can also be constrained to an IP or a certain range of IP addresses:constraints(ip: /192\.168\.\d+\.\d+/) do
+  resources :posts
+endAny user connecting from the 192.168.* range will be able to see this resource, where as any user connecting outside of this range will be told there is no such route.Dynamic request matchingRequests to routes can be constrained based on specific criteria:constraints(-> (req) { /iPhone/.match?(req.env["HTTP_USER_AGENT"]) }) do
+  resources :iphones
+endYou are able to move this logic out into a class if it is too complex for routes. This class must have amatches?method defined on it which either returnstrueif the user should be given access to that route, orfalseif the user should not.class Iphone
+  def self.matches?(request)
+    /iPhone/.match?(request.env["HTTP_USER_AGENT"])
+  end
+endAn expected place for this code would belib/constraints.This class is then used like this:constraints(Iphone) do
+  resources :iphones
+endSource:show|on GitHub# File actionpack/lib/action_dispatch/routing/mapper.rb, line 1046defconstraints(constraints= {},&block)scope(constraints:constraints,&block)endcontroller(controller)LinkScopes routes to a specific controllercontroller "food" do
+  match "bacon", action: :bacon, via: :get
+endSource:show|on GitHub# File actionpack/lib/action_dispatch/routing/mapper.rb, line 928defcontroller(controller)@scope=@scope.new(controller:controller)yieldensure@scope=@scope.parentenddefaults(defaults = {})LinkAllows you to set default parameters for a route, such as this: defaults id: âhomeâ do match âscoped_pages/(:id)â, to: âpages#showâ endUsing this, the:idparameter here will default to âhomeâ.Source:show|on GitHub# File actionpack/lib/action_dispatch/routing/mapper.rb, line 1056defdefaults(defaults= {})@scope=@scope.new(defaults:merge_defaults_scope(@scope[:defaults],defaults))yieldensure@scope=@scope.parentendnamespace(path, options = {}, &block)LinkScopes routes to a specific namespace. For example:namespace :admin do
+  resources :posts
+endThis generates the following routes:admin_posts GET       /admin/posts(.:format)          admin/posts#index
+    admin_posts POST      /admin/posts(.:format)          admin/posts#create
+ new_admin_post GET       /admin/posts/new(.:format)      admin/posts#new
+edit_admin_post GET       /admin/posts/:id/edit(.:format) admin/posts#edit
+     admin_post GET       /admin/posts/:id(.:format)      admin/posts#show
+     admin_post PATCH/PUT /admin/posts/:id(.:format)      admin/posts#update
+     admin_post DELETE    /admin/posts/:id(.:format)      admin/posts#destroyOptionsThe:path,:as,:module,:shallow_path, and:shallow_prefixoptions all default to the name of the namespace.For options, seeBase#match. For:shallow_pathoption, seeResources#resources.# accessible through /sekret/posts rather than /admin/posts
+namespace :admin, path: "sekret" do
+  resources :posts
+end
+
+# maps to +Sekret::PostsController+ rather than +Admin::PostsController+
+namespace :admin, module: "sekret" do
+  resources :posts
+end
+
+# generates +sekret_posts_path+ rather than +admin_posts_path+
+namespace :admin, as: "sekret" do
+  resources :posts
+endSource:show|on GitHub# File actionpack/lib/action_dispatch/routing/mapper.rb, line 973defnamespace(path,options= {},&block)path=path.to_sdefaults= {module:path,as:options.fetch(:as,path),shallow_path:options.fetch(:path,path),shallow_prefix:options.fetch(:as,path)
+  }path_scope(options.delete(:path) {path})doscope(defaults.merge!(options),&block)endendscope(*args)LinkScopes a set of routes to the given default options.Take the following route definition as an example:scope path: ":account_id", as: "account" do
+  resources :projects
+endThis generates helpers such asaccount_projects_path, just likeresourcesdoes. The difference here being that the routes generated are like /:account_id/projects, rather than /accounts/:account_id/projects.OptionsTakes same options asBase#matchandResources#resources.# route /posts (without the prefix /admin) to +Admin::PostsController+
+scope module: "admin" do
+  resources :posts
+end
+
+# prefix the posts resource's requests with '/admin'
+scope path: "/admin" do
+  resources :posts
+end
+
+# prefix the routing helper name: +sekret_posts_path+ instead of +posts_path+
+scope as: "sekret" do
+  resources :posts
+endSource:show|on GitHub# File actionpack/lib/action_dispatch/routing/mapper.rb, line 869defscope(*args)options=args.extract_options!.dupscope= {}options[:path] =args.flatten.join("/")ifargs.any?options[:constraints]||={}unlessnested_scope?options[:shallow_path]||=options[:path]ifoptions.key?(:path)options[:shallow_prefix]||=options[:as]ifoptions.key?(:as)endifoptions[:constraints].is_a?(Hash)defaults=options[:constraints].selectdo|k,v|URL_OPTIONS.include?(k)&&(v.is_a?(String)||v.is_a?(Integer))endoptions[:defaults] =defaults.merge(options[:defaults]||{})elseblock,options[:constraints] =options[:constraints], {}endifoptions.key?(:only)||options.key?(:except)scope[:action_options] = {only:options.delete(:only),except:options.delete(:except) }endifoptions.key?:anchorraiseArgumentError,"anchor is ignored unless passed to `match`"end@scope.options.eachdo|option|ifoption==:blocksvalue=blockelsifoption==:optionsvalue=optionselsevalue=options.delete(option) {POISON}endunlessPOISON==valuescope[option] =send("merge_#{option}_scope",@scope[option],value)endend@scope=@scope.newscopeyieldselfensure@scope=@scope.parentend

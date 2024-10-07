@@ -1,0 +1,1 @@
+NamespaceMODULEActiveJob::QueueName::ClassMethodsMethodsQqueue_nameInstance Public methodsqueue_name()LinkReturns the name of the queue the job will be run on.Source:show|on GitHub# File activejob/lib/active_job/queue_name.rb, line 61defqueue_nameif@queue_name.is_a?(Proc)@queue_name=self.class.queue_name_from_part(instance_exec(&@queue_name))end@queue_nameend

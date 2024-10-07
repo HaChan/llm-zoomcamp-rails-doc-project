@@ -1,0 +1,54 @@
+NamespaceMODULEActionView::TestCase::Behavior::ClassMethodsMODULEActionView::TestCase::Behavior::LocalsCLASSActionView::TestCase::Behavior::RenderedViewsCollectionMethods#_routes,_test_caseCconfigPprotect_against_forgery?Rrender,rendered_viewsSsetup_with_controllerIncluded ModulesRails::Dom::Testing::AssertionsActionView::ContextActionDispatch::Routing::PolymorphicRoutesAbstractController::HelpersActionView::HelpersActionView::RecordIdentifierActionView::RoutingUrlForActiveSupport::Testing::ConstantLookupConstantsINTERNAL_IVARS=[
+:@NAME,
+:@failures,
+:@assertions,
+:@__io__,
+:@_assertion_wrapped,
+:@_assertions,
+:@_result,
+:@_routes,
+:@controller,
+:@_controller,
+:@_request,
+:@_config,
+:@_default_form_builder,
+:@_layouts,
+:@_files,
+:@_rendered_views,
+:@method_name,
+:@output_buffer,
+:@_partials,
+:@passed,
+:@rendered,
+:@request,
+:@routes,
+:@tagged_logger,
+:@_templates,
+:@options,
+:@test_passed,
+:@view,
+:@view_context_class,
+:@view_flow,
+:@_subscribers,
+:@html_document,
+]Attributes[RW]controller[RW]output_buffer[RW]rendered[RW]requestInstance Public methods_routes()Link:method: renderedReturns the content rendered by the lastrendercall.The returned object behaves like a string but also exposes a number of methods that allows you to parse the content string in formats registered using.register_parser.By default includes the following parsers:.htmlParse therenderedcontentStringinto HTML. By default, this means aNokogiri::XML::Node.test "renders HTML" do
+  article = Article.create!(title: "Hello, world")
+
+  render partial: "articles/article", locals: { article: article }
+
+  assert_pattern { rendered.html.at("main h1") => { content: "Hello, world" } }
+endTo parse the rendered content into aCapybara::Simple::Node, re-register an:htmlparser with a call toCapybara.string:register_parser :html, -> rendered { Capybara.string(rendered) }
+
+test "renders HTML" do
+  article = Article.create!(title: "Hello, world")
+
+  render partial: article
+
+  rendered.html.assert_css "h1", text: "Hello, world"
+end.jsonParse therenderedcontentStringinto JSON. By default, this means aActiveSupport::HashWithIndifferentAccess.test "renders JSON" do
+  article = Article.create!(title: "Hello, world")
+
+  render formats: :json, partial: "articles/article", locals: { article: article }
+
+  assert_pattern { rendered.json => { title: "Hello, world" } }
+endSource:show|on GitHub# File actionview/lib/action_view/test_case.rb, line 297def_routes@controller._routesif@controller.respond_to?(:_routes)end_test_case()LinkSource:show|on GitHub# File actionview/lib/action_view/test_case.rb, line 214def_test_casecontroller._test_caseendconfig()LinkSource:show|on GitHub# File actionview/lib/action_view/test_case.rb, line 232defconfig@controller.configif@controller.respond_to?(:config)endprotect_against_forgery?()LinkSource:show|on GitHub# File actionview/lib/action_view/test_case.rb, line 210defprotect_against_forgery?falseendrender(options = {}, local_assigns = {}, &block)LinkSource:show|on GitHub# File actionview/lib/action_view/test_case.rb, line 236defrender(options= {},local_assigns= {},&block)view.assign(view_assigns)@rendered<<output=view.render(options,local_assigns,&block)outputendrendered_views()LinkSource:show|on GitHub# File actionview/lib/action_view/test_case.rb, line 242defrendered_views@_rendered_views||=RenderedViewsCollection.newendsetup_with_controller()LinkSource:show|on GitHub# File actionview/lib/action_view/test_case.rb, line 220defsetup_with_controllercontroller_class=Class.new(ActionView::TestCase::TestController)@controller=controller_class.new@request=@controller.request@view_flow=ActionView::OutputFlow.new@output_buffer=ActionView::OutputBuffer.new@rendered=self.class.content_class.new(+"")test_case_instance=selfcontroller_class.define_method(:_test_case) {test_case_instance}end

@@ -1,0 +1,1 @@
+MethodsNnewRregistryInstance Public methodsnew(*, **)LinkSource:show|on GitHub# File activerecord/lib/active_record/connection_adapters/deduplicable.rb, line 13defnew(*,**)super.deduplicateendregistry()LinkSource:show|on GitHub# File activerecord/lib/active_record/connection_adapters/deduplicable.rb, line 9defregistry@registry||={}end

@@ -1,0 +1,1 @@
+NamespaceMODULEActiveRecord::Migration::Compatibility::V7_0::LegacyIndexNameMODULEActiveRecord::Migration::Compatibility::V7_0::TableDefinition

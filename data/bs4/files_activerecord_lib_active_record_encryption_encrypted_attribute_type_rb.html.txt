@@ -1,0 +1,1 @@
+NamespaceMODULEActiveModelMODULEActiveModel::TypeMODULEActiveRecordMODULEActiveRecord::EncryptionCLASSActiveModel::Type::BinaryCLASSActiveRecord::Encryption::EncryptedAttributeType

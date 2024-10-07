@@ -1,0 +1,1 @@
+NamespaceCLASSActiveSupport::Notifications::Fanout::Subscribers::EventObjectCLASSActiveSupport::Notifications::Fanout::Subscribers::Matcher

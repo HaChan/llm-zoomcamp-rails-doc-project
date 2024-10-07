@@ -1,0 +1,1 @@
+Required Filesactive_record/associations/join_dependency/join_partactive_support/core_ext/array/extractNamespaceMODULEActiveRecordMODULEActiveRecord::AssociationsMODULEArel

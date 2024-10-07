@@ -1,0 +1,1 @@
+Actionable ErrorsActionable errors lets you define actions to resolve an error.To make an error actionable, include theActiveSupport::ActionableErrormodule and invoke theactionclass macro to define the action. An action needs a name and a block to execute.NamespaceMODULEActiveSupport::ActionableError::ClassMethodsCLASSActiveSupport::ActionableError::NonActionable

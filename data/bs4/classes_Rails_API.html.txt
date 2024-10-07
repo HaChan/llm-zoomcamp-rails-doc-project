@@ -1,0 +1,1 @@
+NamespaceCLASSRails::API::EdgeTaskCLASSRails::API::RepoTaskCLASSRails::API::StableTaskCLASSRails::API::Task

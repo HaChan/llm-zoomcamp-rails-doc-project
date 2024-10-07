@@ -1,0 +1,3 @@
+MethodsGgenerate_method_for_mimeClass Public methodsgenerate_method_for_mime(mime)LinkSource:show|on GitHub# File actionpack/lib/abstract_controller/collector.rb, line 9defself.generate_method_for_mime(mime)sym=mime.is_a?(Symbol)?mime:mime.to_symclass_eval<<-RUBY,__FILE__,__LINE__+1def #{sym}(...)
+          custom(Mime[:#{sym}], ...)
+        endRUBYend

@@ -1,0 +1,1 @@
+Required Filesactive_record/relation/batches/batch_enumeratorNamespaceMODULEActiveRecordMODULEActiveRecord::Batches

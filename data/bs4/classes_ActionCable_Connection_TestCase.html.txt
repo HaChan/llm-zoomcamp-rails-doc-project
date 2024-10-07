@@ -1,0 +1,28 @@
+Action CableConnectionTestCaseUnit test Action Cable connections.Useful to check whether a connectionâsidentified_bygets assigned properly and that any improper connection requests are rejected.Basic exampleUnit tests are written as follows:Simulate a connection attempt by callingconnect.Assert state, e.g. identifiers, has been assigned.class ApplicationCable::ConnectionTest <ActionCable::Connection::TestCasedef test_connects_with_proper_cookie # Simulate the connection request with a cookie.cookies= users(:john).idconnect
+
+# Assert the connection identifier matches the fixture.
+assert_equal users(:john).id, connection.user.idenddef test_rejects_connection_without_proper_cookie assert_reject_connection { connect } end endconnectaccepts additional information about the HTTP request with theparams,headers,session, and Rackenvoptions.def test_connect_with_headers_and_query_string
+  connect params: { user_id: 1 }, headers: { "X-API-TOKEN" => "secret-my" }
+
+  assert_equal "1", connection.user.id
+  assert_equal "secret-my", connection.token
+end
+
+def test_connect_with_params
+  connect params: { user_id: 1 }
+
+  assert_equal "1", connection.user.id
+endYou can also set up the correct cookies before the connection request:def test_connect_with_cookies
+  # Plain cookies:
+  cookies["user_id"] = 1
+
+  # Or signed/encrypted:
+  # cookies.signed["user_id"] = 1
+  # cookies.encrypted["user_id"] = 1
+
+  connect
+
+  assert_equal "1", connection.user_id
+endConnectionis automatically inferredActionCable::Connection::TestCasewill automatically infer the connection under test from the test class name. If the channel cannot be inferred from the test class name, you can explicitly set it withtests.class ConnectionTest < ActionCable::Connection::TestCase
+  tests ApplicationCable::Connection
+endNamespaceMODULEActionCable::Connection::TestCase::BehaviorIncluded ModulesActionCable::Connection::TestCase::Behavior

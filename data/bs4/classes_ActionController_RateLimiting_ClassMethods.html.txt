@@ -1,0 +1,13 @@
+MethodsRrate_limitInstance Public methodsrate_limit(to:, within:, by: -> { request.remote_ip }LinkApplies a rate limit to all actions or those specified by the normalbefore_actionfilters withonly:andexcept:.The maximum number of requests allowed is specifiedto:and constrained to the window of time given bywithin:.Rate limits are by default unique to the ip address making the request, but you can provide your own identity function by passing a callable in theby:parameter. Itâs evaluated within the context of the controller processing the request.Requests that exceed the rate limit are refused with a429 Too Many Requestsresponse. You can specialize this by passing a callable in thewith:parameter. Itâs evaluated within the context of the controller processing the request.Rate limiting relies on a backingActiveSupport::Cachestore and defaults toconfig.action_controller.cache_store, which itself defaults to the globalconfig.cache_store. If you donât want to store rate limits in the same datastore as your general caches, you can pass a custom store in thestoreparameter.Examples:class SessionsController < ApplicationController
+  rate_limit to: 10, within: 3.minutes, only: :create
+end
+
+class SignupsController < ApplicationController
+  rate_limit to: 1000, within: 10.seconds,
+    by: -> { request.domain }, with: -> { redirect_to busy_controller_url, alert: "Too many signups on domain!" }, only: :new
+end
+
+class APIController < ApplicationController
+  RATE_LIMIT_STORE = ActiveSupport::Cache::RedisCacheStore.new(url: ENV["REDIS_URL"])
+  rate_limit to: 10, within: 3.minutes, store: RATE_LIMIT_STORE
+endSource:show|on GitHub# File actionpack/lib/action_controller/metal/rate_limiting.rb, line 47defrate_limit(to:,within:,by:->{request.remote_ip},with:->{head:too_many_requests},store:cache_store,**options)before_action->{rate_limiting(to:to,within:within,by:by,with:with,store:store) },**optionsend

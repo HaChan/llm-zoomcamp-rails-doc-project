@@ -1,0 +1,1 @@
+Required Filesruby-vipsNamespaceMODULEActiveStorageCLASSActiveStorage::AnalyzerCLASSActiveStorage::Analyzer::ImageAnalyzerCLASSActiveStorage::Analyzer::ImageAnalyzer::Vips

@@ -1,0 +1,1 @@
+Methods#===Uunsubscribe!Instance Public methods===(name)LinkSource:show|on GitHub# File activesupport/lib/active_support/notifications/fanout.rb, line 366def===(name)trueendunsubscribe!(*)LinkSource:show|on GitHub# File activesupport/lib/active_support/notifications/fanout.rb, line 370defunsubscribe!(*)falseend

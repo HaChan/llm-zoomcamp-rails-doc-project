@@ -1,0 +1,1 @@
+Required FilesbackburnerNamespaceMODULEActiveJobMODULEActiveJob::QueueAdaptersCLASSActiveJob::QueueAdapters::BackburnerAdapter

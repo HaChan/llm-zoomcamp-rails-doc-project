@@ -1,0 +1,26 @@
+DeprecatedInstanceVariableProxytransforms an instance variable into a deprecated one. It takes an instance of a class, a method on that class, an instance variable, and a deprecator as the last argument.Trying to use the deprecated instance variable will result in a deprecation warning, pointing to the method as a replacement.class Example
+  def initialize
+    @request = ActiveSupport::Deprecation::DeprecatedInstanceVariableProxy.new(self, :request, :@request, ActiveSupport::Deprecation.new)
+    @_request = :special_request
+  end
+
+  def request
+    @_request
+  end
+
+  def old_request
+    @request
+  end
+end
+
+example = Example.new
+# => #<Example:0x007fb9b31090b8 @_request=:special_request, @request=:special_request>
+
+example.old_request.to_s
+# => DEPRECATION WARNING: @request is deprecated! Call request.to_s instead of
+   @request.to_s
+   (Backtrace informationâ¦)
+   "special_request"
+
+example.request.to_s
+# => "special_request"MethodsNnewClass Public methodsnew(instance, method, var = "@#{method}", deprecator:)LinkSource:show|on GitHub# File activesupport/lib/active_support/deprecation/proxy_wrappers.rb, line 88definitialize(instance,method,var="@#{method}",deprecator:)@instance=instance@method=method@var=var@deprecator=deprecatorend

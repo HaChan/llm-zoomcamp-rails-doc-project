@@ -1,0 +1,1 @@
+Required Filesresqueactive_support/core_ext/enumerableactive_support/core_ext/array/accessresque-schedulerresque_schedulerNamespaceMODULEActiveJobMODULEActiveJob::QueueAdaptersCLASSActiveJob::QueueAdapters::ResqueAdapter

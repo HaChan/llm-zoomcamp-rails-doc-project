@@ -1,0 +1,1 @@
+Required Filesactive_supportactive_support/core_ext/enumerableactive_support/core_ext/object/blankrails/deprecatorthorNamespaceMODULERailsMODULERails::Command

@@ -1,0 +1,46 @@
+Superclass for Action Cable channel functional tests.Basic exampleFunctional tests are written as follows: 1. First, one uses thesubscribemethod to simulate subscription creation. 2. Then, one asserts whether the current state is as expected. âStateâ can be anything: transmitted messages, subscribed streams, etc.For example:class ChatChannelTest < ActionCable::Channel::TestCase
+  def test_subscribed_with_room_number
+    # Simulate a subscription creation
+    subscribe room_number: 1
+
+    # Asserts that the subscription was successfully created
+    assert subscription.confirmed?
+
+    # Asserts that the channel subscribes connection to a stream
+    assert_has_stream "chat_1"
+
+    # Asserts that the channel subscribes connection to a specific
+    # stream created for a model
+    assert_has_stream_for Room.find(1)
+  end
+
+  def test_does_not_stream_with_incorrect_room_number
+    subscribe room_number: -1
+
+    # Asserts that not streams was started
+    assert_no_streams
+  end
+
+  def test_does_not_subscribe_without_room_number
+    subscribe
+
+    # Asserts that the subscription was rejected
+    assert subscription.rejected?
+  end
+endYou can also perform actions: def test_perform_speak subscribe room_number: 1perform :speak, message: "Hello, Rails!"
+
+  assert_equal "Hello, Rails!", transmissions.last["text"]
+endSpecial methodsActionCable::Channel::TestCasewill also automatically provide the following instance methods for use in the tests:connectionAnActionCable::Channel::ConnectionStub, representing the current HTTP connection.subscriptionAn instance of the current channel, created when you callsubscribe.transmissionsA list of all messages that have been transmitted into the channel.Channelis automatically inferredActionCable::Channel::TestCasewill automatically infer the channel under test from the test class name. If the channel cannot be inferred from the test class name, you can explicitly set it withtests.class SpecialEdgeCaseChannelTest < ActionCable::Channel::TestCase
+  tests SpecialChannel
+endSpecifying connection identifiersYou need to set up your connection manually to provide values for the identifiers. To do this just use:stub_connection(user: users(:john))Testing broadcastingActionCable::Channel::TestCaseenhancesActionCable::TestHelperassertions (e.g.assert_broadcasts) to handle broadcasting to models:# in your channel
+def speak(data)
+  broadcast_to room, text: data["message"]
+end
+
+def test_speak
+  subscribe room_id: rooms(:chat).id
+
+  assert_broadcast_on(rooms(:chat), text: "Hello, Rails!") do
+    perform :speak, message: "Hello, Rails!"
+  end
+endNamespaceMODULEActionCable::Channel::TestCase::BehaviorIncluded ModulesActionCable::Channel::TestCase::Behavior

@@ -1,0 +1,25 @@
+Active Record ResultThis class encapsulates a result returned from calling#exec_queryon any database connection adapter. For example:result = ActiveRecord::Base.lease_connection.exec_query('SELECT id, title, body FROM posts')
+result # => #<ActiveRecord::Result:0xdeadbeef>
+
+# Get the column names of the result:
+result.columns
+# => ["id", "title", "body"]
+
+# Get the record values of the result:
+result.rows
+# => [[1, "title_1", "body_1"],
+      [2, "title_2", "body_2"],
+      ...
+     ]
+
+# Get an array of hashes representing the result (column => value):
+result.to_a
+# => [{"id" => 1, "title" => "title_1", "body" => "body_1"},
+      {"id" => 2, "title" => "title_2", "body" => "body_2"},
+      ...
+     ]
+
+# ActiveRecord::Result also includes Enumerable.
+result.each do |row|
+  puts row['title'] + " " + row['body']
+endMethods#[]Eeach,empty?Iincludes_column?,initialize_copyLlast,lengthNnewTto_a,to_aryIncluded ModulesEnumerableAttributes[R]column_types[R]columns[R]rowsClass Public methodsnew(columns, rows, column_types = nil)LinkSource:show|on GitHub# File activerecord/lib/active_record/result.rb, line 49definitialize(columns,rows,column_types=nil)# We freeze the strings to prevent them getting duped when# used as keys in ActiveRecord::Base's @attributes hash@columns=columns.each(&:-@).freeze@rows=rows@hash_rows=nil@column_types=column_types||EMPTY_HASH@column_indexes=nilendInstance Public methods[](idx)LinkSource:show|on GitHub# File activerecord/lib/active_record/result.rb, line 93def[](idx)hash_rows[idx]endeach(&block)LinkCalls the given block once for each element in row collection, passing row as parameter.Returns anEnumeratorif no block is given.Source:show|on GitHub# File activerecord/lib/active_record/result.rb, line 73defeach(&block)ifblock_given?hash_rows.each(&block)elsehash_rows.to_enum{@rows.size}endendempty?()LinkReturns true if there are no records, otherwise false.Source:show|on GitHub# File activerecord/lib/active_record/result.rb, line 82defempty?rows.empty?endincludes_column?(name)LinkReturns true if this result set includes the column namednameSource:show|on GitHub# File activerecord/lib/active_record/result.rb, line 60defincludes_column?(name)@columns.include?nameendinitialize_copy(other)LinkSource:show|on GitHub# File activerecord/lib/active_record/result.rb, line 136definitialize_copy(other)@columns=columns@rows=rows.dup@column_types=column_types.dup@hash_rows=nilendlast(n = nil)LinkReturns the last record from the rows collection.Source:show|on GitHub# File activerecord/lib/active_record/result.rb, line 98deflast(n=nil)n?hash_rows.last(n):hash_rows.lastendlength()LinkReturns the number of elements in the rows array.Source:show|on GitHub# File activerecord/lib/active_record/result.rb, line 65deflength@rows.lengthendto_a()LinkAlias for:to_aryto_ary()LinkReturns an array of hashes representing each row record.Also aliased as:to_aSource:show|on GitHub# File activerecord/lib/active_record/result.rb, line 87defto_aryhash_rowsend

@@ -1,0 +1,1 @@
+NamespaceMODULEActionCable::Channel::Naming::ClassMethodsMethodsCchannel_nameInstance Public methodschannel_name()LinkSource:show|on GitHub# File actioncable/lib/action_cable/channel/naming.rb, line 23defchannel_nameself.class.channel_nameend

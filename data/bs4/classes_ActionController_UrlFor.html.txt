@@ -1,0 +1,11 @@
+Action ControllerUrlForIncludesurl_forinto the host class. The class has to provide aRouteSetby implementing the_routesmethod. Otherwise, an exception will be raised.In addition toAbstractController::UrlFor, this module accesses the HTTP layer to define URL options like thehost. In order to do so, this module requires the host class to implementenvwhich needs to be Rack-compatible, andrequestwhich returns anActionDispatch::Requestinstance.class RootUrl
+  include ActionController::UrlFor
+  include Rails.application.routes.url_helpers
+
+  delegate :env, :request, to: :controller
+
+  def initialize(controller)
+    @controller = controller
+    @url        = root_path # named route from the application.
+  end
+endMethodsNnewUurl_optionsIncluded ModulesAbstractController::UrlForClass Public methodsnew(...)LinkSource:show|on GitHub# File actionpack/lib/action_controller/metal/url_for.rb, line 32definitialize(...)super@_url_options=nilendInstance Public methodsurl_options()LinkSource:show|on GitHub# File actionpack/lib/action_controller/metal/url_for.rb, line 37defurl_options@_url_options||={host:request.host,port:request.optional_port,protocol:request.protocol,_recall:request.path_parameters}.merge!(super).freezeif(same_origin=_routes.equal?(request.routes))||(script_name=request.engine_script_name(_routes))||(original_script_name=request.original_script_name)options=@_url_options.dupiforiginal_script_nameoptions[:original_script_name] =original_script_nameelseifsame_originoptions[:script_name] =request.script_name.empty??"":request.script_name.dupelseoptions[:script_name] =script_nameendendoptions.freezeelse@_url_optionsendend

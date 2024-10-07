@@ -1,0 +1,59 @@
+Contains helpers that help you test passage of time.MethodsAafter_teardownFfreeze_timeTtravel,travel_back,travel_toUunfreeze_timeInstance Public methodsafter_teardown()LinkSource:show|on GitHub# File activesupport/lib/active_support/testing/time_helpers.rb, line 69defafter_teardowntravel_backsuperendfreeze_time(with_usec: false, &block)LinkCallstravel_towithTime.now. Forwards optionalwith_usecargument.Time.current # => Sun, 09 Jul 2017 15:34:49 EST -05:00
+freeze_time
+sleep(1)
+Time.current # => Sun, 09 Jul 2017 15:34:49 EST -05:00This method also accepts a block, which will return the current time back to its original state at the end of the block:Time.current # => Sun, 09 Jul 2017 15:34:49 EST -05:00
+freeze_time do
+  sleep(1)
+  User.create.created_at # => Sun, 09 Jul 2017 15:34:49 EST -05:00
+end
+Time.current # => Sun, 09 Jul 2017 15:34:50 EST -05:00Source:show|on GitHub# File activesupport/lib/active_support/testing/time_helpers.rb, line 256deffreeze_time(with_usec:false,&block)travel_toTime.now,with_usec:with_usec,&blockendtravel(duration, with_usec: false, &block)LinkChanges current time to the time in the future or in the past by a given time difference by stubbingTime.now,Date.today, andDateTime.now. The stubs are automatically removed at the end of the test.Note that the usec for the resulting time will be set to 0 to prevent rounding errors with external services, like MySQL (which will round instead of floor, leading to off-by-one-second errors), unless thewith_usecargument is set totrue.Time.current     # => Sat, 09 Nov 2013 15:34:49 EST -05:00
+travel 1.day
+Time.current     # => Sun, 10 Nov 2013 15:34:49 EST -05:00
+Date.current     # => Sun, 10 Nov 2013
+DateTime.current # => Sun, 10 Nov 2013 15:34:49 -0500This method also accepts a block, which will return the current time back to its original state at the end of the block:Time.current # => Sat, 09 Nov 2013 15:34:49 EST -05:00
+travel 1.day do
+  User.create.created_at # => Sun, 10 Nov 2013 15:34:49 EST -05:00
+end
+Time.current # => Sat, 09 Nov 2013 15:34:49 EST -05:00Source:show|on GitHub# File activesupport/lib/active_support/testing/time_helpers.rb, line 97deftravel(duration,with_usec:false,&block)travel_toTime.now+duration,with_usec:with_usec,&blockendtravel_back()LinkReturns the current time back to its original state, by removing the stubs added bytravel,travel_to, andfreeze_time.Time.current # => Sat, 09 Nov 2013 15:34:49 EST -05:00
+
+travel_to Time.zone.local(2004, 11, 24, 1, 4, 44)
+Time.current # => Wed, 24 Nov 2004 01:04:44 EST -05:00
+
+travel_back
+Time.current # => Sat, 09 Nov 2013 15:34:49 EST -05:00This method also accepts a block, which brings the stubs back at the end of the block:Time.current # => Sat, 09 Nov 2013 15:34:49 EST -05:00
+
+travel_to Time.zone.local(2004, 11, 24, 1, 4, 44)
+Time.current # => Wed, 24 Nov 2004 01:04:44 EST -05:00
+
+travel_back do
+  Time.current # => Sat, 09 Nov 2013 15:34:49 EST -05:00
+end
+
+Time.current # => Wed, 24 Nov 2004 01:04:44 EST -05:00Also aliased as:unfreeze_timeSource:show|on GitHub# File activesupport/lib/active_support/testing/time_helpers.rb, line 230deftravel_backstubbed_time=Time.currentifblock_given?&&simple_stubs.stubbed?simple_stubs.unstub_all!yieldifblock_given?ensuretravel_tostubbed_timeifstubbed_timeendtravel_to(date_or_time, with_usec: false)LinkChanges current time to the given time by stubbingTime.now,Time.new,Date.today, andDateTime.nowto return the time or date passed into this method. The stubs are automatically removed at the end of the test.Time.current     # => Sat, 09 Nov 2013 15:34:49 EST -05:00
+travel_to Time.zone.local(2004, 11, 24, 1, 4, 44)
+Time.current     # => Wed, 24 Nov 2004 01:04:44 EST -05:00
+Date.current     # => Wed, 24 Nov 2004
+DateTime.current # => Wed, 24 Nov 2004 01:04:44 -0500Dates are taken as their timestamp at the beginning of the day in the application time zone.Time.currentreturns said timestamp, andTime.nowits equivalent in the system time zone. Similarly,Date.currentreturns a date equal to the argument, andDate.todaythe date according toTime.now, which may be different. (Note that you rarely want to deal withTime.now, orDate.today, in order to honor the application time zone please always useTime.currentandDate.current.)Note that the usec for the time passed will be set to 0 to prevent rounding errors with external services, like MySQL (which will round instead of floor, leading to off-by-one-second errors), unless thewith_usecargument is set totrue.This method also accepts a block, which will return the current time back to its original state at the end of the block:Time.current # => Sat, 09 Nov 2013 15:34:49 EST -05:00
+travel_to Time.zone.local(2004, 11, 24, 1, 4, 44) do
+  Time.current # => Wed, 24 Nov 2004 01:04:44 EST -05:00
+end
+Time.current # => Sat, 09 Nov 2013 15:34:49 EST -05:00Source:show|on GitHub# File activesupport/lib/active_support/testing/time_helpers.rb, line 133deftravel_to(date_or_time,with_usec:false)ifblock_given?&&in_blocktravel_to_nested_block_call=<<~MSGCalling `travel_to` with a block, when we have previously already made a call to `travel_to`, can lead to confusing time stubbing.
+
+      Instead of:
+
+         travel_to 2.days.from_now do
+           # 2 days from today
+           travel_to 3.days.from_now do
+             # 5 days from today
+           end
+         end
+
+      preferred way to achieve above is:
+
+         travel 2.days do
+           # 2 days from today
+         end
+
+         travel 5.days do
+           # 5 days from today
+         endMSGraisetravel_to_nested_block_callendifdate_or_time.is_a?(Date)&&!date_or_time.is_a?(DateTime)now=date_or_time.midnight.to_timeelsifdate_or_time.is_a?(String)now=Time.zone.parse(date_or_time)elsenow=date_or_timenow=now.to_timeunlessnow.is_a?(Time)now=now.change(usec:0)unlesswith_usecend# +now+ must be in local system timezone, because +Time.at(now)+# and +now.to_date+ (see stubs below) will use +now+'s timezone too!now=now.getlocalstubs=simple_stubsstubbed_time=Time.nowifstubs.stubbing(Time,:now)stubs.stub_object(Time,:now) {at(now) }stubs.stub_object(Time,:new)do|*args,**options|ifargs.empty?&&options.empty?at(now)elsestub=stubs.stubbing(Time,:new)Time.send(stub.original_method,*args,**options)endendstubs.stub_object(Date,:today) {jd(now.to_date.jd) }stubs.stub_object(DateTime,:now) {jd(now.to_date.jd,now.hour,now.min,now.sec,Rational(now.utc_offset,86400)) }ifblock_given?beginself.in_block=trueyieldensureifstubbed_timetravel_tostubbed_timeelsetravel_backendself.in_block=falseendendendunfreeze_time()LinkAlias for:travel_back

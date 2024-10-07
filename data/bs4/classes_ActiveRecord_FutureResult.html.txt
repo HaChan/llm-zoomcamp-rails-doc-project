@@ -1,0 +1,1 @@
+NamespaceCLASSActiveRecord::FutureResult::CompleteCLASSActiveRecord::FutureResult::EventBuffer

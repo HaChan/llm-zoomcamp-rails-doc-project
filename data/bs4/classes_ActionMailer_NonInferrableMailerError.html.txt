@@ -1,0 +1,1 @@
+MethodsNnewClass Public methodsnew(name)LinkSource:show|on GitHub# File actionmailer/lib/action_mailer/test_case.rb, line 8definitialize(name)super"Unable to determine the mailer to test from #{name}. "\"You'll need to specify it using tests YourMailer in your "\"test case definition"end

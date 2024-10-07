@@ -1,0 +1,8 @@
+Action Cable Remote ConnectionsIf you need to disconnect a given connection, you can go through theRemoteConnections. You can find the connections youâre looking for by searching for the identifier declared on the connection. For example:module ApplicationCable
+  class Connection < ActionCable::Connection::Base
+    identified_by :current_user
+    ....
+  end
+end
+
+ActionCable.server.remote_connections.where(current_user: User.find(1)).disconnectThis will disconnect all the connections established forUser.find(1), across all servers running on all machines, because it uses the internal channel that all of these servers are subscribed to.By default, server sends a âdisconnectâ message with âreconnectâ flag set to true. You can override it by specifying thereconnectoption:ActionCable.server.remote_connections.where(current_user: User.find(1)).disconnect(reconnect: false)NamespaceCLASSActionCable::RemoteConnections::RemoteConnectionMethodsNnewWwhereAttributes[R]serverClass Public methodsnew(server)LinkSource:show|on GitHub# File actioncable/lib/action_cable/remote_connections.rb, line 34definitialize(server)@server=serverendInstance Public methodswhere(identifier)LinkSource:show|on GitHub# File actioncable/lib/action_cable/remote_connections.rb, line 38defwhere(identifier)RemoteConnection.new(server,identifier)end

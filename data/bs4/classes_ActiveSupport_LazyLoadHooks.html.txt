@@ -1,0 +1,12 @@
+Lazy Load HooksLazyLoadHooksallows Rails to lazily load a lot of components and thus making the app boot faster. Because of this feature now there is no need to requireActiveRecord::Baseat boot time purely to apply configuration. Instead a hook is registered that applies configuration onceActiveRecord::Baseis loaded. HereActiveRecord::Baseis used as example but this feature can be applied elsewhere too.Here is an example whereon_loadmethod is called to register a hook.initializer 'active_record.initialize_timezone' do
+  ActiveSupport.on_load(:active_record) do
+    self.time_zone_aware_attributes = true
+    self.default_timezone = :utc
+  end
+endWhen the entirety ofActiveRecord::Basehas been evaluated thenrun_load_hooksis invoked. The very last line ofActiveRecord::Baseis:ActiveSupport.run_load_hooks(:active_record, ActiveRecord::Base)run_load_hookswill then execute all the hooks that were registered with theon_loadmethod. In the case of the above example, it will execute the block of code that is in theinitializer.Registering a hook that has already run results in that hook executing immediately. This allows hooks to be nested for code that relies on multiple lazily loaded components:initializer "action_text.renderer" do
+  ActiveSupport.on_load(:action_controller_base) do
+    ActiveSupport.on_load(:action_text_content) do
+      self.default_renderer = Class.new(ActionController::Base).renderer
+    end
+  end
+endMethodsOon_loadRrun_load_hooksInstance Public methodson_load(name, options = {}, &block)LinkDeclares a block that will be executed when a Rails component is fully loaded. If the component has already loaded, the block is executed immediately.Options::yield- Yields the object thatrun_load_hookstoblock.:run_once- Givenblockwill run only once.Source:show|on GitHub# File activesupport/lib/active_support/lazy_load_hooks.rb, line 60defon_load(name,options= {},&block)@loaded[name].eachdo|base|execute_hook(name,base,options,block)end@load_hooks[name]<<[block,options]endrun_load_hooks(name, base = Object)LinkExecutes all blocks registered tonameviaon_load, usingbaseas the evaluation context.ActiveSupport.run_load_hooks(:active_record, ActiveRecord::Base)In the case of the above example, it will execute all hooks registered for:active_recordwithin the classActiveRecord::Base.Source:show|on GitHub# File activesupport/lib/active_support/lazy_load_hooks.rb, line 75defrun_load_hooks(name,base=Object)@loaded[name]<<base@load_hooks[name].eachdo|hook,options|execute_hook(name,base,options,hook)endend

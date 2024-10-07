@@ -1,0 +1,7 @@
+Raised byActiveRecord::Base#destroy!when a record cannot be destroyed due to any of thebefore_destroycallbacks throwing:abort. SeeActiveRecord::Callbacksfor further details.class User < ActiveRecord::Base
+  before_destroy do
+    throw :abort if still_active?
+  end
+end
+
+User.first.destroy! # => raises an ActiveRecord::RecordNotDestroyedMethodsNnewAttributes[R]recordClass Public methodsnew(message = nil, record = nil)LinkSource:show|on GitHub# File activerecord/lib/active_record/errors.rb, line 172definitialize(message=nil,record=nil)@record=recordsuper(message)end

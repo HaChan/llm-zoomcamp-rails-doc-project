@@ -1,0 +1,62 @@
+Bite-sized separation of concernsWe often find ourselves with a medium-sized chunk of behavior that weâd like to extract, but only mix in to a single class.Extracting a plain old Ruby object to encapsulate it and collaborate or delegate to the original object is often a good choice, but when thereâs no additional state to encapsulate or weâre making DSL-style declarations about the parent class, introducing new collaborators can obfuscate rather than simplify.The typical route is to just dump everything in a monolithic class, perhaps with a comment, as a least-bad alternative. Using modules in separate files means tedious sifting to get a big-picture view.Dissatisfying ways to separate small concernsUsing comments:class Todo < ApplicationRecord
+  # Other todo implementation
+  # ...
+
+  ## Event tracking
+  has_many :events
+
+  before_create :track_creation
+
+  private
+    def track_creation
+      # ...
+    end
+endWith an inline module:Noisy syntax.class Todo < ApplicationRecord
+  # Other todo implementation
+  # ...
+
+  module EventTracking
+    extend ActiveSupport::Concern
+
+    included do
+      has_many :events
+      before_create :track_creation
+    end
+
+    private
+      def track_creation
+        # ...
+      end
+  end
+  include EventTracking
+endMix-in noise exiled to its own file:Once our chunk of behavior starts pushing the scroll-to-understand-it boundary, we give in and move it to a separate file. At this size, the increased overhead can be a reasonable tradeoff even if it reduces our at-a-glance perception of how things work.class Todo < ApplicationRecord
+  # Other todo implementation
+  # ...
+
+  include TodoEventTracking
+endIntroducingModule#concerningBy quieting the mix-in noise, we arrive at a natural, low-ceremony way to separate bite-sized concerns.class Todo < ApplicationRecord
+  # Other todo implementation
+  # ...
+
+  concerning :EventTracking do
+    included do
+      has_many :events
+      before_create :track_creation
+    end
+
+    private
+      def track_creation
+        # ...
+      end
+  end
+end
+
+Todo.ancestors
+# => [Todo, Todo::EventTracking, ApplicationRecord, Object]This small step has some wonderful ripple effects. We cangrok the behavior of our class in one glance,clean up monolithic junk-drawer classes by separating their concerns, andstop leaning on protected/private for crude âthis is internal stuffâ modularity.Prepending concerningconcerningsupports aprepend: trueargument which willprependthe concern instead of usingincludefor it.MethodsCconcern,concerningInstance Public methodsconcern(topic, &module_definition)LinkA low-cruft shortcut to define a concern.concern :EventTracking do
+  ...
+endis equivalent tomodule EventTracking
+  extend ActiveSupport::Concern
+
+  ...
+endSource:show|on GitHub# File activesupport/lib/active_support/core_ext/module/concerning.rb, line 132defconcern(topic,&module_definition)const_settopic,Module.new{extend::ActiveSupport::Concernmodule_eval(&module_definition)
+  }endconcerning(topic, prepend: false, &block)LinkDefine a new concern and mix it in.Source:show|on GitHub# File activesupport/lib/active_support/core_ext/module/concerning.rb, line 114defconcerning(topic,prepend:false,&block)method=prepend?:prepend::include__send__(method,concern(topic,&block))end

@@ -1,0 +1,1 @@
+NamespaceMODULEActiveRecordMODULEActiveRecord::CallbacksMODULEActiveRecord::Callbacks::ClassMethods

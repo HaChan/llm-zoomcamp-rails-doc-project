@@ -1,0 +1,1 @@
+Required Filesrails/generatorsrails/generators/testing/behaviorrails/generators/testing/setup_and_teardownrails/generators/testing/assertionsfileutilsNamespaceMODULERailsMODULERails::GeneratorsCLASSRails::Generators::TestCase

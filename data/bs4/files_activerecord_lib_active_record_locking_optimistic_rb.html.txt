@@ -1,0 +1,1 @@
+NamespaceMODULEActiveRecordMODULEActiveRecord::LockingMODULEActiveRecord::Locking::OptimisticMODULEActiveRecord::Locking::Optimistic::ClassMethods

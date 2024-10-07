@@ -1,0 +1,1 @@
+MethodsSsilenceInstance Public methodssilence(severity = Logger::ERROR)LinkSilences the logger for the duration of the block.Source:show|on GitHub# File activesupport/lib/active_support/logger_silence.rb, line 17defsilence(severity=Logger::ERROR)silencer?log_at(severity) {yieldself}:yield(self)end

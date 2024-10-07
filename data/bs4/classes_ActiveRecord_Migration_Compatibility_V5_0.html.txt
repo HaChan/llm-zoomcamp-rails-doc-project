@@ -1,0 +1,1 @@
+NamespaceMODULEActiveRecord::Migration::Compatibility::V5_0::TableDefinition

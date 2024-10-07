@@ -1,0 +1,1 @@
+Required Filesactive_support/core_ext/big_decimal/conversionsactive_support/multibyte/charsNamespaceMODULEActiveModelMODULEActiveRecordMODULEActiveRecord::ConnectionAdaptersMODULEActiveRecord::ConnectionAdapters::QuotingMODULEActiveSupport

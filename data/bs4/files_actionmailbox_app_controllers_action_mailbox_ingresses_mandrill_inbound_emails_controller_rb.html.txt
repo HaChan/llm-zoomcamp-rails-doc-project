@@ -1,0 +1,1 @@
+NamespaceMODULEActionMailboxMODULEActionMailbox::IngressesMODULEActionMailbox::Ingresses::MandrillMODULEActiveSupportMODULEDigestCLASSActionMailbox::Ingresses::Mandrill::InboundEmailsControllerCLASSActionMailbox::Ingresses::Mandrill::InboundEmailsController::Authenticator

@@ -1,0 +1,31 @@
+Methods#[],[]=Cclear_rotationsIinitializeOon_rotationRrotate,rotate_defaultsAttributes[RW]transitionalIf true, the first two rotation option sets are swapped when building message verifiers. For example, with the following configuration, message verifiers will generate messages usingserializer: Marshal, url_safe: true, and will able to verify messages that were generated using any of the three option sets:verifiers = ActiveSupport::MessageVerifiers.new { ... }
+verifiers.rotate(serializer: JSON, url_safe: true)
+verifiers.rotate(serializer: Marshal, url_safe: true)
+verifiers.rotate(serializer: Marshal, url_safe: false)
+verifiers.transitional = trueThis can be useful when performing a rolling deploy of an application, wherein servers that have not yet been updated must still be able to verify messages from updated servers. In such a scenario, first perform a rolling deploy with the new rotation (e.g.serializer: JSON, url_safe: true) as the first rotation andtransitional = true. Then, after all servers have been updated, perform a second rolling deploy withtransitional = false.Instance Public methods[](salt)LinkReturns aMessageVerifierconfigured with a secret derived from the givensalt, and options fromrotate.MessageVerifierinstances will be memoized, so the samesaltwill return the same instance.Source:on GitHub# File activesupport/lib/active_support/message_verifiers.rb, line 47[]=(salt, verifier)LinkOverrides aMessageVerifierinstance associated with a givensalt.Source:on GitHub# File activesupport/lib/active_support/message_verifiers.rb, line 55clear_rotationsLinkClears the list of option sets.Source:on GitHub# File activesupport/lib/active_support/message_verifiers.rb, line 113initialize(&secret_generator)LinkInitializes a new instance.secret_generatormust accept a salt, and return a suitable secret (string).secret_generatormay also accept arbitrary kwargs. Ifrotateis called with any options matching those kwargs, those options will be passed tosecret_generatorinstead of to the message verifier.verifiers = ActiveSupport::MessageVerifiers.new do |salt, base:|
+  MySecretGenerator.new(base).generate(salt)
+end
+
+verifiers.rotate(base: "...")Source:on GitHub# File activesupport/lib/active_support/message_verifiers.rb, line 31on_rotation(&callback)LinkSets a callback to invoke when a message is verified using an option set other than the first.For example, this callback could log each time it is called, and thus indicate whether old option sets are still in use or can be removed from rotation.Source:on GitHub# File activesupport/lib/active_support/message_verifiers.rb, line 119rotate(**options)LinkAddsoptionsto the list of option sets.Messageswill be signed using the first set in the list. When verifying, however, each set will be tried, in order, until one succeeds.Notably, the:secret_generatoroption can specify a different secret generator than the one initially specified. The secret generator must respond tocall, accept a salt, and return a suitable secret (string). The secret generator may also accept arbitrary kwargs.If any options match the kwargs of the operative secret generator, those options will be passed to the secret generator instead of to the message verifier.For fine-grained per-salt rotations, a block form is supported. The block will receive the salt, and should return an appropriate optionsHash. The block may also returnnilto indicate that the rotation does not apply to the given salt. For example:verifiers = ActiveSupport::MessageVerifiers.new { ... }
+
+verifiers.rotate do |salt|
+  case salt
+  when :foo
+    { serializer: JSON, url_safe: true }
+  when :bar
+    { serializer: Marshal, url_safe: true }
+  end
+end
+
+verifiers.rotate(serializer: Marshal, url_safe: false)
+
+# Uses `serializer: JSON, url_safe: true`.
+# Falls back to `serializer: Marshal, url_safe: false`.
+verifiers[:foo]
+
+# Uses `serializer: Marshal, url_safe: true`.
+# Falls back to `serializer: Marshal, url_safe: false`.
+verifiers[:bar]
+
+# Uses `serializer: Marshal, url_safe: false`.
+verifiers[:baz]Source:on GitHub# File activesupport/lib/active_support/message_verifiers.rb, line 61rotate_defaultsLinkInvokesrotatewith the default options.Source:on GitHub# File activesupport/lib/active_support/message_verifiers.rb, line 107

@@ -1,0 +1,9 @@
+Raised when a given database does not exist.MethodsDdb_errorNnewIncluded ModulesActiveSupport::ActionableErrorClass Public methodsdb_error(db_name)LinkSource:show|on GitHub# File activerecord/lib/active_record/errors.rb, line 327defdb_error(db_name)NoDatabaseError.new(<<~MSG)We could not find your database: #{db_name}. Available database configurations can be found in config/database.yml.
+
+          To resolve this error:
+
+          - Did you not create the database, or did you delete it? To create the database, run:
+
+              bin/rails db:create
+
+          - Has the database name changed? Verify that config/database.yml contains the correct database name.MSGendnew(message = nil, connection_pool: nil)LinkSource:show|on GitHub# File activerecord/lib/active_record/errors.rb, line 322definitialize(message=nil,connection_pool:nil)super(message||"Database not found",connection_pool:connection_pool)end

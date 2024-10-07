@@ -1,0 +1,1 @@
+NamespaceMODULEActiveRecordMODULEActiveRecord::EncryptionCLASSActiveRecord::Encryption::Cipher

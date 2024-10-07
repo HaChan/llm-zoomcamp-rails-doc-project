@@ -1,0 +1,108 @@
+Resource routing allows you to quickly declare all of the common routes for a given resourceful controller. Instead of declaring separate routes for yourindex,show,new,edit,create,update, anddestroyactions, a resourceful route declares them in a single line of code:resources :photosSometimes, you have a resource that clients always look up without referencing an ID. A common example, /profile always shows the profile of the currently logged in user. In this case, you can use a singular resource to map /profile (rather than /profile/:id) to the show action.resource :profileItâs common to have resources that are logically children of other resources:resources :magazines do
+  resources :ads
+endYou may wish to organize groups of controllers under a namespace. Most commonly, you might group a number of administrative controllers under anadminnamespace. You would place these controllers under theapp/controllers/admindirectory, and you can group them together in your router:namespace "admin" do
+  resources :posts, :comments
+endBy default the:idparameter doesnât accept dots. If you need to use dots as part of the:idparameter add a constraint which overrides this restriction, e.g:resources :articles, id: /[^\/]+/This allows any character other than a slash as part of your:id.MethodsAapi_only?CcollectionDdrawMmatch,memberNnamespace,nested,newRresource,resources,resources_path_names,rootSset_member_mappings_for_resource,shallow,shallow?Wwith_scope_levelConstantsCANONICAL_ACTIONS=%w(index create new show update destroy)RESOURCE_OPTIONS=[:as, :controller, :path, :only, :except, :param, :concerns]VALID_ON_OPTIONS=[:new, :collection, :member]CANONICAL_ACTIONSholds all actions that does not need a prefix or a path appended since they fit properly in their scope level.Instance Public methodscollection(&block)LinkTo add a route to the collection:resources :photos do
+  collection do
+    get 'search'
+  end
+endThis will enableRailsto recognize paths such as/photos/searchwith GET, and route to the search action ofPhotosController. It will also create thesearch_photos_urlandsearch_photos_pathroute helpers.Source:show|on GitHub# File actionpack/lib/action_dispatch/routing/mapper.rb, line 1547defcollection(&block)unlessresource_scope?raiseArgumentError,"can't use collection outside resource(s) scope"endwith_scope_level(:collection)dopath_scope(parent_resource.collection_scope,&block)endenddraw(name)LinkLoads another routes file with the givennamelocated inside theconfig/routesdirectory. In that file, you can use the normal routing DSL, butdo notsurround it with aRails.application.routes.drawblock.# config/routes.rb
+Rails.application.routes.draw do
+  draw :admin                 # Loads `config/routes/admin.rb`
+  draw "third_party/some_gem" # Loads `config/routes/third_party/some_gem.rb`
+end
+
+# config/routes/admin.rb
+namespace :admin do
+  resources :accounts
+end
+
+# config/routes/third_party/some_gem.rb
+mount SomeGem::Engine, at: "/some_gem"CAUTION:Use this feature with care. Having multiple routes files can negatively impact discoverability and readability. For most applications âeven those with a few hundred routes â itâs easier for developers to have a single routes file.Source:show|on GitHub# File actionpack/lib/action_dispatch/routing/mapper.rb, line 1656defdraw(name)path=@draw_paths.finddo|_path|File.exist?"#{_path}/#{name}.rb"endunlesspathmsg="Your router tried to #draw the external file #{name}.rb,\n"\"but the file was not found in:\n\n"msg+=@draw_paths.map{|_path|" * #{_path}"}.join("\n")raiseArgumentError,msgendroute_path="#{path}/#{name}.rb"instance_eval(File.read(route_path),route_path.to_s)endmatch(path, *rest, &block)LinkMatches a URL pattern to one or more routes. For more information, seematch.match 'path' => 'controller#action', via: :patch
+match 'path', to: 'controller#action', via: :post
+match 'path', 'otherpath', on: :member, via: :getSource:show|on GitHub# File actionpack/lib/action_dispatch/routing/mapper.rb, line 1678defmatch(path,*rest,&block)ifrest.empty?&&Hash===pathoptions=pathpath,to=options.find{|name,_value|name.is_a?(String) }raiseArgumentError,"Route path not specified"ifpath.nil?casetowhenSymboloptions[:action] =towhenStringifto.include?("#")options[:to] =toelseoptions[:controller] =toendelseoptions[:to] =toendoptions.delete(path)paths= [path]elseoptions=rest.pop||{}paths= [path]+restendifoptions.key?(:defaults)defaults(options.delete(:defaults)) {map_match(paths,options,&block) }elsemap_match(paths,options,&block)endendmember(&block)LinkTo add a member route, add a member block into the resource block:resources :photos do
+  member do
+    get 'preview'
+  end
+endThis will recognize/photos/1/previewwith GET, and route to the preview action ofPhotosController. It will also create thepreview_photo_urlandpreview_photo_pathhelpers.Source:show|on GitHub# File actionpack/lib/action_dispatch/routing/mapper.rb, line 1568defmember(&block)unlessresource_scope?raiseArgumentError,"can't use member outside resource(s) scope"endwith_scope_level(:member)doifshallow?shallow_scope{path_scope(parent_resource.member_scope,&block)
+      }elsepath_scope(parent_resource.member_scope,&block)endendendnamespace(path, options = {})LinkSeeActionDispatch::Routing::Mapper::Scoping#namespace.Source:show|on GitHub# File actionpack/lib/action_dispatch/routing/mapper.rb, line 1615defnamespace(path,options= {})ifresource_scope?nested{super}elsesuperendendnested(&block)LinkSource:show|on GitHub# File actionpack/lib/action_dispatch/routing/mapper.rb, line 1594defnested(&block)unlessresource_scope?raiseArgumentError,"can't use nested outside resource(s) scope"endwith_scope_level(:nested)doifshallow?&&shallow_nesting_depth>=1shallow_scopedopath_scope(parent_resource.nested_scope)doscope(nested_options,&block)endendelsepath_scope(parent_resource.nested_scope)doscope(nested_options,&block)endendendendnew(&block)LinkSource:show|on GitHub# File actionpack/lib/action_dispatch/routing/mapper.rb, line 1584defnew(&block)unlessresource_scope?raiseArgumentError,"can't use new outside resource(s) scope"endwith_scope_level(:new)dopath_scope(parent_resource.new_scope(action_path(:new)),&block)endendresource(*resources, &block)LinkSometimes, you have a resource that clients always look up without referencing an ID. A common example, /profile always shows the profile of the currently logged in user. In this case, you can use a singular resource to map /profile (rather than /profile/:id) to the show action:resource :profileThis creates six different routes in your application, all mapping to theProfilescontroller (note that the controller is named after the plural):GET       /profile/new
+GET       /profile
+GET       /profile/edit
+PATCH/PUT /profile
+DELETE    /profile
+POST      /profileIf you want instances of a model to work with this resource via record identification (e.g. inform_withorredirect_to), you will need to callresolve:resource :profile
+resolve('Profile') { [:profile] }
+
+# Enables this to work with singular routes:
+form_with(model: @profile) {}OptionsTakes same options asresourcesSource:show|on GitHub# File actionpack/lib/action_dispatch/routing/mapper.rb, line 1336defresource(*resources,&block)options=resources.extract_options!.dupifapply_common_behavior_for(:resource,resources,options,&block)returnselfendwith_scope_level(:resource)dooptions=apply_action_optionsoptionsresource_scope(SingletonResource.new(resources.pop,api_only?,@scope[:shallow],options))doyieldifblock_given?concerns(options[:concerns])ifoptions[:concerns]newdoget:newendifparent_resource.actions.include?(:new)set_member_mappings_for_resourcecollectiondopost:createendifparent_resource.actions.include?(:create)endendselfendresources(*resources, &block)LinkInRails, a resourceful route provides a mapping between HTTP verbs and URLs and controller actions. By convention, each action also maps to particular CRUD operations in a database. A single entry in the routing file, such asresources :photoscreates seven different routes in your application, all mapping to thePhotoscontroller:GET       /photos
+GET       /photos/new
+POST      /photos
+GET       /photos/:id
+GET       /photos/:id/edit
+PATCH/PUT /photos/:id
+DELETE    /photos/:idResourcescan also be nested infinitely by using this block syntax:resources :photos do
+  resources :comments
+endThis generates the following comments routes:GET       /photos/:photo_id/comments
+GET       /photos/:photo_id/comments/new
+POST      /photos/:photo_id/comments
+GET       /photos/:photo_id/comments/:id
+GET       /photos/:photo_id/comments/:id/edit
+PATCH/PUT /photos/:photo_id/comments/:id
+DELETE    /photos/:photo_id/comments/:idOptionsTakes same options asmatchas well as::path_namesAllows you to change the segment component of theeditandnewactions. Actions not specified are not changed.resources :posts, path_names: { new: "brand_new" }
+
+The above example will now change /posts/new to /posts/brand_new.:pathAllows you to change the path prefix for the resource.resources :posts, path: 'postings'
+
+The resource and all segments will now route to /postings instead of
+/posts.:onlyOnly generate routes for the given actions.resources :cows, only: :show
+    resources :cows, only: [:show, :index]:exceptGenerate all routes except for the given actions.resources :cows, except: :show
+    resources :cows, except: [:show, :index]:shallowGenerates shallow routes for nested resource(s). When placed on a parent resource, generates shallow routes for all nested resources.resources :posts, shallow: true do
+      resources :comments
+    end
+
+Is the same as:
+
+    resources :posts do
+      resources :comments, except: [:show, :edit, :update, :destroy]
+    end
+    resources :comments, only: [:show, :edit, :update, :destroy]
+
+This allows URLs for resources that otherwise would be deeply nested such
+as a comment on a blog post like `/posts/a-long-permalink/comments/1234`
+to be shortened to just `/comments/1234`.
+
+Set `shallow: false` on a child resource to ignore a parent's shallow
+parameter.:shallow_pathPrefixes nested shallow routes with the specified path.scope shallow_path: "sekret" do
+      resources :posts do
+        resources :comments, shallow: true
+      end
+    end
+
+The `comments` resource here will have the following routes generated for
+it:
+
+    post_comments    GET       /posts/:post_id/comments(.:format)
+    post_comments    POST      /posts/:post_id/comments(.:format)
+    new_post_comment GET       /posts/:post_id/comments/new(.:format)
+    edit_comment     GET       /sekret/comments/:id/edit(.:format)
+    comment          GET       /sekret/comments/:id(.:format)
+    comment          PATCH/PUT /sekret/comments/:id(.:format)
+    comment          DELETE    /sekret/comments/:id(.:format):shallow_prefixPrefixes nested shallow route names with specified prefix.scope shallow_prefix: "sekret" do
+      resources :posts do
+        resources :comments, shallow: true
+      end
+    end
+
+The `comments` resource here will have the following routes generated for
+it:
+
+    post_comments           GET       /posts/:post_id/comments(.:format)
+    post_comments           POST      /posts/:post_id/comments(.:format)
+    new_post_comment        GET       /posts/:post_id/comments/new(.:format)
+    edit_sekret_comment     GET       /comments/:id/edit(.:format)
+    sekret_comment          GET       /comments/:id(.:format)
+    sekret_comment          PATCH/PUT /comments/:id(.:format)
+    sekret_comment          DELETE    /comments/:id(.:format):formatAllows you to specify the default value for optionalformatsegment or disable it by supplyingfalse.:paramAllows you to override the default param name of:idin the URL.Examples# routes call +Admin::PostsController+
+resources :posts, module: "admin"
+
+# resource actions are at /admin/posts.
+resources :posts, path: "admin/posts"Source:show|on GitHub# File actionpack/lib/action_dispatch/routing/mapper.rb, line 1506defresources(*resources,&block)options=resources.extract_options!.dupifapply_common_behavior_for(:resources,resources,options,&block)returnselfendwith_scope_level(:resources)dooptions=apply_action_optionsoptionsresource_scope(Resource.new(resources.pop,api_only?,@scope[:shallow],options))doyieldifblock_given?concerns(options[:concerns])ifoptions[:concerns]collectiondoget:indexifparent_resource.actions.include?(:index)post:createifparent_resource.actions.include?(:create)endnewdoget:newendifparent_resource.actions.include?(:new)set_member_mappings_for_resourceendendselfendresources_path_names(options)LinkSource:show|on GitHub# File actionpack/lib/action_dispatch/routing/mapper.rb, line 1303defresources_path_names(options)@scope[:path_names].merge!(options)endroot(path, options = {})LinkYou can specify whatRailsshould route â/â to with the root method:root to: 'pages#main'For options, seematch, asrootuses it internally.You can also pass a string which will expandroot 'pages#main'You should put the root route at the top ofconfig/routes.rb, because this means it will be matched first. As this is the most popular route of mostRailsapplications, this is beneficial.Source:show|on GitHub# File actionpack/lib/action_dispatch/routing/mapper.rb, line 1725defroot(path,options= {})ifpath.is_a?(String)options[:to] =pathelsifpath.is_a?(Hash)&&options.empty?options=pathelseraiseArgumentError,"must be called with a path and/or options"endif@scope.resources?with_scope_level(:root)dopath_scope(parent_resource.path)domatch_root_route(options)endendelsematch_root_route(options)endendshallow()LinkSource:show|on GitHub# File actionpack/lib/action_dispatch/routing/mapper.rb, line 1623defshallow@scope=@scope.new(shallow:true)yieldensure@scope=@scope.parentendshallow?()LinkSource:show|on GitHub# File actionpack/lib/action_dispatch/routing/mapper.rb, line 1630defshallow?!parent_resource.singleton?&&@scope[:shallow]endInstance Private methodsapi_only?()LinkSource:show|on GitHub# File actionpack/lib/action_dispatch/routing/mapper.rb, line 1925defapi_only?# :doc:@set.api_only?endset_member_mappings_for_resource()LinkSource:show|on GitHub# File actionpack/lib/action_dispatch/routing/mapper.rb, line 1913defset_member_mappings_for_resource# :doc:memberdoget:editifparent_resource.actions.include?(:edit)get:showifparent_resource.actions.include?(:show)ifparent_resource.actions.include?(:update)patch:updateput:updateenddelete:destroyifparent_resource.actions.include?(:destroy)endendwith_scope_level(kind)LinkSource:show|on GitHub# File actionpack/lib/action_dispatch/routing/mapper.rb, line 1809defwith_scope_level(kind)# :doc:@scope=@scope.new_level(kind)yieldensure@scope=@scope.parentend

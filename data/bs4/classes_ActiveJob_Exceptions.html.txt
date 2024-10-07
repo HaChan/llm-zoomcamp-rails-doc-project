@@ -1,0 +1,9 @@
+Provides behavior for retrying and discarding jobs on exceptions.NamespaceMODULEActiveJob::Exceptions::ClassMethodsMethodsRretry_jobInstance Public methodsretry_job(options = {})LinkReschedules the job to be re-executed. This is useful in combination withrescue_from. When you rescue an exception from your job you can ask Active Job to retry performing your job.Options:wait- Enqueues the job with the specified delay in seconds:wait_until- Enqueues the job at the time specified:queue- Enqueues the job on the specified queue:priority- Enqueues the job with the specified priorityExamplesclass SiteScraperJob < ActiveJob::Base
+  rescue_from(ErrorLoadingSite) do
+    retry_job queue: :low_priority
+  end
+
+  def perform(*args)
+    # raise ErrorLoadingSite if cannot scrape
+  end
+endSource:show|on GitHub# File activejob/lib/active_job/exceptions.rb, line 151defretry_job(options= {})instrument:enqueue_retry,options.slice(:error,:wait)doenqueueoptionsendend

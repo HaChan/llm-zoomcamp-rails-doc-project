@@ -1,0 +1,2 @@
+MethodsDduplicable?Instance Public methodsduplicable?()LinkMethods are not duplicable:method(:puts).duplicable? # => false
+method(:puts).dup         # => TypeError: allocator undefined for MethodSource:show|on GitHub# File activesupport/lib/active_support/core_ext/object/duplicable.rb, line 44defduplicable?falseend

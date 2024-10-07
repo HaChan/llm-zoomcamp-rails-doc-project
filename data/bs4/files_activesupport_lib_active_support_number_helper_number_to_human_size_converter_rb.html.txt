@@ -1,0 +1,1 @@
+Required Filesactive_support/number_helper/number_converterNamespaceMODULEActiveSupportMODULEActiveSupport::NumberHelper

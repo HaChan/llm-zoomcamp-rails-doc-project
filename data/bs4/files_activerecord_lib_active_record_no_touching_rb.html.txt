@@ -1,0 +1,1 @@
+NamespaceMODULEActiveRecordMODULEActiveRecord::NoTouchingMODULEActiveRecord::NoTouching::ClassMethodsMODULEActiveSupport

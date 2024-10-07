@@ -1,0 +1,1 @@
+Resque adapter for Active JobResque (pronounced like ârescueâ) is a Redis-backed library for creating background jobs, placing those jobs on multiple queues, and processing them later.Read more about Resquehere.To use Resque set the queue_adapter config to:resque.Rails.application.config.active_job.queue_adapter = :resque

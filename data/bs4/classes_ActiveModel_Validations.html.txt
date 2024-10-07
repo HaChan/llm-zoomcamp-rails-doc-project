@@ -1,0 +1,91 @@
+Active Model ValidationsProvides a full validation framework to your objects.A minimal implementation could be:class Person
+  include ActiveModel::Validations
+
+  attr_accessor :first_name, :last_name
+
+  validates_each :first_name, :last_name do |record, attr, value|
+    record.errors.add attr, "starts with z." if value.start_with?("z")
+  end
+endWhich provides you with the full standard validation stack that you know from Active Record:person = Person.new
+person.valid?                   # => true
+person.invalid?                 # => false
+
+person.first_name = 'zoolander'
+person.valid?                   # => false
+person.invalid?                 # => true
+person.errors.messages          # => {first_name:["starts with z."]}Note thatActiveModel::Validationsautomatically adds anerrorsmethod to your instances initialized with a newActiveModel::Errorsobject, so there is no need for you to do this manually.NamespaceMODULEActiveModel::Validations::CallbacksMODULEActiveModel::Validations::ClassMethodsMODULEActiveModel::Validations::HelperMethodsCLASSActiveModel::Validations::AcceptanceValidatorMethodsEerrorsIinvalid?Rraise_validation_errorVvalid?,validate,validate!,validates_with,validation_contextIncluded ModulesActiveModel::Validations::HelperMethodsAttributes[RW]validation_contextInstance Public methodserrors()LinkReturns theErrorsobject that holds all information about attribute error messages.class Person
+  include ActiveModel::Validations
+
+  attr_accessor :name
+  validates_presence_of :name
+end
+
+person = Person.new
+person.valid? # => false
+person.errors # => #<ActiveModel::Errors:0x007fe603816640 @messages={name:["can't be blank"]}>Source:show|on GitHub# File activemodel/lib/active_model/validations.rb, line 330deferrors@errors||=Errors.new(self)endinvalid?(context = nil)LinkPerforms the opposite ofvalid?. Returnstrueif errors were added,falseotherwise.class Person
+  include ActiveModel::Validations
+
+  attr_accessor :name
+  validates_presence_of :name
+end
+
+person = Person.new
+person.name = ''
+person.invalid? # => true
+person.name = 'david'
+person.invalid? # => falseContext can optionally be supplied to define which callbacks to test against (the context is defined on the validations using:on).class Person
+  include ActiveModel::Validations
+
+  attr_accessor :name
+  validates_presence_of :name, on: :new
+end
+
+person = Person.new
+person.invalid?       # => false
+person.invalid?(:new) # => trueSource:show|on GitHub# File activemodel/lib/active_model/validations.rb, line 402definvalid?(context=nil)!valid?(context)endvalid?(context = nil)LinkRuns all the specified validations and returnstrueif no errors were added otherwisefalse.class Person
+  include ActiveModel::Validations
+
+  attr_accessor :name
+  validates_presence_of :name
+end
+
+person = Person.new
+person.name = ''
+person.valid? # => false
+person.name = 'david'
+person.valid? # => trueContext can optionally be supplied to define which callbacks to test against (the context is defined on the validations using:on).class Person
+  include ActiveModel::Validations
+
+  attr_accessor :name
+  validates_presence_of :name, on: :new
+end
+
+person = Person.new
+person.valid?       # => true
+person.valid?(:new) # => falseAlso aliased as:validateSource:show|on GitHub# File activemodel/lib/active_model/validations.rb, line 363defvalid?(context=nil)current_context,self.validation_context=validation_context,contexterrors.clearrun_validations!ensureself.validation_context=current_contextendvalidate(context = nil)LinkAlias for:valid?validate!(context = nil)LinkRuns all the validations within the specified context. Returnstrueif no errors are found, raisesValidationErrorotherwise.Validationswith no:onoption will run no matter the context.Validationswith some:onoption will only run in the specified context.Source:show|on GitHub# File activemodel/lib/active_model/validations.rb, line 411defvalidate!(context=nil)valid?(context)||raise_validation_errorendvalidates_with(*args, &block)LinkPasses the record off to the class or classes specified and allows them to add errors based on more complex conditions.class Person
+  include ActiveModel::Validations
+
+  validate :instance_validations
+
+  def instance_validations
+    validates_with MyValidator
+  end
+endPlease consult the class method documentation for more information on creating your own validator.You may also pass it multiple classes, like so:class Person
+  include ActiveModel::Validations
+
+  validate :instance_validations, on: :create
+
+  def instance_validations
+    validates_with MyValidator, MyOtherValidator
+  end
+endStandard configuration options (:on,:ifand:unless), which are available on the class version ofvalidates_with, should instead be placed on thevalidatesmethod as these are applied and tested in the callback.If you pass any additional configuration options, they will be passed to the class and available asoptions, please refer to the class version of this method for more information.Source:show|on GitHub# File activemodel/lib/active_model/validations/with.rb, line 144defvalidates_with(*args,&block)options=args.extract_options!options[:class] =self.classargs.eachdo|klass|validator=klass.new(options.dup,&block)validator.validate(self)endendvalidation_contextLinkReturns the context when running validations.This is useful when running validations except a certain context (opposite to theonoption).class Person
+  include ActiveModel::Validations
+
+  attr_accessor :name
+  validates :name, presence: true, if: -> { validation_context != :custom }
+end
+
+person = Person.new
+person.valid?          #=> false
+person.valid?(:new)    #=> false
+person.valid?(:custom) #=> trueSource:on GitHub# File activemodel/lib/active_model/validations.rb, line 49Instance Private methodsraise_validation_error()LinkSource:show|on GitHub# File activemodel/lib/active_model/validations.rb, line 445defraise_validation_error# :doc:raise(ValidationError.new(self))end

@@ -1,0 +1,1 @@
+NamespaceCLASSRails::Rack::Logger

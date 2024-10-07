@@ -1,0 +1,1 @@
+NamespaceMODULEActiveRecordCLASSActiveRecord::MigrationCLASSActiveRecord::Migration::CommandRecorder

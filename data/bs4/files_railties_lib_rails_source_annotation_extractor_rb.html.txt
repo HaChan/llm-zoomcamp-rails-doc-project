@@ -1,0 +1,1 @@
+Required FilesripperNamespaceMODULERailsCLASSRails::SourceAnnotationExtractorCLASSRails::SourceAnnotationExtractor::AnnotationCLASSRails::SourceAnnotationExtractor::ParserExtractorCLASSRails::SourceAnnotationExtractor::ParserExtractor::ParserCLASSRails::SourceAnnotationExtractor::PatternExtractor

@@ -1,0 +1,41 @@
+HTTPBasicauthenticationSimpleBasicexampleclass PostsController < ApplicationController
+  http_basic_authenticate_with name: "dhh", password: "secret", except: :index
+
+  def index
+    render plain: "Everyone can see me!"
+  end
+
+  def edit
+    render plain: "I'm only accessible if you know the password"
+  end
+endAdvancedBasicexampleHere is a more advancedBasicexample where only Atom feeds and the XMLAPIare protected by HTTP authentication. The regular HTML interface is protected by a session approach:class ApplicationController < ActionController::Base
+  before_action :set_account, :authenticate
+
+  private
+    def set_account
+      @account = Account.find_by(url_name: request.subdomains.first)
+    end
+
+    def authenticate
+      case request.format
+      when Mime[:xml], Mime[:atom]
+        if user = authenticate_with_http_basic { |u, p| @account.users.authenticate(u, p) }
+          @current_user = user
+        else
+          request_http_basic_authentication
+        end
+      else
+        if session_authenticated?
+          @current_user = @account.users.find(session[:authenticated][:user_id])
+        else
+          redirect_to(login_url) and return false
+        end
+      end
+    end
+endIn your integration tests, you can do something like this:def test_access_granted_from_xml
+  authorization = ActionController::HttpAuthentication::Basic.encode_credentials(users(:dhh).name, users(:dhh).password)
+
+  get "/notes/1.xml", headers: { 'HTTP_AUTHORIZATION' => authorization }
+
+  assert_equal 200, status
+endNamespaceMODULEActionController::HttpAuthentication::Basic::ControllerMethodsMethodsAauth_param,auth_scheme,authenticate,authentication_requestDdecode_credentialsEencode_credentialsHhas_basic_credentials?Uuser_name_and_passwordInstance Public methodsauth_param(request)LinkSource:show|on GitHub# File actionpack/lib/action_controller/metal/http_authentication.rb, line 130defauth_param(request)request.authorization.to_s.split(" ",2).secondendauth_scheme(request)LinkSource:show|on GitHub# File actionpack/lib/action_controller/metal/http_authentication.rb, line 126defauth_scheme(request)request.authorization.to_s.split(" ",2).firstendauthenticate(request, &login_procedure)LinkSource:show|on GitHub# File actionpack/lib/action_controller/metal/http_authentication.rb, line 108defauthenticate(request,&login_procedure)ifhas_basic_credentials?(request)login_procedure.call(*user_name_and_password(request))endendauthentication_request(controller, realm, message)LinkSource:show|on GitHub# File actionpack/lib/action_controller/metal/http_authentication.rb, line 138defauthentication_request(controller,realm,message)message||="HTTP Basic: Access denied.\n"controller.headers["WWW-Authenticate"] =%(Basic realm="#{realm.tr('"', "")}")controller.status=401controller.response_body=messageenddecode_credentials(request)LinkSource:show|on GitHub# File actionpack/lib/action_controller/metal/http_authentication.rb, line 122defdecode_credentials(request)::Base64.decode64(auth_param(request)||"")endencode_credentials(user_name, password)LinkSource:show|on GitHub# File actionpack/lib/action_controller/metal/http_authentication.rb, line 134defencode_credentials(user_name,password)"Basic #{::Base64.strict_encode64("#{user_name}:#{password}")}"endhas_basic_credentials?(request)LinkSource:show|on GitHub# File actionpack/lib/action_controller/metal/http_authentication.rb, line 114defhas_basic_credentials?(request)request.authorization.present?&&(auth_scheme(request).downcase=="basic")enduser_name_and_password(request)LinkSource:show|on GitHub# File actionpack/lib/action_controller/metal/http_authentication.rb, line 118defuser_name_and_password(request)decode_credentials(request).split(":",2)end

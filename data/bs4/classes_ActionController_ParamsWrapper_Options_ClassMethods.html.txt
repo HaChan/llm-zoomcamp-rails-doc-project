@@ -1,0 +1,15 @@
+Methods#_set_wrapper_optionsIinheritedWwrap_parametersInstance Public methods_set_wrapper_options(options)LinkSource:show|on GitHub# File actionpack/lib/action_controller/metal/params_wrapper.rb, line 189def_set_wrapper_options(options)self._wrapper_options=Options.from_hash(options)endinherited(klass)LinkSets the default wrapper key or model which will be used to determine wrapper key and attribute names. Called automatically when the module is inherited.Source:show|on GitHub# File actionpack/lib/action_controller/metal/params_wrapper.rb, line 244definherited(klass)ifklass._wrapper_options.format.any?params=klass._wrapper_options.dupparams.klass=klassklass._wrapper_options=paramsendsuperendwrap_parameters(name_or_model_or_options, options = {})LinkSets the name of the wrapper key, or the model whichParamsWrapperwould use to determine the attribute names from.Exampleswrap_parameters format: :xml
+  # enables the parameter wrapper for XML format
+
+wrap_parameters :person
+  # wraps parameters into +params[:person]+ hash
+
+wrap_parameters Person
+  # wraps parameters by determining the wrapper key from Person class
+  # (+person+, in this case) and the list of attribute names
+
+wrap_parameters include: [:username, :title]
+  # wraps only +:username+ and +:title+ attributes from parameters.
+
+wrap_parameters false
+  # disables parameters wrapping for this controller altogether.Options:format- The list of formats in which the parameters wrapper will be enabled.:include- The list of attribute names which parameters wrapper will wrap into a nested hash.:exclude- The list of attribute names which parameters wrapper will exclude from a nested hash.Source:show|on GitHub# File actionpack/lib/action_controller/metal/params_wrapper.rb, line 221defwrap_parameters(name_or_model_or_options,options= {})model=nilcasename_or_model_or_optionswhenHashoptions=name_or_model_or_optionswhenfalseoptions=options.merge(format:[])whenSymbol,Stringoptions=options.merge(name:name_or_model_or_options)elsemodel=name_or_model_or_optionsendopts=Options.from_hash_wrapper_options.to_h.slice(:format).merge(options)opts.model=modelopts.klass=selfself._wrapper_options=optsend

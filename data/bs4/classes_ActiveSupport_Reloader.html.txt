@@ -1,0 +1,16 @@
+Active Support ReloaderThis class defines several callbacks:to_prepare -- Run once at application startup, and also from
++to_run+.
+
+to_run -- Run before a work run that is reloading. If
++reload_classes_only_on_change+ is true (the default), the class
+unload will have already occurred.
+
+to_complete -- Run after a work run that has reloaded. If
++reload_classes_only_on_change+ is false, the class unload will
+have occurred after the work run, but before this callback.
+
+before_class_unload -- Run immediately before the classes are
+unloaded.
+
+after_class_unload -- Run immediately after the classes are
+unloaded.MethodsAafter_class_unloadBbefore_class_unloadNnewRrelease_unload_lock!,reload!,require_unload_lock!Tto_prepareWwrapClass Public methodsafter_class_unload(*args, &block)LinkRegisters a callback that will run immediately after the classes are unloaded.Source:show|on GitHub# File activesupport/lib/active_support/reloader.rb, line 44defself.after_class_unload(*args,&block)set_callback(:class_unload,:after,*args,&block)endbefore_class_unload(*args, &block)LinkRegisters a callback that will run immediately before the classes are unloaded.Source:show|on GitHub# File activesupport/lib/active_support/reloader.rb, line 39defself.before_class_unload(*args,&block)set_callback(:class_unload,*args,&block)endnew()LinkSource:show|on GitHub# File activesupport/lib/active_support/reloader.rb, line 99definitializesuper@locked=falseendreload!()LinkInitiate a manual reloadSource:show|on GitHub# File activesupport/lib/active_support/reloader.rb, line 51defself.reload!executor.wrapdonew.tapdo|instance|instance.run!ensureinstance.complete!endendprepare!endto_prepare(*args, &block)LinkRegisters a callback that will run once at application startup and every time the code is reloaded.Source:show|on GitHub# File activesupport/lib/active_support/reloader.rb, line 34defself.to_prepare(*args,&block)set_callback(:prepare,*args,&block)endwrap(**kwargs)LinkRun the supplied block as a work unit, reloading code as neededSource:show|on GitHub# File activesupport/lib/active_support/reloader.rb, line 71defself.wrap(**kwargs)returnyieldifactive?executor.wrap(**kwargs)doinstance=run!beginyieldensureinstance.complete!endendendInstance Public methodsrelease_unload_lock!()LinkRelease the unload lock if it has been previously obtainedSource:show|on GitHub# File activesupport/lib/active_support/reloader.rb, line 114defrelease_unload_lock!if@locked@locked=falseActiveSupport::Dependencies.interlock.done_unloadingendendrequire_unload_lock!()LinkAcquire theActiveSupport::Dependencies::Interlockunload lock, ensuring it will be released automaticallySource:show|on GitHub# File activesupport/lib/active_support/reloader.rb, line 106defrequire_unload_lock!unless@lockedActiveSupport::Dependencies.interlock.start_unloading@locked=trueendend

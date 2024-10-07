@@ -1,0 +1,1 @@
+MethodsUurl_optionsInstance Public methodsurl_options()LinkSource:show|on GitHub# File actionpack/lib/action_dispatch/testing/integration.rb, line 645defurl_optionsintegration_session.url_optionsend

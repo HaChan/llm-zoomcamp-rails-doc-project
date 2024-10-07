@@ -1,0 +1,1 @@
+Required Filesaction_view/helpers/tags/collection_helpersNamespaceMODULEActionViewMODULEActionView::HelpersMODULEActionView::Helpers::Tags

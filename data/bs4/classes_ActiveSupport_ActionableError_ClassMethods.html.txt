@@ -1,0 +1,7 @@
+MethodsAactionInstance Public methodsaction(name, &block)LinkDefines an action that can resolve the error.class PendingMigrationError < MigrationError
+  include ActiveSupport::ActionableError
+
+  action "Run pending migrations" do
+    ActiveRecord::Tasks::DatabaseTasks.migrate
+  end
+endSource:show|on GitHub# File activesupport/lib/active_support/actionable_error.rb, line 45defaction(name,&block)_actions[name] =blockend

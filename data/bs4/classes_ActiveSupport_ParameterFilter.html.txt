@@ -1,0 +1,24 @@
+Active Support Parameter FilterParameterFilterreplaces values in aHash-like object if their keys match one of the specified filters.Matching based on nested keys is possible by using dot notation, e.g."credit_card.number".If a proc is given as a filter, each key and value of theHash-like and of any nestedHashes will be passed to it. The value or key can then be mutated as desired using methods such asString#replace.# Replaces values with "[FILTERED]" for keys that match /password/i.
+ActiveSupport::ParameterFilter.new([:password])
+
+# Replaces values with "[FILTERED]" for keys that match /foo|bar/i.
+ActiveSupport::ParameterFilter.new([:foo, "bar"])
+
+# Replaces values for the exact key "pin" and for keys that begin with
+# "pin_". Does not match keys that otherwise include "pin" as a
+# substring, such as "shipping_id".
+ActiveSupport::ParameterFilter.new([/\Apin\z/, /\Apin_/])
+
+# Replaces the value for :code in `{ credit_card: { code: "xxxx" } }`.
+# Does not change `{ file: { code: "xxxx" } }`.
+ActiveSupport::ParameterFilter.new(["credit_card.code"])
+
+# Reverses values for keys that match /secret/i.
+ActiveSupport::ParameterFilter.new([-> (k, v) do
+  v.reverse! if /secret/i.match?(k)
+end])MethodsFfilter,filter_paramNnewPprecompile_filtersClass Public methodsnew(filters = [], mask: FILTERED)LinkCreate instance with given filters. Supported type of filters areString,Regexp, andProc. Other types of filters are treated asStringusingto_s. ForProcfilters, key, value, and optional original hash is passed to block arguments.Options:mask- A replaced object when filtered. Defaults to"[FILTERED]".Source:show|on GitHub# File activesupport/lib/active_support/parameter_filter.rb, line 77definitialize(filters= [],mask:FILTERED)@mask=maskcompile_filters!(filters)endprecompile_filters(filters)LinkPrecompiles an array of filters that otherwise would be passed directly to initialize. Depending on the quantity and types of filters, precompilation can improve filtering performance, especially in the case where theParameterFilterinstance itself cannot be retained (but the precompiled filters can be retained).filters = [/foo/, :bar, "nested.baz", /nested\.qux/]
+
+precompiled = ActiveSupport::ParameterFilter.precompile_filters(filters)
+# => [/(?-mix:foo)|(?i:bar)/, /(?i:nested\.baz)|(?-mix:nested\.qux)/]
+
+ActiveSupport::ParameterFilter.new(precompiled)Source:show|on GitHub# File activesupport/lib/active_support/parameter_filter.rb, line 55defself.precompile_filters(filters)filters,patterns=filters.partition{|filter|filter.is_a?(Proc) }patterns.map!do|pattern|pattern.is_a?(Regexp)?pattern:"(?i:#{Regexp.escape pattern.to_s})"enddeep_patterns=patterns.extract!{|pattern|pattern.to_s.include?("\\.") }filters<<Regexp.new(patterns.join("|"))ifpatterns.any?filters<<Regexp.new(deep_patterns.join("|"))ifdeep_patterns.any?filtersendInstance Public methodsfilter(params)LinkMask value ofparamsif key matches one of filters.Source:show|on GitHub# File activesupport/lib/active_support/parameter_filter.rb, line 83deffilter(params)@no_filters?params.dup:call(params)endfilter_param(key, value)LinkReturns filtered value for given key. ForProcfilters, third block argument is not populated.Source:show|on GitHub# File activesupport/lib/active_support/parameter_filter.rb, line 88deffilter_param(key,value)@no_filters?value:value_for_key(key,value)end

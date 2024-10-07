@@ -1,0 +1,3 @@
+MethodsBblocked?NnewConstantsSETS={
+modern: { safari: 17.2, chrome: 120, firefox: 121, opera: 106, ie: false }
+}Attributes[R]request[R]versionsClass Public methodsnew(request, versions:)LinkSource:show|on GitHub# File actionpack/lib/action_controller/metal/allow_browser.rb, line 70definitialize(request,versions:)@request,@versions=request,versionsendInstance Public methodsblocked?()LinkSource:show|on GitHub# File actionpack/lib/action_controller/metal/allow_browser.rb, line 74defblocked?user_agent_version_reported?&&unsupported_browser?end

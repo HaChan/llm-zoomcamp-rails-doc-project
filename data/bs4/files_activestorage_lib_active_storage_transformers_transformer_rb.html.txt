@@ -1,0 +1,1 @@
+NamespaceMODULEActiveStorageMODULEActiveStorage::TransformersCLASSActiveStorage::Transformers::Transformer

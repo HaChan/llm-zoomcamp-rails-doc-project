@@ -1,0 +1,54 @@
+Active Model ValidatorA simple base class that can be used along withActiveModel::Validations::ClassMethods.validates_withclass Person
+  include ActiveModel::Validations
+  validates_with MyValidator
+end
+
+class MyValidator < ActiveModel::Validator
+  def validate(record)
+    if some_complex_logic
+      record.errors.add(:base, "This record is invalid")
+    end
+  end
+
+  private
+    def some_complex_logic
+      # ...
+    end
+endAny class that inherits from ActiveModel::Validator must implement a method calledvalidatewhich accepts arecord.class Person
+  include ActiveModel::Validations
+  validates_with MyValidator
+end
+
+class MyValidator < ActiveModel::Validator
+  def validate(record)
+    record # => The person instance being validated
+    options # => Any non-standard options passed to validates_with
+  end
+endTo cause a validation error, you must add to therecordâs errors directly from within the validators message.class MyValidator < ActiveModel::Validator
+  def validate(record)
+    record.errors.add :base, "This is some custom error message"
+    record.errors.add :first_name, "This is some complex validation"
+    # etc...
+  end
+endTo add behavior to the initialize method, use the following signature:class MyValidator < ActiveModel::Validator
+  def initialize(options)
+    super
+    @my_custom_field = options[:field_name] || :first_name
+  end
+endNote that the validator is initialized only once for the whole application life cycle, and not on each validation run.The easiest way to add custom validators for validating individual attributes is with the convenientActiveModel::EachValidatorclass.class TitleValidator < ActiveModel::EachValidator
+  def validate_each(record, attribute, value)
+    record.errors.add attribute, 'must be Mr., Mrs., or Dr.' unless %w(Mr. Mrs. Dr.).include?(value)
+  end
+endThis can now be used in combination with thevalidatesmethod. SeeActiveModel::Validations::ClassMethods#validatesfor more on this.class Person
+  include ActiveModel::Validations
+  attr_accessor :title
+
+  validates :title, presence: true, title: true
+endIt can be useful to access the class that is using that validator when there are prerequisites such as anattr_accessorbeing present. This class is accessible viaoptions[:class]in the constructor. To set up your validator override the constructor.class MyValidator < ActiveModel::Validator
+  def initialize(options={})
+    super
+    options[:class].attr_accessor :custom_attribute
+  end
+endMethodsKkind,kindNnewVvalidateAttributes[R]optionsClass Public methodskind()LinkReturns the kind of the validator.PresenceValidator.kind   # => :presence
+AcceptanceValidator.kind # => :acceptanceSource:show|on GitHub# File activemodel/lib/active_model/validator.rb, line 103defself.kind@kind||=name.split("::").last.underscore.chomp("_validator").to_symunlessanonymous?endnew(options = {})LinkAccepts options that will be made available through theoptionsreader.Source:show|on GitHub# File activemodel/lib/active_model/validator.rb, line 108definitialize(options= {})@options=options.except(:class).freezeendInstance Public methodskind()LinkReturns the kind for this validator.PresenceValidator.new(attributes: [:username]).kind # => :presence
+AcceptanceValidator.new(attributes: [:terms]).kind  # => :acceptanceSource:show|on GitHub# File activemodel/lib/active_model/validator.rb, line 116defkindself.class.kindendvalidate(record)LinkOverride this method in subclasses with validation logic, adding errors to the recordserrorsarray where necessary.Source:show|on GitHub# File activemodel/lib/active_model/validator.rb, line 122defvalidate(record)raiseNotImplementedError,"Subclasses must implement a validate(record) method."end

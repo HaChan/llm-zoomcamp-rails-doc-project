@@ -1,0 +1,1 @@
+Required Filesactive_support/callbacksNamespaceMODULEActionCableMODULEActionCable::ChannelMODULEActionCable::Channel::CallbacksMODULEActionCable::Channel::Callbacks::ClassMethods

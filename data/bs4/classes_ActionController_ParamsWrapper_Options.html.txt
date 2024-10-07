@@ -1,0 +1,1 @@
+NamespaceMODULEActionController::ParamsWrapper::Options::ClassMethods

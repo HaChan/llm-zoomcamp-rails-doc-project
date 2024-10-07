@@ -1,0 +1,7 @@
+MethodsAattr_readonlyRreadonly_attributesInstance Public methodsattr_readonly(*attributes)LinkAttributeslisted as readonly will be used to create a new record. Assigning a new value to a readonly attribute on a persisted record raises an error.By settingconfig.active_record.raise_on_assign_to_attr_readonlytofalse, it will not raise. The value will change in memory, but will not be persisted onsave.Examplesclass Post < ActiveRecord::Base
+  attr_readonly :title
+end
+
+post = Post.create!(title: "Introducing Ruby on Rails!")
+post.title = "a different title" # raises ActiveRecord::ReadonlyAttributeError
+post.update(title: "a different title") # raises ActiveRecord::ReadonlyAttributeErrorSource:show|on GitHub# File activerecord/lib/active_record/readonly_attributes.rb, line 30defattr_readonly(*attributes)self._attr_readonly|=attributes.map(&:to_s)ifActiveRecord.raise_on_assign_to_attr_readonlyinclude(HasReadonlyAttributes)endendreadonly_attributes()LinkReturns an array of all the attributes that have been specified as readonly.Source:show|on GitHub# File activerecord/lib/active_record/readonly_attributes.rb, line 39defreadonly_attributes_attr_readonlyend

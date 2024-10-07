@@ -1,0 +1,9 @@
+Raised when a relation cannot be mutated because itâs already loaded.class Task < ActiveRecord::Base
+end
+
+relation = Task.all
+relation.loaded? # => true
+
+# Methods which try to mutate a loaded relation fail.
+relation.where!(title: 'TODO')  # => ActiveRecord::UnmodifiableRelation
+relation.limit!(5)              # => ActiveRecord::UnmodifiableRelation

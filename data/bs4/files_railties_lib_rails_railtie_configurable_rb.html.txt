@@ -1,0 +1,1 @@
+Required Filesactive_support/concernNamespaceMODULERailsMODULERails::Railtie::ConfigurableMODULERails::Railtie::Configurable::ClassMethodsCLASSRails::Railtie

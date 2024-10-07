@@ -1,0 +1,1 @@
+NamespaceCLASSActionText::Attachables::MissingAttachableCLASSActionText::Attachables::RemoteImage

@@ -1,0 +1,16 @@
+MethodsFfill_in_rich_text_areaInstance Public methodsfill_in_rich_text_area(locator = nil, with:)LinkLocates a Trix editor and fills it in with the given HTML.The editor can be found by: * itsid* itsplaceholder* the text from itslabelelement * itsaria-label* thenameof its inputExamples:# <trix-editor id="message_content" ...></trix-editor>
+fill_in_rich_text_area "message_content", with: "Hello <em>world!</em>"
+
+# <trix-editor placeholder="Your message here" ...></trix-editor>
+fill_in_rich_text_area "Your message here", with: "Hello <em>world!</em>"
+
+# <label for="message_content">Message content</label>
+# <trix-editor id="message_content" ...></trix-editor>
+fill_in_rich_text_area "Message content", with: "Hello <em>world!</em>"
+
+# <trix-editor aria-label="Message content" ...></trix-editor>
+fill_in_rich_text_area "Message content", with: "Hello <em>world!</em>"
+
+# <input id="trix_input_1" name="message[content]" type="hidden">
+# <trix-editor input="trix_input_1"></trix-editor>
+fill_in_rich_text_area "message[content]", with: "Hello <em>world!</em>"Source:show|on GitHub# File actiontext/lib/action_text/system_test_helper.rb, line 35deffill_in_rich_text_area(locator=nil,with:)find(:rich_text_area,locator).execute_script("this.editor.loadHTML(arguments[0])",with.to_s)end

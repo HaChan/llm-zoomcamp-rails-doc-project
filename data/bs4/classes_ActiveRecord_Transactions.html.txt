@@ -1,0 +1,1 @@
+SeeActiveRecord::Transactions::ClassMethodsfor documentation.NamespaceMODULEActiveRecord::Transactions::ClassMethods

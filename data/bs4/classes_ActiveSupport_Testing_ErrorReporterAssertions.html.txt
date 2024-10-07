@@ -1,0 +1,11 @@
+NamespaceMODULEActiveSupport::Testing::ErrorReporterAssertions::ErrorCollectorMethodsAassert_error_reported,assert_no_error_reportedInstance Public methodsassert_error_reported(error_class = StandardError, &block)LinkAssertion that the block should cause at least one exception to be reported toRails.error.Passes if the evaluated code in the yielded block reports a matching exception.assert_error_reported(IOError) do
+  Rails.error.report(IOError.new("Oops"))
+endTo test further details about the reported exception, you can use the return value.report = assert_error_reported(IOError) do
+  # ...
+end
+assert_equal "Oops", report.error.message
+assert_equal "admin", report.context[:section]
+assert_equal :warning, report.severity
+assert_predicate report, :handled?Source:show|on GitHub# File activesupport/lib/active_support/testing/error_reporter_assertions.rb, line 88defassert_error_reported(error_class=StandardError,&block)reports=ErrorCollector.recorddo_assert_nothing_raised_or_warn("assert_error_reported",&block)endifreports.empty?assert(false,"Expected a #{error_class.name} to be reported, but there were no errors reported.")elsif(report=reports.find{|r|error_class===r.error})self.assertions+=1reportelsemessage="Expected a #{error_class.name} to be reported, but none of the "\"#{reports.size} reported errors matched:  \n"\"#{reports.map { |r| r.error.class.name }.join("\n  ")}"assert(false,message)endendassert_no_error_reported(&block)LinkAssertion that the block should not cause an exception to be reported toRails.error.Passes if evaluated code in the yielded block reports no exception.assert_no_error_reported do
+  perform_service(param: 'no_exception')
+endSource:show|on GitHub# File activesupport/lib/active_support/testing/error_reporter_assertions.rb, line 62defassert_no_error_reported(&block)reports=ErrorCollector.recorddo_assert_nothing_raised_or_warn("assert_no_error_reported",&block)endassert_predicate(reports,:empty?)end

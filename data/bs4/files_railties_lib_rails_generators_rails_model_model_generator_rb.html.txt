@@ -1,0 +1,1 @@
+Required Filesrails/generators/model_helpersNamespaceMODULERailsMODULERails::Generators

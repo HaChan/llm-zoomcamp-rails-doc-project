@@ -1,0 +1,1 @@
+Required FilespgopensslNamespaceMODULEActionCableMODULEActionCable::SubscriptionAdapterMODULEActiveRecordMODULEDigestCLASSActionCable::SubscriptionAdapter::PostgreSQLCLASSActionCable::SubscriptionAdapter::PostgreSQL::Listener

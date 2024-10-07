@@ -1,0 +1,51 @@
+Methods#!~,<=>,==,===,=~Eeql?HhumanMmatch?NnewTto_s,to_strUuncountable?Included ModulesComparableAttributes[RW]cache_key[RW]collection[RW]element[RW]i18n_key[RW]name[RW]param_key[RW]plural[RW]route_key[RW]singular[RW]singular_route_keyClass Public methodsnew(klass, namespace = nil, name = nil, locale = :en)LinkReturns a newActiveModel::Nameinstance. By default, thenamespaceandnameoption will take the namespace and name of the given class respectively. Uselocaleargument for singularize and pluralize model name.module Foo
+  class Bar
+  end
+end
+
+ActiveModel::Name.new(Foo::Bar).to_s
+# => "Foo::Bar"Source:show|on GitHub# File activemodel/lib/active_model/naming.rb, line 166definitialize(klass,namespace=nil,name=nil,locale=:en)@name=name||klass.nameraiseArgumentError,"Class name cannot be blank. You need to supply a name argument when anonymous class given"if@name.blank?@unnamespaced=@name.delete_prefix("#{namespace.name}::")ifnamespace@klass=klass@singular=_singularize(@name)@plural=ActiveSupport::Inflector.pluralize(@singular,locale)@uncountable=@plural==@singular@element=ActiveSupport::Inflector.underscore(ActiveSupport::Inflector.demodulize(@name))@human=ActiveSupport::Inflector.humanize(@element)@collection=ActiveSupport::Inflector.tableize(@name)@param_key= (namespace?_singularize(@unnamespaced):@singular)@i18n_key=@name.underscore.to_sym@route_key= (namespace?ActiveSupport::Inflector.pluralize(@param_key,locale):@plural.dup)@singular_route_key=ActiveSupport::Inflector.singularize(@route_key,locale)@route_key<<"_index"if@uncountableendInstance Public methods!~(regexp)LinkEquivalent toString#!~. Match the class name against the given regexp. Returnstrueif there is no match, otherwisefalse.class BlogPost
+  extend ActiveModel::Naming
+end
+
+BlogPost.model_name !~ /Post/ # => false
+BlogPost.model_name !~ /\d/   # => trueSource:on GitHub# File activemodel/lib/active_model/naming.rb, line 83<=>(other)LinkEquivalent toString#<=>.class BlogPost
+  extend ActiveModel::Naming
+end
+
+BlogPost.model_name <=> 'BlogPost'  # => 0
+BlogPost.model_name <=> 'Blog'      # => 1
+BlogPost.model_name <=> 'BlogPosts' # => -1Source:on GitHub# File activemodel/lib/active_model/naming.rb, line 50==(other)LinkEquivalent toString#==. Returnstrueif the class name andotherare equal, otherwisefalse.class BlogPost
+  extend ActiveModel::Naming
+end
+
+BlogPost.model_name == 'BlogPost'  # => true
+BlogPost.model_name == 'Blog Post' # => falseSource:on GitHub# File activemodel/lib/active_model/naming.rb, line 19===(other)LinkEquivalent to#==.class BlogPost
+  extend ActiveModel::Naming
+end
+
+BlogPost.model_name === 'BlogPost'  # => true
+BlogPost.model_name === 'Blog Post' # => falseSource:on GitHub# File activemodel/lib/active_model/naming.rb, line 35=~(regexp)LinkEquivalent toString#=~. Match the class name against the given regexp. Returns the position where the match starts ornilif there is no match.class BlogPost
+  extend ActiveModel::Naming
+end
+
+BlogPost.model_name =~ /Post/ # => 4
+BlogPost.model_name =~ /\d/   # => nilSource:on GitHub# File activemodel/lib/active_model/naming.rb, line 66eql?(other)LinkEquivalent toString#eql?. Returnstrueif the class name andotherhave the same length and content, otherwisefalse.class BlogPost
+  extend ActiveModel::Naming
+end
+
+BlogPost.model_name.eql?('BlogPost')  # => true
+BlogPost.model_name.eql?('Blog Post') # => falseSource:on GitHub# File activemodel/lib/active_model/naming.rb, line 99human(options = {})LinkTransform the model name into a more human format, using I18n. By default, it will underscore then humanize the class name.class BlogPost
+  extend ActiveModel::Naming
+end
+
+BlogPost.model_name.human # => "Blog post"Specifyoptionswith additional translating options.Source:show|on GitHub# File activemodel/lib/active_model/naming.rb, line 197defhuman(options= {})return@humanifi18n_keys.empty?||i18n_scope.empty?key,*defaults=i18n_keysdefaults<<options[:default]ifoptions[:default]defaults<<MISSING_TRANSLATIONtranslation=I18n.translate(key,scope:i18n_scope,count:1,**options,default:defaults)translation=@humaniftranslation==MISSING_TRANSLATIONtranslationendmatch?(regexp)LinkEquivalent toString#match?. Match the class name against the given regexp. Returnstrueif there is a match, otherwisefalse.class BlogPost
+  extend ActiveModel::Naming
+end
+
+BlogPost.model_name.match?(/Post/) # => true
+BlogPost.model_name.match?(/\d/) # => falseSource:on GitHub# File activemodel/lib/active_model/naming.rb, line 115to_s()LinkReturns the class name.class BlogPost
+  extend ActiveModel::Naming
+end
+
+BlogPost.model_name.to_s # => "BlogPost"Source:on GitHub# File activemodel/lib/active_model/naming.rb, line 131to_str()LinkEquivalent toto_s.Source:show|on GitHub# File activemodel/lib/active_model/naming.rb, line 151delegate:==,:===,:<=>,:=~,:"!~",:eql?,:match?,:to_s,:to_str,:as_json,to::nameuncountable?()LinkSource:show|on GitHub# File activemodel/lib/active_model/naming.rb, line 209defuncountable?@uncountableend

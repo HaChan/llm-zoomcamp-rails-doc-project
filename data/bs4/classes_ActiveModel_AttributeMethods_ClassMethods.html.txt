@@ -1,0 +1,127 @@
+MethodsAalias_attribute,attribute_alias,attribute_alias?,attribute_method_affix,attribute_method_prefix,attribute_method_suffixDdefine_attribute_method,define_attribute_methodsGgenerate_alias_attribute_methodsUundefine_attribute_methodsInstance Public methodsalias_attribute(new_name, old_name)LinkAllows you to make aliases for attributes.class Person
+  include ActiveModel::AttributeMethods
+
+  attr_accessor :name
+  attribute_method_suffix '_short?'
+  define_attribute_methods :name
+
+  alias_attribute :nickname, :name
+
+  private
+    def attribute_short?(attr)
+      send(attr).length < 5
+    end
+end
+
+person = Person.new
+person.name = 'Bob'
+person.name            # => "Bob"
+person.nickname        # => "Bob"
+person.name_short?     # => true
+person.nickname_short? # => trueSource:show|on GitHub# File activemodel/lib/active_model/attribute_methods.rb, line 203defalias_attribute(new_name,old_name)old_name=old_name.to_snew_name=new_name.to_sself.attribute_aliases=attribute_aliases.merge(new_name=>old_name)aliases_by_attribute_name[old_name]<<new_nameeagerly_generate_alias_attribute_methods(new_name,old_name)endattribute_alias(name)LinkReturns the original name for the aliasnameSource:show|on GitHub# File activemodel/lib/active_model/attribute_methods.rb, line 240defattribute_alias(name)attribute_aliases[name.to_s]endattribute_alias?(new_name)LinkIsnew_namean alias?Source:show|on GitHub# File activemodel/lib/active_model/attribute_methods.rb, line 235defattribute_alias?(new_name)attribute_aliases.key?new_name.to_sendattribute_method_affix(*affixes)LinkDeclares a method available for all attributes with the given prefix and suffix. Usesmethod_missingandrespond_to?to rewrite the method.#{prefix}#{attr}#{suffix}(*args, &block)to#{prefix}attribute#{suffix}(#{attr}, *args, &block)An#{prefix}attribute#{suffix}instance method must exist and accept at least theattrargument.class Person
+  include ActiveModel::AttributeMethods
+
+  attr_accessor :name
+  attribute_method_affix prefix: 'reset_', suffix: '_to_default!'
+  define_attribute_methods :name
+
+  private
+    def reset_attribute_to_default!(attr)
+      send("#{attr}=", 'Default Name')
+    end
+end
+
+person = Person.new
+person.name                         # => 'Gem'
+person.reset_name_to_default!
+person.name                         # => 'Default Name'Source:show|on GitHub# File activemodel/lib/active_model/attribute_methods.rb, line 175defattribute_method_affix(*affixes)self.attribute_method_patterns+=affixes.map!{|affix|AttributeMethodPattern.new(**affix) }undefine_attribute_methodsendattribute_method_prefix(*prefixes, parameters: nil)LinkDeclares a method available for all attributes with the given prefix. Usesmethod_missingandrespond_to?to rewrite the method.#{prefix}#{attr}(*args, &block)to#{prefix}attribute(#{attr}, *args, &block)An instance method#{prefix}attributemust exist and accept at least theattrargument.class Person
+  include ActiveModel::AttributeMethods
+
+  attr_accessor :name
+  attribute_method_prefix 'clear_'
+  define_attribute_methods :name
+
+  private
+    def clear_attribute(attr)
+      send("#{attr}=", nil)
+    end
+end
+
+person = Person.new
+person.name = 'Bob'
+person.name          # => "Bob"
+person.clear_name
+person.name          # => nilSource:show|on GitHub# File activemodel/lib/active_model/attribute_methods.rb, line 106defattribute_method_prefix(*prefixes,parameters:nil)self.attribute_method_patterns+=prefixes.map!{|prefix|AttributeMethodPattern.new(prefix:prefix,parameters:parameters) }undefine_attribute_methodsendattribute_method_suffix(*suffixes, parameters: nil)LinkDeclares a method available for all attributes with the given suffix. Usesmethod_missingandrespond_to?to rewrite the method.#{attr}#{suffix}(*args, &block)toattribute#{suffix}(#{attr}, *args, &block)Anattribute#{suffix}instance method must exist and accept at least theattrargument.class Person
+  include ActiveModel::AttributeMethods
+
+  attr_accessor :name
+  attribute_method_suffix '_short?'
+  define_attribute_methods :name
+
+  private
+    def attribute_short?(attr)
+      send(attr).length < 5
+    end
+end
+
+person = Person.new
+person.name = 'Bob'
+person.name          # => "Bob"
+person.name_short?   # => trueSource:show|on GitHub# File activemodel/lib/active_model/attribute_methods.rb, line 140defattribute_method_suffix(*suffixes,parameters:nil)self.attribute_method_patterns+=suffixes.map!{|suffix|AttributeMethodPattern.new(suffix:suffix,parameters:parameters) }undefine_attribute_methodsenddefine_attribute_method(attr_name, _owner: generated_attribute_methods, as: attr_name)LinkDeclares an attribute that should be prefixed and suffixed byActiveModel::AttributeMethods.To use, pass an attribute name (as string or symbol). Be sure to declaredefine_attribute_methodafter you define any prefix, suffix or affix method, or they will not hook in.class Person
+  include ActiveModel::AttributeMethods
+
+  attr_accessor :name
+  attribute_method_suffix '_short?'
+
+  # Call to define_attribute_method must appear after the
+  # attribute_method_prefix, attribute_method_suffix or
+  # attribute_method_affix declarations.
+  define_attribute_method :name
+
+  private
+    def attribute_short?(attr)
+      send(attr).length < 5
+    end
+end
+
+person = Person.new
+person.name = 'Bob'
+person.name        # => "Bob"
+person.name_short? # => trueSource:show|on GitHub# File activemodel/lib/active_model/attribute_methods.rb, line 306defdefine_attribute_method(attr_name,_owner:generated_attribute_methods,as:attr_name)ActiveSupport::CodeGenerator.batch(_owner,__FILE__,__LINE__)do|owner|attribute_method_patterns.eachdo|pattern|define_attribute_method_pattern(pattern,attr_name,owner:owner,as:as)endattribute_method_patterns_cache.clearendenddefine_attribute_methods(*attr_names)LinkDeclares the attributes that should be prefixed and suffixed byActiveModel::AttributeMethods.To use, pass attribute names (as strings or symbols). Be sure to declaredefine_attribute_methodsafter you define any prefix, suffix, or affix methods, or they will not hook in.class Person
+  include ActiveModel::AttributeMethods
+
+  attr_accessor :name, :age, :address
+  attribute_method_prefix 'clear_'
+
+  # Call to define_attribute_methods must appear after the
+  # attribute_method_prefix, attribute_method_suffix or
+  # attribute_method_affix declarations.
+  define_attribute_methods :name, :age, :address
+
+  private
+    def clear_attribute(attr)
+      send("#{attr}=", nil)
+    end
+endSource:show|on GitHub# File activemodel/lib/active_model/attribute_methods.rb, line 267defdefine_attribute_methods(*attr_names)ActiveSupport::CodeGenerator.batch(generated_attribute_methods,__FILE__,__LINE__)do|owner|attr_names.flatten.eachdo|attr_name|define_attribute_method(attr_name,_owner:owner)aliases_by_attribute_name[attr_name.to_s].eachdo|aliased_name|generate_alias_attribute_methodsowner,aliased_name,attr_nameendendendendgenerate_alias_attribute_methods(code_generator, new_name, old_name)LinkSource:show|on GitHub# File activemodel/lib/active_model/attribute_methods.rb, line 217defgenerate_alias_attribute_methods(code_generator,new_name,old_name)define_attribute_method(old_name,_owner:code_generator,as:new_name)endundefine_attribute_methods()LinkRemoves all the previously dynamically defined methods from the class, including alias attribute methods.class Person
+  include ActiveModel::AttributeMethods
+
+  attr_accessor :name
+  attribute_method_suffix '_short?'
+  define_attribute_method :name
+  alias_attribute :first_name, :name
+
+  private
+    def attribute_short?(attr)
+      send(attr).length < 5
+    end
+end
+
+person = Person.new
+person.name = 'Bob'
+person.first_name  # => "Bob"
+person.name_short? # => true
+
+Person.undefine_attribute_methods
+
+person.name_short? # => NoMethodError
+person.first_name  # => NoMethodErrorSource:show|on GitHub# File activemodel/lib/active_model/attribute_methods.rb, line 370defundefine_attribute_methodsgenerated_attribute_methods.module_evaldoundef_method(*instance_methods)endattribute_method_patterns_cache.clearend

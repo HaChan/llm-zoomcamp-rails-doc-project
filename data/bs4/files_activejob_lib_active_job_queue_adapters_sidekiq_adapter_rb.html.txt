@@ -1,0 +1,1 @@
+Required FilessidekiqNamespaceMODULEActiveJobMODULEActiveJob::QueueAdaptersCLASSActiveJob::QueueAdapters::SidekiqAdapter

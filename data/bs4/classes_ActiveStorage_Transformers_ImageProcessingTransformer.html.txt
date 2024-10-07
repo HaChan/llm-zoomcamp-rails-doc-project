@@ -1,0 +1,1 @@
+NamespaceCLASSActiveStorage::Transformers::ImageProcessingTransformer::UnsupportedImageProcessingArgumentCLASSActiveStorage::Transformers::ImageProcessingTransformer::UnsupportedImageProcessingMethod

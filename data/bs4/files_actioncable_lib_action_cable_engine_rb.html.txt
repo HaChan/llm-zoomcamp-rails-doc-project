@@ -1,0 +1,1 @@
+Required Filesrailsaction_cableactive_support/core_ext/hash/indifferent_accessNamespaceMODULEActionCableMODULEActionCable::ChannelMODULEActiveSupportMODULERails

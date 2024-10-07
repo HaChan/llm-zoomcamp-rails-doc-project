@@ -1,0 +1,4 @@
+Action Mailbox CallbacksDefines the callbacks related to processing.MethodsAafter_processing,around_processingBbefore_processingIncluded ModulesActiveSupport::CallbacksConstantsTERMINATOR=->(mailbox, chain) do
+chain.call
+mailbox.finished_processing?
+endInstance Public methodsafter_processing(*methods, &block)LinkSource:show|on GitHub# File actionmailbox/lib/action_mailbox/callbacks.rb, line 27defafter_processing(*methods,&block)set_callback(:process,:after,*methods,&block)endaround_processing(*methods, &block)LinkSource:show|on GitHub# File actionmailbox/lib/action_mailbox/callbacks.rb, line 31defaround_processing(*methods,&block)set_callback(:process,:around,*methods,&block)endbefore_processing(*methods, &block)LinkSource:show|on GitHub# File actionmailbox/lib/action_mailbox/callbacks.rb, line 23defbefore_processing(*methods,&block)set_callback(:process,:before,*methods,&block)end

@@ -1,0 +1,27 @@
+Action Mailbox BaseThe base class for all application mailboxes. Not intended to be inherited from directly. Inherit fromApplicationMailboxinstead, as thatâs where the app-specific routing is configured. This routing is specified in the following ways:class ApplicationMailbox < ActionMailbox::Base
+  # Any of the recipients of the mail (whether to, cc, bcc) are matched against the regexp.
+  routing /^replies@/i => :replies
+
+  # Any of the recipients of the mail (whether to, cc, bcc) needs to be an exact match for the string.
+  routing "help@example.com" => :help
+
+  # Any callable (proc, lambda, etc) object is passed the inbound_email record and is a match if true.
+  routing ->(inbound_email) { inbound_email.mail.to.size > 2 } => :multiple_recipients
+
+  # Any object responding to #match? is called with the inbound_email record as an argument. Match if true.
+  routing CustomAddress.new => :custom
+
+  # Any inbound_email that has not been already matched will be sent to the BackstopMailbox.
+  routing :all => :backstop
+endApplication mailboxes need to override theprocessmethod, which is invoked by the framework after callbacks have been run. The callbacks available are:before_processing,after_processing, andaround_processing. The primary use case is to ensure that certain preconditions to processing are fulfilled usingbefore_processingcallbacks.If a precondition fails to be met, you can halt the processing using the#bounced!method, which will silently prevent any further processing, but not actually send out any bounce notice. You can also pair this behavior with the invocation of an Action Mailer class responsible for sending out an actual bounce email. This is done using thebounce_withmethod, which takes the mail object returned by an Action Mailer method, like so:class ForwardsMailbox < ApplicationMailbox
+  before_processing :ensure_sender_is_a_user
+
+  private
+    def ensure_sender_is_a_user
+      unless User.exist?(email_address: mail.from)
+        bounce_with UserRequiredMailer.missing(inbound_email)
+      end
+    end
+endDuring the processing of the inbound email, the status will be tracked. Before processing begins, the email will normally have thependingstatus. Once processing begins, just before callbacks and theprocessmethod is called, the status is changed toprocessing. If processing is allowed to complete, the status is changed todelivered. If a bounce is triggered, thenbounced. If an unhandled exception is bubbled up, thenfailed.Exceptions can be handled at the class level using the familiarActiveSupport::Rescuableapproach:class ForwardsMailbox < ApplicationMailbox
+  rescue_from(ApplicationSpecificVerificationError) { bounced! }
+endMethodsBbounce_now_with,bounce_withNnewPprocessRreceiveIncluded ModulesActiveSupport::RescuableAttributes[R]inbound_emailClass Public methodsnew(inbound_email)LinkSource:show|on GitHub# File actionmailbox/lib/action_mailbox/base.rb, line 79definitialize(inbound_email)@inbound_email=inbound_emailendreceive(inbound_email)LinkSource:show|on GitHub# File actionmailbox/lib/action_mailbox/base.rb, line 75defself.receive(inbound_email)new(inbound_email).perform_processingendInstance Public methodsbounce_now_with(message)LinkImmediately sends the givenmessageand changes the inbound emailâs status to:bounced.Source:show|on GitHub# File actionmailbox/lib/action_mailbox/base.rb, line 111defbounce_now_with(message)inbound_email.bounced!message.deliver_nowendbounce_with(message)LinkEnqueues the givenmessagefor delivery and changes the inbound emailâs status to:bounced.Source:show|on GitHub# File actionmailbox/lib/action_mailbox/base.rb, line 105defbounce_with(message)inbound_email.bounced!message.deliver_laterendprocess()LinkSource:show|on GitHub# File actionmailbox/lib/action_mailbox/base.rb, line 96defprocess# Override in subclassesend

@@ -1,0 +1,1 @@
+Sets theActiveStorage::Current.url_optionsattribute, which the disk service uses to generate URLs. Include this concern in custom controllers that callActiveStorage::Blob#url,ActiveStorage::Variant#url, orActiveStorage::Preview#urlso the disk service can generate URLs using the same host, protocol, and port as the current request.

@@ -1,0 +1,1 @@
+MethodsNnewClass Public methodsnew(content_path)LinkSource:show|on GitHub# File activesupport/lib/active_support/encrypted_file.rb, line 10definitialize(content_path)super"Missing encrypted content file in #{content_path}."end

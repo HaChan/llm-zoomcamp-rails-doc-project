@@ -1,0 +1,1 @@
+MethodsLloadInstance Public methodsload(dumped)LinkSource:show|on GitHub# File activesupport/lib/active_support/message_pack/cache_serializer.rb, line 11defload(dumped)superrescueActiveSupport::MessagePack::MissingClassError# Treat missing class as cache miss => return nilend

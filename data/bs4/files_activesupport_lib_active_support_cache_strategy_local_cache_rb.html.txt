@@ -1,0 +1,1 @@
+Required Filesactive_support/core_ext/string/inflectionsNamespaceMODULEActiveSupportMODULEActiveSupport::CacheMODULEActiveSupport::Cache::StrategyMODULEActiveSupport::Cache::Strategy::LocalCacheCLASSActiveSupport::Cache::Strategy::LocalCache::LocalStore

@@ -1,0 +1,27 @@
+Active Model Attribute MethodsProvides a way to add prefixes and suffixes to your methods as well as handling the creation ofActiveRecord::Base- like class methods such astable_name.The requirements to implementActiveModel::AttributeMethodsare to:include ActiveModel::AttributeMethodsin your class.Call each of its methods you want to add, such asattribute_method_suffixorattribute_method_prefix.Calldefine_attribute_methodsafter the other methods are called.Define the various generic_attributemethods that you have declared.Define anattributesmethod which returns a hash with each attribute name in your model as hash key and the attribute value as hash value.Hashkeys must be strings.A minimal implementation could be:class Person
+  include ActiveModel::AttributeMethods
+
+  attribute_method_affix  prefix: 'reset_', suffix: '_to_default!'
+  attribute_method_suffix '_contrived?'
+  attribute_method_prefix 'clear_'
+  define_attribute_methods :name
+
+  attr_accessor :name
+
+  def attributes
+    { 'name' => @name }
+  end
+
+  private
+    def attribute_contrived?(attr)
+      true
+    end
+
+    def clear_attribute(attr)
+      send("#{attr}=", nil)
+    end
+
+    def reset_attribute_to_default!(attr)
+      send("#{attr}=", 'Default Name')
+    end
+endNamespaceMODULEActiveModel::AttributeMethods::ClassMethodsMethodsAattribute_missingMmethod_missingRrespond_to?,respond_to_without_attributes?ConstantsCALL_COMPILABLE_REGEXP=/\A[a-zA-Z_]\w*[!?]?\z/NAME_COMPILABLE_REGEXP=/\A[a-zA-Z_]\w*[!?=]?\z/Instance Public methodsattribute_missing(match, ...)Linkattribute_missingis likemethod_missing, but for attributes. Whenmethod_missingis called we check to see if there is a matching attribute method. If so, we tellattribute_missingto dispatch the attribute. This method can be overloaded to customize the behavior.Source:show|on GitHub# File activemodel/lib/active_model/attribute_methods.rb, line 515defattribute_missing(match,...)__send__(match.proxy_target,match.attr_name,...)endmethod_missing(method, ...)LinkAllows access to the object attributes, which are held in the hash returned byattributes, as though they were first-class methods. So aPersonclass with anameattribute can for example usePerson#nameandPerson#name=and never directly use the attributes hash â except for multiple assignments withActiveRecord::Base#attributes=.Itâs also possible to instantiate related objects, so aClientclass belonging to theclientstable with amaster_idforeign key can instantiate master throughClient#master.Source:show|on GitHub# File activemodel/lib/active_model/attribute_methods.rb, line 502defmethod_missing(method,...)ifrespond_to_without_attributes?(method,true)superelsematch=matched_attribute_method(method.name)match?attribute_missing(match,...):superendendrespond_to?(method, include_private_methods = false)LinkAlso aliased as:respond_to_without_attributes?Source:show|on GitHub# File activemodel/lib/active_model/attribute_methods.rb, line 523defrespond_to?(method,include_private_methods=false)ifsupertrueelsif!include_private_methods&&super(method,true)# If we're here then we haven't found among non-private methods# but found among all methods. Which means that the given method is private.falseelse!matched_attribute_method(method.to_s).nil?endendrespond_to_without_attributes?(method, include_private_methods = false)LinkAPersoninstance with anameattribute can askperson.respond_to?(:name),person.respond_to?(:name=), andperson.respond_to?(:name?)which will all returntrue.Alias for:respond_to?

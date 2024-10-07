@@ -1,0 +1,1 @@
+NamespaceMODULEActiveRecord::ConnectionAdapters::MySQL::ColumnMethodsMODULEActiveRecord::ConnectionAdapters::MySQL::DatabaseStatementsCLASSActiveRecord::ConnectionAdapters::MySQL::TableCLASSActiveRecord::ConnectionAdapters::MySQL::TableDefinition

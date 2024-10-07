@@ -1,0 +1,1 @@
+Provides asynchronous purging ofActiveStorage::Blobrecords viaActiveStorage::Blob#purge_later.MethodsPperformInstance Public methodsperform(blob)LinkSource:show|on GitHub# File activestorage/app/jobs/active_storage/purge_job.rb, line 10defperform(blob)blob.purgeend

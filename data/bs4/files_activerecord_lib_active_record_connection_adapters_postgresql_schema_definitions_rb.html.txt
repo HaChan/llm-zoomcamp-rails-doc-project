@@ -1,0 +1,1 @@
+NamespaceMODULEActiveRecordMODULEActiveRecord::ConnectionAdaptersMODULEActiveRecord::ConnectionAdapters::PostgreSQLMODULEActiveRecord::ConnectionAdapters::PostgreSQL::ColumnMethodsCLASSActiveRecord::ConnectionAdapters::PostgreSQL::AlterTableCLASSActiveRecord::ConnectionAdapters::PostgreSQL::TableCLASSActiveRecord::ConnectionAdapters::PostgreSQL::TableDefinition

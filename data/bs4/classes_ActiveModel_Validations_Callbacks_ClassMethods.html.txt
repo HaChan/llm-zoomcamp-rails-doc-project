@@ -1,0 +1,42 @@
+MethodsAafter_validationBbefore_validationInstance Public methodsafter_validation(*args, &block)LinkDefines a callback that will get called right after validation.class Person
+  include ActiveModel::Validations
+  include ActiveModel::Validations::Callbacks
+
+  attr_accessor :name, :status
+
+  validates_presence_of :name
+
+  after_validation :set_status
+
+  private
+    def set_status
+      self.status = errors.empty?
+    end
+end
+
+person = Person.new
+person.name = ''
+person.valid? # => false
+person.status # => false
+person.name = 'bob'
+person.valid? # => true
+person.status # => trueSource:show|on GitHub# File activemodel/lib/active_model/validations/callbacks.rb, line 88defafter_validation(*args,&block)options=args.extract_options!options=options.dupoptions[:prepend] =trueset_options_for_callback(options)set_callback(:validation,:after,*args,options,&block)endbefore_validation(*args, &block)LinkDefines a callback that will get called right before validation.class Person
+  include ActiveModel::Validations
+  include ActiveModel::Validations::Callbacks
+
+  attr_accessor :name
+
+  validates_length_of :name, maximum: 6
+
+  before_validation :remove_whitespaces
+
+  private
+    def remove_whitespaces
+      name.strip!
+    end
+end
+
+person = Person.new
+person.name = '  bob  '
+person.valid? # => true
+person.name   # => "bob"Source:show|on GitHub# File activemodel/lib/active_model/validations/callbacks.rb, line 55defbefore_validation(*args,&block)options=args.extract_options!set_options_for_callback(options)set_callback(:validation,:before,*args,options,&block)end

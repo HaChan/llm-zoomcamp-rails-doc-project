@@ -1,0 +1,1 @@
+NamespaceMODULEActionControllerMODULEActionController::FlashMODULEActionController::Flash::ClassMethods

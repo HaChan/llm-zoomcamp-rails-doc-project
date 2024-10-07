@@ -1,0 +1,1 @@
+MethodsNnode_to_plain_textInstance Public methodsnode_to_plain_text(node)LinkSource:show|on GitHub# File actiontext/lib/action_text/plain_text_conversion.rb, line 9defnode_to_plain_text(node)remove_trailing_newlines(plain_text_for_node(node))end

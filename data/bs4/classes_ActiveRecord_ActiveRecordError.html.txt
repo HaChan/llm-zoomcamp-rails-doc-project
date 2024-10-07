@@ -1,0 +1,1 @@
+Active Record ErrorsGeneric Active Record exception class.

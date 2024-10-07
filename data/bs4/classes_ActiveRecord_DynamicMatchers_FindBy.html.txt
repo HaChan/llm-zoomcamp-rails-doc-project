@@ -1,0 +1,1 @@
+MethodsFfinderPprefixClass Public methodsprefix()LinkSource:show|on GitHub# File activerecord/lib/active_record/dynamic_matchers.rb, line 96defself.prefix"find_by"endInstance Public methodsfinder()LinkSource:show|on GitHub# File activerecord/lib/active_record/dynamic_matchers.rb, line 100deffinder"find_by"end

@@ -1,0 +1,1 @@
+MethodsDduplicable?Instance Public methodsduplicable?()LinkSingletoninstances are not duplicable:Class.new.include(Singleton).instance.dup # TypeError (can't dup instance of singletonSource:show|on GitHub# File activesupport/lib/active_support/core_ext/object/duplicable.rb, line 66defduplicable?falseend

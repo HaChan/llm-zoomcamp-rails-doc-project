@@ -1,0 +1,66 @@
+MethodsBbuildCcreate,create!IinstantiateQquery_constraintsUupdate,update!Instance Public methodsbuild(attributes = nil, &block)LinkBuilds an object (or multiple objects) and returns either the built object or a list of built objects.Theattributesparameter can be either aHashor anArrayof Hashes. These Hashes describe the attributes on the objects that are to be built.Examples# Build a single new object
+User.build(first_name: 'Jamie')
+
+# Build an Array of new objects
+User.build([{ first_name: 'Jamie' }, { first_name: 'Jeremy' }])
+
+# Build a single object and pass it into a block to set other attributes.
+User.build(first_name: 'Jamie') do |u|
+  u.is_admin = false
+end
+
+# Building an Array of new objects using a block, where the block is executed for each object:
+User.build([{ first_name: 'Jamie' }, { first_name: 'Jeremy' }]) do |u|
+  u.is_admin = false
+endSource:show|on GitHub# File activerecord/lib/active_record/persistence.rb, line 82defbuild(attributes=nil,&block)ifattributes.is_a?(Array)attributes.collect{|attr|build(attr,&block) }elsenew(attributes,&block)endendcreate(attributes = nil, &block)LinkCreates an object (or multiple objects) and saves it to the database, if validations pass. The resulting object is returned whether the object was saved successfully to the database or not.Theattributesparameter can be either aHashor anArrayof Hashes. These Hashes describe the attributes on the objects that are to be created.Examples# Create a single new object
+User.create(first_name: 'Jamie')
+
+# Create an Array of new objects
+User.create([{ first_name: 'Jamie' }, { first_name: 'Jeremy' }])
+
+# Create a single object and pass it into a block to set other attributes.
+User.create(first_name: 'Jamie') do |u|
+  u.is_admin = false
+end
+
+# Creating an Array of new objects using a block, where the block is executed for each object:
+User.create([{ first_name: 'Jamie' }, { first_name: 'Jeremy' }]) do |u|
+  u.is_admin = false
+endSource:show|on GitHub# File activerecord/lib/active_record/persistence.rb, line 33defcreate(attributes=nil,&block)ifattributes.is_a?(Array)attributes.collect{|attr|create(attr,&block) }elseobject=new(attributes,&block)object.saveobjectendendcreate!(attributes = nil, &block)LinkCreates an object (or multiple objects) and saves it to the database, if validations pass. Raises aRecordInvaliderror if validations fail, unlike Base#create.Theattributesparameter can be either aHashor anArrayof Hashes. These describe which attributes to be created on the object, or multiple objects when given anArrayof Hashes.Source:show|on GitHub# File activerecord/lib/active_record/persistence.rb, line 50defcreate!(attributes=nil,&block)ifattributes.is_a?(Array)attributes.collect{|attr|create!(attr,&block) }elseobject=new(attributes,&block)object.save!objectendendinstantiate(attributes, column_types = {}, &block)LinkGiven an attributes hash,instantiatereturns a new instance of the appropriate class. Accepts only keys as strings.For example,Post.allmay return Comments, Messages, and Emails by storing the recordâs subclass in atypeattribute. By callinginstantiateinstead ofnew, finder methods ensure they get new instances of the appropriate class for each record.SeeActiveRecord::Inheritance#discriminate_class_for_recordto see how this âsingle-tableâ inheritance mapping is implemented.Source:show|on GitHub# File activerecord/lib/active_record/persistence.rb, line 100definstantiate(attributes,column_types= {},&block)klass=discriminate_class_for_record(attributes)instantiate_instance_of(klass,attributes,column_types,&block)endquery_constraints(*columns_list)LinkAccepts a list of attribute names to be used in the WHERE clause of SELECT / UPDATE / DELETE queries and in the ORDER BY clause for#firstand#lastfinder methods.class Developer < ActiveRecord::Base
+  query_constraints :company_id, :id
+end
+
+developer = Developer.first
+# SELECT "developers".* FROM "developers" ORDER BY "developers"."company_id" ASC, "developers"."id" ASC LIMIT 1
+developer.inspect # => #<Developer id: 1, company_id: 1, ...>
+
+developer.update!(name: "Nikita")
+# UPDATE "developers" SET "name" = 'Nikita' WHERE "developers"."company_id" = 1 AND "developers"."id" = 1
+
+# It is possible to update an attribute used in the query_constraints clause:
+developer.update!(company_id: 2)
+# UPDATE "developers" SET "company_id" = 2 WHERE "developers"."company_id" = 1 AND "developers"."id" = 1
+
+developer.name = "Bob"
+developer.save!
+# UPDATE "developers" SET "name" = 'Bob' WHERE "developers"."company_id" = 1 AND "developers"."id" = 1
+
+developer.destroy!
+# DELETE FROM "developers" WHERE "developers"."company_id" = 1 AND "developers"."id" = 1
+
+developer.delete
+# DELETE FROM "developers" WHERE "developers"."company_id" = 1 AND "developers"."id" = 1
+
+developer.reload
+# SELECT "developers".* FROM "developers" WHERE "developers"."company_id" = 1 AND "developers"."id" = 1 LIMIT 1Source:show|on GitHub# File activerecord/lib/active_record/persistence.rb, line 212defquery_constraints(*columns_list)raiseArgumentError,"You must specify at least one column to be used in querying"ifcolumns_list.empty?@query_constraints_list=columns_list.map(&:to_s)@has_query_constraints=@query_constraints_listendupdate(id = :all, attributes)LinkUpdates an object (or multiple objects) and saves it to the database, if validations pass. The resulting object is returned whether the object was saved successfully to the database or not.Parametersid- This should be the id or an array of ids to be updated. Optional argument, defaults to all records in the relation.attributes- This should be a hash of attributes or an array of hashes.Examples# Updates one record
+Person.update(15, user_name: "Samuel", group: "expert")
+
+# Updates multiple records
+people = { 1 => { "first_name" => "David" }, 2 => { "first_name" => "Jeremy" } }
+Person.update(people.keys, people.values)
+
+# Updates multiple records from the result of a relation
+people = Person.where(group: "expert")
+people.update(group: "masters")Note: Updating a large number of records will run an UPDATE query for each record, which may cause a performance issue. When running callbacks is not needed for each record update, it is preferred to useupdate_allfor updating all records in a single query.Source:show|on GitHub# File activerecord/lib/active_record/persistence.rb, line 132defupdate(id=:all,attributes)ifid.is_a?(Array)ifid.any?(ActiveRecord::Base)raiseArgumentError,"You are passing an array of ActiveRecord::Base instances to `update`. "\"Please pass the ids of the objects by calling `pluck(:id)` or `map(&:id)`."endid.map{|one_id|find(one_id) }.each_with_index{|object,idx|object.update(attributes[idx])
+    }elsifid==:allall.each{|record|record.update(attributes) }elseifActiveRecord::Base===idraiseArgumentError,"You are passing an instance of ActiveRecord::Base to `update`. "\"Please pass the id of the object by calling `.id`."endobject=find(id)object.update(attributes)objectendendupdate!(id = :all, attributes)LinkUpdates the object (or multiple objects) just likeupdatebut callsupdate!instead ofupdate, so an exception is raised if the record is invalid and saving will fail.Source:show|on GitHub# File activerecord/lib/active_record/persistence.rb, line 158defupdate!(id=:all,attributes)ifid.is_a?(Array)ifid.any?(ActiveRecord::Base)raiseArgumentError,"You are passing an array of ActiveRecord::Base instances to `update!`. "\"Please pass the ids of the objects by calling `pluck(:id)` or `map(&:id)`."endid.map{|one_id|find(one_id) }.each_with_index{|object,idx|object.update!(attributes[idx])
+    }elsifid==:allall.each{|record|record.update!(attributes) }elseifActiveRecord::Base===idraiseArgumentError,"You are passing an instance of ActiveRecord::Base to `update!`. "\"Please pass the id of the object by calling `.id`."endobject=find(id)object.update!(attributes)objectendend

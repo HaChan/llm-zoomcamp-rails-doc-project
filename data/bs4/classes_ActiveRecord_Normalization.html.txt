@@ -1,0 +1,9 @@
+NamespaceMODULEActiveRecord::Normalization::ClassMethodsMethodsNnormalize_attributeInstance Public methodsnormalize_attribute(name)LinkNormalizes a specified attribute using its declared normalizations.Examplesclass User < ActiveRecord::Base
+  normalizes :email, with: -> email { email.strip.downcase }
+end
+
+legacy_user = User.find(1)
+legacy_user.email # => " CRUISE-CONTROL@EXAMPLE.COM\n"
+legacy_user.normalize_attribute(:email)
+legacy_user.email # => "cruise-control@example.com"
+legacy_user.saveSource:show|on GitHub# File activerecord/lib/active_record/normalization.rb, line 26defnormalize_attribute(name)# Treat the value as a new, unnormalized value.self[name] =self[name]end

@@ -1,0 +1,1 @@
+NamespaceMODULEActionMailboxMODULEActionMailbox::InboundEmail::IncineratableCLASSActionMailbox::InboundEmailCLASSActionMailbox::InboundEmail::Incineratable::Incineration

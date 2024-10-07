@@ -1,0 +1,42 @@
+Active Model APIIncludes the required interface for an object to interact with Action Pack and Action View, using different Active Model modules. It includes model name introspections, conversions, translations, and validations. Besides that, it allows you to initialize the object with a hash of attributes, pretty much like Active Record does.A minimal implementation could be:class Person
+  include ActiveModel::API
+  attr_accessor :name, :age
+end
+
+person = Person.new(name: 'bob', age: '18')
+person.name # => "bob"
+person.age  # => "18"Note that, by default,ActiveModel::APIimplementspersisted?to returnfalse, which is the most common case. You may want to override it in your class to simulate a different scenario:class Person
+  include ActiveModel::API
+  attr_accessor :id, :name
+
+  def persisted?
+    self.id.present?
+  end
+end
+
+person = Person.new(id: 1, name: 'bob')
+person.persisted? # => trueAlso, if for some reason you need to run code on initialize (::new), make sure you callsuperif you want the attributes hash initialization to happen.class Person
+  include ActiveModel::API
+  attr_accessor :id, :name, :omg
+
+  def initialize(attributes={})
+    super
+    @omg ||= true
+  end
+end
+
+person = Person.new(id: 1, name: 'bob')
+person.omg # => trueFor more detailed information on other functionalities available, please refer to the specific modules included inActiveModel::API(see below).MethodsNnewPpersisted?Included ModulesActiveModel::AttributeAssignmentActiveModel::ValidationsActiveModel::ConversionClass Public methodsnew(attributes = {})LinkInitializes a new model with the givenparams.class Person
+  include ActiveModel::API
+  attr_accessor :name, :age
+end
+
+person = Person.new(name: 'bob', age: '18')
+person.name # => "bob"
+person.age  # => "18"Source:show|on GitHub# File activemodel/lib/active_model/api.rb, line 80definitialize(attributes= {})assign_attributes(attributes)ifattributessuper()endInstance Public methodspersisted?()LinkIndicates if the model is persisted. Default isfalse.class Person
+  include ActiveModel::API
+  attr_accessor :id, :name
+end
+
+person = Person.new(id: 1, name: 'bob')
+person.persisted? # => falseSource:show|on GitHub# File activemodel/lib/active_model/api.rb, line 95defpersisted?falseend

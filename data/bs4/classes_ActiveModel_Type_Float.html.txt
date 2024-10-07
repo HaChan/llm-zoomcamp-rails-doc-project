@@ -1,0 +1,5 @@
+Active Model Float TypeAttribute type for floating point numeric values. It is registered under the:floatkey.class BagOfCoffee
+  include ActiveModel::Attributes
+
+  attribute :weight, :float
+endValues are cast using theirto_fmethod, except for the following strings:Blank strings are cast tonil."Infinity"is cast toFloat::INFINITY."-Infinity"is cast to-Float::INFINITY."NaN"is cast toFloat::NAN.bag = BagOfCoffee.newbag.weight = â0.25â bag.weight # => 0.25bag.weight = ââ bag.weight # => nilbag.weight = âNaNâ bag.weight # => Float::NANMethodsTtype,type_cast_for_schemaIncluded ModulesActiveModel::Type::Helpers::NumericInstance Public methodstype()LinkSource:show|on GitHub# File activemodel/lib/active_model/type/float.rb, line 39deftype:floatendtype_cast_for_schema(value)LinkSource:show|on GitHub# File activemodel/lib/active_model/type/float.rb, line 43deftype_cast_for_schema(value)return"::Float::NAN"ifvalue.try(:nan?)casevaluewhen::Float::INFINITYthen"::Float::INFINITY"when-::Float::INFINITYthen"-::Float::INFINITY"elsesuperendend

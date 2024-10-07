@@ -1,0 +1,1 @@
+Required Filesshellwordsactive_support/core_ext/kernel/reportingactive_support/core_ext/string/stripNamespaceMODULERailsMODULERails::GeneratorsMODULERails::Generators::Actions

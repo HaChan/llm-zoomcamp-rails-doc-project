@@ -1,0 +1,1 @@
+NamespaceCLASSRails::Command::UnusedRoutesCommand::RouteInfo

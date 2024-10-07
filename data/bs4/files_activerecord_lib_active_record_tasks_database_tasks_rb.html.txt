@@ -1,0 +1,1 @@
+Required Filesactive_record/database_configurationsactive_record/schema_dumperNamespaceMODULEActiveRecordMODULEActiveRecord::TasksMODULEActiveRecord::Tasks::DatabaseTasksMODULEDigestCLASSActiveRecord::DatabaseConfigurations

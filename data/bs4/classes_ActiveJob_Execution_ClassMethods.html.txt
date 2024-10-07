@@ -1,0 +1,1 @@
+Includes methods for executing and performing jobs instantly.MethodsPperform_nowInstance Public methodsperform_now(...)LinkPerforms the job immediately.MyJob.perform_now("mike")Source:show|on GitHub# File activejob/lib/active_job/execution.rb, line 22defperform_now(...)job_or_instantiate(...).perform_nowend

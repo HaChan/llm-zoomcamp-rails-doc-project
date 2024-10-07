@@ -1,0 +1,1 @@
+NamespaceMODULEActionCableMODULEActionCable::ConnectionMODULEActionCable::Connection::AuthorizationCLASSActionCable::Connection::Authorization::UnauthorizedError

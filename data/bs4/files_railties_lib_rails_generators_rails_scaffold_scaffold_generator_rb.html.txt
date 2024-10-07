@@ -1,0 +1,1 @@
+Required Filesrails/generators/rails/resource/resource_generatorNamespaceMODULERailsMODULERails::Generators

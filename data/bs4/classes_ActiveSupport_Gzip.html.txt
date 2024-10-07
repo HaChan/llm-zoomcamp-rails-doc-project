@@ -1,0 +1,5 @@
+Active Support GzipA convenient wrapper for the zlib standard library that allows compression/decompression of strings with gzip.gzip = ActiveSupport::Gzip.compress('compress me!')
+# => "\x1F\x8B\b\x00o\x8D\xCDO\x00\x03K\xCE\xCF-(J-.V\xC8MU\x04\x00R>n\x83\f\x00\x00\x00"
+
+ActiveSupport::Gzip.decompress(gzip)
+# => "compress me!"NamespaceCLASSActiveSupport::Gzip::StreamMethodsCcompressDdecompressClass Public methodscompress(source, level = Zlib::DEFAULT_COMPRESSION, strategy = Zlib::DEFAULT_STRATEGY)LinkCompresses a string using gzip.Source:show|on GitHub# File activesupport/lib/active_support/gzip.rb, line 32defself.compress(source,level=Zlib::DEFAULT_COMPRESSION,strategy=Zlib::DEFAULT_STRATEGY)output=Stream.newgz=Zlib::GzipWriter.new(output,level,strategy)gz.write(source)gz.closeoutput.stringenddecompress(source)LinkDecompresses a gzipped string.Source:show|on GitHub# File activesupport/lib/active_support/gzip.rb, line 27defself.decompress(source)Zlib::GzipReader.wrap(StringIO.new(source),&:read)end

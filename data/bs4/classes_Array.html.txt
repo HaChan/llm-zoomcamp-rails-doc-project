@@ -1,0 +1,133 @@
+MethodsDdeep_dupEexcluding,extract!,extract_options!Ffifth,forty_two,fourth,fromIin_groups,in_groups_of,including,inquirySsecond,second_to_last,splitTthird,third_to_last,to,to_formatted_s,to_fs,to_param,to_query,to_sentence,to_xmlWwithout,wrapClass Public methodswrap(object)LinkWraps its argument in an array unless it is already an array (or array-like).Specifically:If the argument isnilan empty array is returned.Otherwise, if the argument responds toto_aryit is invoked, and its result returned.Otherwise, returns an array with the argument as its single element.Array.wrap(nil)       # => []
+Array.wrap([1, 2, 3]) # => [1, 2, 3]
+Array.wrap(0)         # => [0]This method is similar in purpose toKernel#Array, but there are some differences:If the argument responds toto_arythe method is invoked.Kernel#Arraymoves on to tryto_aif the returned value isnil, butArray.wrapreturns an array with the argument as its single element right away.If the returned value fromto_aryis neithernilnor anArrayobject,Kernel#Arrayraises an exception, whileArray.wrapdoes not, it just returns the value.It does not callto_aon the argument, if the argument does not respond toto_aryit returns an array with the argument as its single element.The last point is easily explained with some enumerables:Array(foo: :bar)      # => [[:foo, :bar]]
+Array.wrap(foo: :bar) # => [{:foo=>:bar}]Thereâs also a related idiom that uses the splat operator:[*object]which returns[]fornil, but calls toArray(object)otherwise.The differences withKernel#Arrayexplained above apply to the rest ofobjects.Source:show|on GitHub# File activesupport/lib/active_support/core_ext/array/wrap.rb, line 39defself.wrap(object)ifobject.nil?[]elsifobject.respond_to?(:to_ary)object.to_ary||[object]else[object]endendInstance Public methodsdeep_dup()LinkReturns a deep copy of array.array = [1, [2, 3]]
+dup   = array.deep_dup
+dup[1][2] = 4
+
+array[1][2] # => nil
+dup[1][2]   # => 4Source:show|on GitHub# File activesupport/lib/active_support/core_ext/object/deep_dup.rb, line 29defdeep_dupmap(&:deep_dup)endexcluding(*elements)LinkReturns a copy of theArrayexcluding the specified elements.["David", "Rafael", "Aaron", "Todd"].excluding("Aaron", "Todd") # => ["David", "Rafael"]
+[ [ 0, 1 ], [ 1, 0 ] ].excluding([ [ 1, 0 ] ]) # => [ [ 0, 1 ] ]Note: This is an optimization ofEnumerable#excludingthat usesArray#-instead ofArray#rejectfor performance reasons.Also aliased as:withoutSource:show|on GitHub# File activesupport/lib/active_support/core_ext/array/access.rb, line 47defexcluding(*elements)self-elements.flatten(1)endextract!()LinkRemoves and returns the elements for which the block returns a true value. If no block is given, an Enumerator is returned instead.numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+odd_numbers = numbers.extract! { |number| number.odd? } # => [1, 3, 5, 7, 9]
+numbers # => [0, 2, 4, 6, 8]Source:show|on GitHub# File activesupport/lib/active_support/core_ext/array/extract.rb, line 10defextract!returnto_enum(:extract!) {size}unlessblock_given?extracted_elements= []reject!do|element|extracted_elements<<elementifyield(element)endextracted_elementsendextract_options!()LinkExtracts options from a set of arguments. Removes and returns the last element in the array if itâs a hash, otherwise returns a blank hash.def options(*args)
+  args.extract_options!
+end
+
+options(1, 2)        # => {}
+options(1, 2, a: :b) # => {:a=>:b}Source:show|on GitHub# File activesupport/lib/active_support/core_ext/array/extract_options.rb, line 24defextract_options!iflast.is_a?(Hash)&&last.extractable_options?popelse{}endendfifth()LinkEqual toself[4].%w( a b c d e ).fifth # => "e"Source:show|on GitHub# File activesupport/lib/active_support/core_ext/array/access.rb, line 76deffifthself[4]endforty_two()LinkEqual toself[41]. Also known as accessing âthe redditâ.(1..42).to_a.forty_two # => 42Source:show|on GitHub# File activesupport/lib/active_support/core_ext/array/access.rb, line 83defforty_twoself[41]endfourth()LinkEqual toself[3].%w( a b c d e ).fourth # => "d"Source:show|on GitHub# File activesupport/lib/active_support/core_ext/array/access.rb, line 69deffourthself[3]endfrom(position)LinkReturns the tail of the array fromposition.%w( a b c d ).from(0)  # => ["a", "b", "c", "d"]
+%w( a b c d ).from(2)  # => ["c", "d"]
+%w( a b c d ).from(10) # => []
+%w().from(0)           # => []
+%w( a b c d ).from(-2) # => ["c", "d"]
+%w( a b c ).from(-10)  # => []Source:show|on GitHub# File activesupport/lib/active_support/core_ext/array/access.rb, line 12deffrom(position)self[position,length]||[]endin_groups(number, fill_with = nil, &block)LinkSplits or iterates over the array innumberof groups, padding any remaining slots withfill_withunless it isfalse.%w(1 2 3 4 5 6 7 8 9 10).in_groups(3) {|group| p group}
+["1", "2", "3", "4"]
+["5", "6", "7", nil]
+["8", "9", "10", nil]
+
+%w(1 2 3 4 5 6 7 8 9 10).in_groups(3, '&nbsp;') {|group| p group}
+["1", "2", "3", "4"]
+["5", "6", "7", "&nbsp;"]
+["8", "9", "10", "&nbsp;"]
+
+%w(1 2 3 4 5 6 7).in_groups(3, false) {|group| p group}
+["1", "2", "3"]
+["4", "5"]
+["6", "7"]Source:show|on GitHub# File activesupport/lib/active_support/core_ext/array/grouping.rb, line 62defin_groups(number,fill_with=nil,&block)# size.div number gives minor group size;# size % number gives how many objects need extra accommodation;# each group hold either division or division + 1 items.division=size.divnumbermodulo=size%number# create a new array avoiding dupgroups= []start=0number.timesdo|index|length=division+(modulo>0&&modulo>index?1:0)groups<<last_group=slice(start,length)last_group<<fill_withiffill_with!=false&&modulo>0&&length==divisionstart+=lengthendifblock_given?groups.each(&block)elsegroupsendendin_groups_of(number, fill_with = nil, &block)LinkSplits or iterates over the array in groups of sizenumber, padding any remaining slots withfill_withunless it isfalse.%w(1 2 3 4 5 6 7 8 9 10).in_groups_of(3) {|group| p group}
+["1", "2", "3"]
+["4", "5", "6"]
+["7", "8", "9"]
+["10", nil, nil]
+
+%w(1 2 3 4 5).in_groups_of(2, '&nbsp;') {|group| p group}
+["1", "2"]
+["3", "4"]
+["5", "&nbsp;"]
+
+%w(1 2 3 4 5).in_groups_of(2, false) {|group| p group}
+["1", "2"]
+["3", "4"]
+["5"]Source:show|on GitHub# File activesupport/lib/active_support/core_ext/array/grouping.rb, line 22defin_groups_of(number,fill_with=nil,&block)ifnumber.to_i<=0raiseArgumentError,"Group size must be a positive integer, was #{number.inspect}"endiffill_with==falsecollection=selfelse# size % number gives how many extra we have;# subtracting from number gives how many to add;# modulo number ensures we don't add group of just fill.padding= (number-size%number)%numbercollection=dup.concat(Array.new(padding,fill_with))endifblock_given?collection.each_slice(number,&block)elsecollection.each_slice(number).to_aendendincluding(*elements)LinkReturns a new array that includes the passed elements.[ 1, 2, 3 ].including(4, 5) # => [ 1, 2, 3, 4, 5 ]
+[ [ 0, 1 ] ].including([ [ 1, 0 ] ]) # => [ [ 0, 1 ], [ 1, 0 ] ]Source:show|on GitHub# File activesupport/lib/active_support/core_ext/array/access.rb, line 36defincluding(*elements)self+elements.flatten(1)endinquiry()LinkWraps the array in anActiveSupport::ArrayInquirerobject, which gives a friendlier way to check its string-like contents.pets = [:cat, :dog].inquiry
+
+pets.cat?     # => true
+pets.ferret?  # => false
+
+pets.any?(:cat, :ferret)  # => true
+pets.any?(:ferret, :alligator)  # => falseSource:show|on GitHub# File activesupport/lib/active_support/core_ext/array/inquiry.rb, line 16definquiryActiveSupport::ArrayInquirer.new(self)endsecond()LinkEqual toself[1].%w( a b c d e ).second # => "b"Source:show|on GitHub# File activesupport/lib/active_support/core_ext/array/access.rb, line 55defsecondself[1]endsecond_to_last()LinkEqual toself[-2].%w( a b c d e ).second_to_last # => "d"Source:show|on GitHub# File activesupport/lib/active_support/core_ext/array/access.rb, line 97defsecond_to_lastself[-2]endsplit(value = nil, &block)LinkDivides the array into one or more subarrays based on a delimitingvalueor the result of an optional block.[1, 2, 3, 4, 5].split(3)              # => [[1, 2], [4, 5]]
+(1..10).to_a.split { |i| i % 3 == 0 } # => [[1, 2], [4, 5], [7, 8], [10]]Source:show|on GitHub# File activesupport/lib/active_support/core_ext/array/grouping.rb, line 93defsplit(value=nil,&block)arr=dupresult= []ifblock_given?while(idx=arr.index(&block))result<<arr.shift(idx)arr.shiftendelsewhile(idx=arr.index(value))result<<arr.shift(idx)arr.shiftendendresult<<arrendthird()LinkEqual toself[2].%w( a b c d e ).third # => "c"Source:show|on GitHub# File activesupport/lib/active_support/core_ext/array/access.rb, line 62defthirdself[2]endthird_to_last()LinkEqual toself[-3].%w( a b c d e ).third_to_last # => "c"Source:show|on GitHub# File activesupport/lib/active_support/core_ext/array/access.rb, line 90defthird_to_lastself[-3]endto(position)LinkReturns the beginning of the array up toposition.%w( a b c d ).to(0)  # => ["a"]
+%w( a b c d ).to(2)  # => ["a", "b", "c"]
+%w( a b c d ).to(10) # => ["a", "b", "c", "d"]
+%w().to(0)           # => []
+%w( a b c d ).to(-2) # => ["a", "b", "c"]
+%w( a b c ).to(-10)  # => []Source:show|on GitHub# File activesupport/lib/active_support/core_ext/array/access.rb, line 24defto(position)ifposition>=0takeposition+1elseself[0..position]endendto_formatted_s(format = :default)LinkAlias for:to_fsto_fs(format = :default)LinkExtendsArray#to_sto convert a collection of elements into a comma separated id list if:dbargument is given as the format.This method is aliased toto_formatted_s.Blog.all.to_fs(:db)  # => "1,2,3"
+Blog.none.to_fs(:db) # => "null"
+[1,2].to_fs          # => "[1, 2]"Also aliased as:to_formatted_sSource:show|on GitHub# File activesupport/lib/active_support/core_ext/array/conversions.rb, line 94defto_fs(format=:default)caseformatwhen:dbifempty?"null"elsecollect(&:id).join(",")endelseto_sendendto_param()LinkCallsto_paramon all its elements and joins the result with slashes. This is used byurl_forin Action Pack.Source:show|on GitHub# File activesupport/lib/active_support/core_ext/object/to_query.rb, line 42defto_paramcollect(&:to_param).join"/"endto_query(key)LinkConverts an array into a string suitable for use as a URL query string, using the givenkeyas the param name.['Rails', 'coding'].to_query('hobbies') # => "hobbies%5B%5D=Rails&hobbies%5B%5D=coding"Source:show|on GitHub# File activesupport/lib/active_support/core_ext/object/to_query.rb, line 50defto_query(key)prefix="#{key}[]"ifempty?nil.to_query(prefix)elsecollect{|value|value.to_query(prefix) }.join"&"endendto_sentence(options = {})LinkConverts the array to a comma-separated sentence where the last element is joined by the connector word.You can pass the following options to change the default behavior. If you pass an option key that doesnât exist in the list below, it will raise anArgumentError.Options:words_connector- The sign or word used to join all but the last element in arrays with three or more elements (default: â, â).:last_word_connector- The sign or word used to join the last element in arrays with three or more elements (default: â, and â).:two_words_connector- The sign or word used to join the elements in arrays with two elements (default: â and â).:locale- Ifi18nis available, you can set a locale and use the connector options defined on the âsupport.arrayâ namespace in the corresponding dictionary file.Examples[].to_sentence                      # => ""
+['one'].to_sentence                 # => "one"
+['one', 'two'].to_sentence          # => "one and two"
+['one', 'two', 'three'].to_sentence # => "one, two, and three"
+
+['one', 'two'].to_sentence(passing: 'invalid option')
+# => ArgumentError: Unknown key: :passing. Valid keys are: :words_connector, :two_words_connector, :last_word_connector, :locale
+
+['one', 'two'].to_sentence(two_words_connector: '-')
+# => "one-two"
+
+['one', 'two', 'three'].to_sentence(words_connector: ' or ', last_word_connector: ' or at least ')
+# => "one or two or at least three"Using:localeoption:# Given this locale dictionary:
+#
+#   es:
+#     support:
+#       array:
+#         words_connector: " o "
+#         two_words_connector: " y "
+#         last_word_connector: " o al menos "
+
+['uno', 'dos'].to_sentence(locale: :es)
+# => "uno y dos"
+
+['uno', 'dos', 'tres'].to_sentence(locale: :es)
+# => "uno o dos o al menos tres"Source:show|on GitHub# File activesupport/lib/active_support/core_ext/array/conversions.rb, line 60defto_sentence(options= {})options.assert_valid_keys(:words_connector,:two_words_connector,:last_word_connector,:locale)default_connectors= {words_connector:", ",two_words_connector:" and ",last_word_connector:", and "}ifoptions[:locale]!=false&&defined?(I18n)i18n_connectors=I18n.translate(:'support.array',locale:options[:locale],default:{})default_connectors.merge!(i18n_connectors)endoptions=default_connectors.merge!(options)caselengthwhen0+""when1+"#{self[0]}"when2+"#{self[0]}#{options[:two_words_connector]}#{self[1]}"else+"#{self[0...-1].join(options[:words_connector])}#{options[:last_word_connector]}#{self[-1]}"endendto_xml(options = {})LinkReturns a string that represents the array in XML by invokingto_xmlon each element. Active Record collections delegate their representation in XML to this method.All elements are expected to respond toto_xml, if any of them does not then an exception is raised.The root node reflects the class name of the first element in plural if all elements belong to the same type and thatâs not Hash:customer.projects.to_xml
+
+<?xml version="1.0" encoding="UTF-8"?>
+<projects type="array">
+  <project>
+    <amount type="decimal">20000.0</amount>
+    <customer-id type="integer">1567</customer-id>
+    <deal-date type="date">2008-04-09</deal-date>
+    ...
+  </project>
+  <project>
+    <amount type="decimal">57230.0</amount>
+    <customer-id type="integer">1567</customer-id>
+    <deal-date type="date">2008-04-15</deal-date>
+    ...
+  </project>
+</projects>Otherwise the root element is âobjectsâ:[{ foo: 1, bar: 2}, { baz: 3}].to_xml
+
+<?xml version="1.0" encoding="UTF-8"?>
+<objects type="array">
+  <object>
+    <bar type="integer">2</bar>
+    <foo type="integer">1</foo>
+  </object>
+  <object>
+    <baz type="integer">3</baz>
+  </object>
+</objects>If the collection is empty the root element is ânil-classesâ by default:[].to_xml
+
+<?xml version="1.0" encoding="UTF-8"?>
+<nil-classes type="array"/>To ensure a meaningful root element use the:rootoption:customer_with_no_projects.projects.to_xml(root: 'projects')
+
+<?xml version="1.0" encoding="UTF-8"?>
+<projects type="array"/>By default name of the node for the children of root isroot.singularize. You can change it with the:childrenoption.Theoptionshash is passed downwards:Message.all.to_xml(skip_types: true)
+
+<?xml version="1.0" encoding="UTF-8"?>
+<messages>
+  <message>
+    <created-at>2008-03-07T09:58:18+01:00</created-at>
+    <id>1</id>
+    <name>1</name>
+    <updated-at>2008-03-07T09:58:18+01:00</updated-at>
+    <user-id>1</user-id>
+  </message>
+</messages>Source:show|on GitHub# File activesupport/lib/active_support/core_ext/array/conversions.rb, line 183defto_xml(options= {})require"active_support/builder"unlessdefined?(Builder::XmlMarkup)options=options.dupoptions[:indent]||=2options[:builder]||=Builder::XmlMarkup.new(indent:options[:indent])options[:root]||=\iffirst.class!=Hash&&all?(first.class)underscored=ActiveSupport::Inflector.underscore(first.class.name)ActiveSupport::Inflector.pluralize(underscored).tr("/","_")else"objects"endbuilder=options[:builder]builder.instruct!unlessoptions.delete(:skip_instruct)root=ActiveSupport::XmlMini.rename_key(options[:root].to_s,options)children=options.delete(:children)||root.singularizeattributes=options[:skip_types]?{}:{type:"array"}ifempty?builder.tag!(root,attributes)elsebuilder.tag!(root,attributes)doeach{|value|ActiveSupport::XmlMini.to_tag(children,value,options) }yieldbuilderifblock_given?endendendwithout(*elements)LinkAlias for:excluding

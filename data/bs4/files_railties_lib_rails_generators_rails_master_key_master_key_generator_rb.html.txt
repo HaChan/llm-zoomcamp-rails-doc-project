@@ -1,0 +1,1 @@
+Required Filespathnamerails/generators/baserails/generators/rails/encryption_key_file/encryption_key_file_generatoractive_support/encrypted_fileNamespaceMODULEActiveSupportMODULERailsMODULERails::Generators

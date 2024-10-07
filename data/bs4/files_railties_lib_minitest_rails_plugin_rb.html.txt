@@ -1,0 +1,1 @@
+Required Filesactive_support/core_ext/module/attribute_accessorsrails/test_unit/reporterrails/test_unit/runnerNamespaceMODULEMinitestMODULERailsCLASSMinitest::BacktraceFilterWithFallbackCLASSMinitest::ProfileReporterCLASSMinitest::SuppressedSummaryReporter

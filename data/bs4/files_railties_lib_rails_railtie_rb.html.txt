@@ -1,0 +1,1 @@
+Required Filesrails/initializableactive_support/descendants_trackeractive_support/inflectoractive_support/core_ext/module/introspectionactive_support/core_ext/module/delegationNamespaceMODULEActiveSupportMODULERailsCLASSRails::Railtie

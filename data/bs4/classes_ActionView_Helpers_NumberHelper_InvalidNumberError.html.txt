@@ -1,0 +1,1 @@
+Raised when argumentnumberparam given to the helpers is invalid and the option:raiseis set totrue.MethodsNnewAttributes[RW]numberClass Public methodsnew(number)LinkSource:show|on GitHub# File actionview/lib/action_view/helpers/number_helper.rb, line 22definitialize(number)@number=numberend

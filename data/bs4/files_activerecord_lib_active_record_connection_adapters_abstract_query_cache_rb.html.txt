@@ -1,0 +1,1 @@
+Required Filesconcurrent/mapconcurrent/atomic/atomic_fixnumNamespaceMODULEActiveRecordMODULEActiveRecord::ConnectionAdaptersMODULEActiveRecord::ConnectionAdapters::QueryCacheMODULEActiveSupportCLASSActiveRecord::ConnectionAdapters::ConnectionPool

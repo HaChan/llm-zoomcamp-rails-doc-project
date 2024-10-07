@@ -1,0 +1,579 @@
+Active Record Collection ProxyCollection proxies in Active Record are middlemen between anassociation, and itstargetresult set.For example, givenclass Blog < ActiveRecord::Base
+  has_many :posts
+end
+
+blog = Blog.firstThe collection proxy returned byblog.postsis built from a:has_manyassociation, and delegates to a collection of posts as thetarget.This class delegates unknown methods to theassociationâs relation class via a delegate cache.Thetargetresult set is not loaded until needed. For example,blog.posts.countis computed directly through SQL and does not trigger by itself the instantiation of the actual post records.Methods#<<,==Aany?,appendBbuildCcalculate,clear,concat,count,create,create!Ddelete,delete_all,destroy,destroy_all,distinctEempty?Ffifth,find,first,forty_two,fourthIinclude?Llast,length,load_target,loaded,loaded?Mmany?NnewPpluck,proxy_association,pushRreload,replace,resetSscope,second,second_to_last,select,sizeTtake,target,third,third_to_lastInstance Public methods<<(*records)LinkAdds one or morerecordsto the collection by setting their foreign keys to the associationâs primary key. Since<<flattens its argument list and inserts each record,pushandconcatbehave identically. Returnsselfso several appends may be chained together.class Person < ActiveRecord::Base
+  has_many :pets
+end
+
+person.pets.size # => 0
+person.pets << Pet.new(name: 'Fancy-Fancy')
+person.pets << [Pet.new(name: 'Spook'), Pet.new(name: 'Choo-Choo')]
+person.pets.size # => 3
+
+person.id # => 1
+person.pets
+# => [
+#      #<Pet id: 1, name: "Fancy-Fancy", person_id: 1>,
+#      #<Pet id: 2, name: "Spook", person_id: 1>,
+#      #<Pet id: 3, name: "Choo-Choo", person_id: 1>
+#    ]Also aliased as:push,append,concatSource:show|on GitHub# File activerecord/lib/active_record/associations/collection_proxy.rb, line 1049def<<(*records)proxy_association.concat(records)&&selfend==(other)LinkEquivalent toArray#==. Returnstrueif the two arrays contain the same number of elements and if each element is equal to the corresponding element in theotherarray, otherwise returnsfalse.class Person < ActiveRecord::Base
+  has_many :pets
+end
+
+person.pets
+# => [
+#      #<Pet id: 1, name: "Fancy-Fancy", person_id: 1>,
+#      #<Pet id: 2, name: "Spook", person_id: 1>
+#    ]
+
+other = person.pets.to_ary
+
+person.pets == other
+# => trueNote that unpersisted records can still be seen as equal:other = [Pet.new(id: 1), Pet.new(id: 2)]
+
+person.pets == other
+# => trueSource:show|on GitHub# File activerecord/lib/active_record/associations/collection_proxy.rb, line 980def==(other)load_target==otherendany?()LinkReturnstrueif the collection is not empty.class Person < ActiveRecord::Base
+  has_many :pets
+end
+
+person.pets.count # => 0
+person.pets.any?  # => false
+
+person.pets << Pet.new(name: 'Snoop')
+person.pets.count # => 1
+person.pets.any?  # => trueCalling it without a block when the collection is not yet loaded is equivalent tocollection.exists?. If youâre going to load the collection anyway, it is better to callcollection.load.any?to avoid an extra query.You can also pass ablockto define criteria. The behavior is the same, it returns true if the collection based on the criteria is not empty.person.pets
+# => [#<Pet name: "Snoop", group: "dogs">]
+
+person.pets.any? do |pet|
+  pet.group == 'cats'
+end
+# => false
+
+person.pets.any? do |pet|
+  pet.group == 'dogs'
+end
+# => trueSource:on GitHub# File activerecord/lib/active_record/associations/collection_proxy.rb, line 836append(*records)LinkAlias for:<<build(attributes = {}, &block)LinkReturns a new object of the collection type that has been instantiated withattributesand linked to this object, but have not yet been saved. You can pass an array of attributes hashes, this will return an array with the new objects.class Person
+  has_many :pets
+end
+
+person.pets.build
+# => #<Pet id: nil, name: nil, person_id: 1>
+
+person.pets.build(name: 'Fancy-Fancy')
+# => #<Pet id: nil, name: "Fancy-Fancy", person_id: 1>
+
+person.pets.build([{name: 'Spook'}, {name: 'Choo-Choo'}, {name: 'Brain'}])
+# => [
+#      #<Pet id: nil, name: "Spook", person_id: 1>,
+#      #<Pet id: nil, name: "Choo-Choo", person_id: 1>,
+#      #<Pet id: nil, name: "Brain", person_id: 1>
+#    ]
+
+person.pets.size  # => 5 # size of the collection
+person.pets.count # => 0 # count from databaseAlso aliased as:newSource:show|on GitHub# File activerecord/lib/active_record/associations/collection_proxy.rb, line 318defbuild(attributes= {},&block)@association.build(attributes,&block)endcalculate(operation, column_name)LinkSource:show|on GitHub# File activerecord/lib/active_record/associations/collection_proxy.rb, line 724defcalculate(operation,column_name)null_scope??scope.calculate(operation,column_name):superendclear()LinkEquivalent todelete_all. The difference is that returnsself, instead of an array with the deleted objects, so methods can be chained. Seedelete_allfor more information. Note that becausedelete_allremoves records by directly running an SQL query into the database, theupdated_atcolumn of the object is not changed.Source:show|on GitHub# File activerecord/lib/active_record/associations/collection_proxy.rb, line 1066defcleardelete_allselfendconcat(*records)LinkAlias for:<<count(column_name = nil, █)LinkCount all records.class Person < ActiveRecord::Base
+  has_many :pets
+end
+
+# This will perform the count using SQL.
+person.pets.count # => 3
+person.pets
+# => [
+#       #<Pet id: 1, name: "Fancy-Fancy", person_id: 1>,
+#       #<Pet id: 2, name: "Spook", person_id: 1>,
+#       #<Pet id: 3, name: "Choo-Choo", person_id: 1>
+#    ]Passing a block will select all of a personâs pets in SQL and then perform the count using Ruby.person.pets.count { |pet| pet.name.include?('-') } # => 2Source:on GitHub# File activerecord/lib/active_record/associations/collection_proxy.rb, line 733create(attributes = {}, &block)LinkReturns a new object of the collection type that has been instantiated with attributes, linked to this object and that has already been saved (if it passes the validations).class Person
+  has_many :pets
+end
+
+person.pets.create(name: 'Fancy-Fancy')
+# => #<Pet id: 1, name: "Fancy-Fancy", person_id: 1>
+
+person.pets.create([{name: 'Spook'}, {name: 'Choo-Choo'}])
+# => [
+#      #<Pet id: 2, name: "Spook", person_id: 1>,
+#      #<Pet id: 3, name: "Choo-Choo", person_id: 1>
+#    ]
+
+person.pets.size  # => 3
+person.pets.count # => 3
+
+person.pets.find(1, 2, 3)
+# => [
+#       #<Pet id: 1, name: "Fancy-Fancy", person_id: 1>,
+#       #<Pet id: 2, name: "Spook", person_id: 1>,
+#       #<Pet id: 3, name: "Choo-Choo", person_id: 1>
+#    ]Source:show|on GitHub# File activerecord/lib/active_record/associations/collection_proxy.rb, line 349defcreate(attributes= {},&block)@association.create(attributes,&block)endcreate!(attributes = {}, &block)LinkLikecreate, except that if the record is invalid, raises an exception.class Person
+  has_many :pets
+end
+
+class Pet
+  validates :name, presence: true
+end
+
+person.pets.create!(name: nil)
+# => ActiveRecord::RecordInvalid: Validation failed: Name can't be blankSource:show|on GitHub# File activerecord/lib/active_record/associations/collection_proxy.rb, line 365defcreate!(attributes= {},&block)@association.create!(attributes,&block)enddelete(*records)LinkDeletes therecordssupplied from the collection according to the strategy specified by the:dependentoption. If no:dependentoption is given, then it will follow the default strategy. Returns an array with the deleted records.Forhas_many :throughassociations, the default deletion strategy is:delete_all.Forhas_manyassociations, the default deletion strategy is:nullify. This sets the foreign keys toNULL.class Person < ActiveRecord::Base
+  has_many :pets # dependent: :nullify option by default
+end
+
+person.pets.size # => 3
+person.pets
+# => [
+#       #<Pet id: 1, name: "Fancy-Fancy", person_id: 1>,
+#       #<Pet id: 2, name: "Spook", person_id: 1>,
+#       #<Pet id: 3, name: "Choo-Choo", person_id: 1>
+#    ]
+
+person.pets.delete(Pet.find(1))
+# => [#<Pet id: 1, name: "Fancy-Fancy", person_id: 1>]
+
+person.pets.size # => 2
+person.pets
+# => [
+#       #<Pet id: 2, name: "Spook", person_id: 1>,
+#       #<Pet id: 3, name: "Choo-Choo", person_id: 1>
+#    ]
+
+Pet.find(1)
+# => #<Pet id: 1, name: "Fancy-Fancy", person_id: nil>If it is set to:destroyall therecordsare removed by calling theirdestroymethod. Seedestroyfor more information.class Person < ActiveRecord::Base
+  has_many :pets, dependent: :destroy
+end
+
+person.pets.size # => 3
+person.pets
+# => [
+#       #<Pet id: 1, name: "Fancy-Fancy", person_id: 1>,
+#       #<Pet id: 2, name: "Spook", person_id: 1>,
+#       #<Pet id: 3, name: "Choo-Choo", person_id: 1>
+#    ]
+
+person.pets.delete(Pet.find(1), Pet.find(3))
+# => [
+#       #<Pet id: 1, name: "Fancy-Fancy", person_id: 1>,
+#       #<Pet id: 3, name: "Choo-Choo", person_id: 1>
+#    ]
+
+person.pets.size # => 1
+person.pets
+# => [#<Pet id: 2, name: "Spook", person_id: 1>]
+
+Pet.find(1, 3)
+# => ActiveRecord::RecordNotFound: Couldn't find all Pets with 'id': (1, 3)If it is set to:delete_all, all therecordsare deletedwithoutcalling theirdestroymethod.class Person < ActiveRecord::Base
+  has_many :pets, dependent: :delete_all
+end
+
+person.pets.size # => 3
+person.pets
+# => [
+#       #<Pet id: 1, name: "Fancy-Fancy", person_id: 1>,
+#       #<Pet id: 2, name: "Spook", person_id: 1>,
+#       #<Pet id: 3, name: "Choo-Choo", person_id: 1>
+#    ]
+
+person.pets.delete(Pet.find(1))
+# => [#<Pet id: 1, name: "Fancy-Fancy", person_id: 1>]
+
+person.pets.size # => 2
+person.pets
+# => [
+#       #<Pet id: 2, name: "Spook", person_id: 1>,
+#       #<Pet id: 3, name: "Choo-Choo", person_id: 1>
+#    ]
+
+Pet.find(1)
+# => ActiveRecord::RecordNotFound: Couldn't find Pet with 'id'=1You can passIntegerorStringvalues, it finds the records responding to theidand executes delete on them.class Person < ActiveRecord::Base
+  has_many :pets
+end
+
+person.pets.size # => 3
+person.pets
+# => [
+#       #<Pet id: 1, name: "Fancy-Fancy", person_id: 1>,
+#       #<Pet id: 2, name: "Spook", person_id: 1>,
+#       #<Pet id: 3, name: "Choo-Choo", person_id: 1>
+#    ]
+
+person.pets.delete("1")
+# => [#<Pet id: 1, name: "Fancy-Fancy", person_id: 1>]
+
+person.pets.delete(2, 3)
+# => [
+#       #<Pet id: 2, name: "Spook", person_id: 1>,
+#       #<Pet id: 3, name: "Choo-Choo", person_id: 1>
+#    ]Source:show|on GitHub# File activerecord/lib/active_record/associations/collection_proxy.rb, line 620defdelete(*records)@association.delete(*records).tap{reset_scope}enddelete_all(dependent = nil)LinkDeletes all the records from the collection according to the strategy specified by the:dependentoption. If no:dependentoption is given, then it will follow the default strategy.Forhas_many :throughassociations, the default deletion strategy is:delete_all.Forhas_manyassociations, the default deletion strategy is:nullify. This sets the foreign keys toNULL.class Person < ActiveRecord::Base
+  has_many :pets # dependent: :nullify option by default
+end
+
+person.pets.size # => 3
+person.pets
+# => [
+#       #<Pet id: 1, name: "Fancy-Fancy", person_id: 1>,
+#       #<Pet id: 2, name: "Spook", person_id: 1>,
+#       #<Pet id: 3, name: "Choo-Choo", person_id: 1>
+#    ]
+
+person.pets.delete_all
+# => [
+#       #<Pet id: 1, name: "Fancy-Fancy", person_id: 1>,
+#       #<Pet id: 2, name: "Spook", person_id: 1>,
+#       #<Pet id: 3, name: "Choo-Choo", person_id: 1>
+#    ]
+
+person.pets.size # => 0
+person.pets      # => []
+
+Pet.find(1, 2, 3)
+# => [
+#       #<Pet id: 1, name: "Fancy-Fancy", person_id: nil>,
+#       #<Pet id: 2, name: "Spook", person_id: nil>,
+#       #<Pet id: 3, name: "Choo-Choo", person_id: nil>
+#    ]Bothhas_manyandhas_many :throughdependencies default to the:delete_allstrategy if the:dependentoption is set to:destroy. Records are not instantiated and callbacks will not be fired.class Person < ActiveRecord::Base
+  has_many :pets, dependent: :destroy
+end
+
+person.pets.size # => 3
+person.pets
+# => [
+#       #<Pet id: 1, name: "Fancy-Fancy", person_id: 1>,
+#       #<Pet id: 2, name: "Spook", person_id: 1>,
+#       #<Pet id: 3, name: "Choo-Choo", person_id: 1>
+#    ]
+
+person.pets.delete_all
+
+Pet.find(1, 2, 3)
+# => ActiveRecord::RecordNotFound: Couldn't find all Pets with 'id': (1, 2, 3)If it is set to:delete_all, all the objects are deletedwithoutcalling theirdestroymethod.class Person < ActiveRecord::Base
+  has_many :pets, dependent: :delete_all
+end
+
+person.pets.size # => 3
+person.pets
+# => [
+#       #<Pet id: 1, name: "Fancy-Fancy", person_id: 1>,
+#       #<Pet id: 2, name: "Spook", person_id: 1>,
+#       #<Pet id: 3, name: "Choo-Choo", person_id: 1>
+#    ]
+
+person.pets.delete_all
+
+Pet.find(1, 2, 3)
+# => ActiveRecord::RecordNotFound: Couldn't find all Pets with 'id': (1, 2, 3)Source:show|on GitHub# File activerecord/lib/active_record/associations/collection_proxy.rb, line 474defdelete_all(dependent=nil)@association.delete_all(dependent).tap{reset_scope}enddestroy(*records)LinkDestroys therecordssupplied and removes them from the collection. This method willalwaysremove record from the database ignoring the:dependentoption. Returns an array with the removed records.class Person < ActiveRecord::Base
+  has_many :pets
+end
+
+person.pets.size # => 3
+person.pets
+# => [
+#       #<Pet id: 1, name: "Fancy-Fancy", person_id: 1>,
+#       #<Pet id: 2, name: "Spook", person_id: 1>,
+#       #<Pet id: 3, name: "Choo-Choo", person_id: 1>
+#    ]
+
+person.pets.destroy(Pet.find(1))
+# => [#<Pet id: 1, name: "Fancy-Fancy", person_id: 1>]
+
+person.pets.size # => 2
+person.pets
+# => [
+#       #<Pet id: 2, name: "Spook", person_id: 1>,
+#       #<Pet id: 3, name: "Choo-Choo", person_id: 1>
+#    ]
+
+person.pets.destroy(Pet.find(2), Pet.find(3))
+# => [
+#       #<Pet id: 2, name: "Spook", person_id: 1>,
+#       #<Pet id: 3, name: "Choo-Choo", person_id: 1>
+#    ]
+
+person.pets.size  # => 0
+person.pets       # => []
+
+Pet.find(1, 2, 3) # => ActiveRecord::RecordNotFound: Couldn't find all Pets with 'id': (1, 2, 3)You can passIntegerorStringvalues, it finds the records responding to theidand then deletes them from the database.person.pets.size # => 3
+person.pets
+# => [
+#       #<Pet id: 4, name: "Benny", person_id: 1>,
+#       #<Pet id: 5, name: "Brain", person_id: 1>,
+#       #<Pet id: 6, name: "Boss",  person_id: 1>
+#    ]
+
+person.pets.destroy("4")
+# => #<Pet id: 4, name: "Benny", person_id: 1>
+
+person.pets.size # => 2
+person.pets
+# => [
+#       #<Pet id: 5, name: "Brain", person_id: 1>,
+#       #<Pet id: 6, name: "Boss",  person_id: 1>
+#    ]
+
+person.pets.destroy(5, 6)
+# => [
+#       #<Pet id: 5, name: "Brain", person_id: 1>,
+#       #<Pet id: 6, name: "Boss",  person_id: 1>
+#    ]
+
+person.pets.size  # => 0
+person.pets       # => []
+
+Pet.find(4, 5, 6) # => ActiveRecord::RecordNotFound: Couldn't find all Pets with 'id': (4, 5, 6)Source:show|on GitHub# File activerecord/lib/active_record/associations/collection_proxy.rb, line 692defdestroy(*records)@association.destroy(*records).tap{reset_scope}enddestroy_all()LinkDeletes the records of the collection directly from the database ignoring the:dependentoption. Records are instantiated and it invokesbefore_remove,after_remove,before_destroy, andafter_destroycallbacks.class Person < ActiveRecord::Base
+  has_many :pets
+end
+
+person.pets.size # => 3
+person.pets
+# => [
+#       #<Pet id: 1, name: "Fancy-Fancy", person_id: 1>,
+#       #<Pet id: 2, name: "Spook", person_id: 1>,
+#       #<Pet id: 3, name: "Choo-Choo", person_id: 1>
+#    ]
+
+person.pets.destroy_all
+
+person.pets.size # => 0
+person.pets      # => []
+
+Pet.find(1) # => Couldn't find Pet with id=1Source:show|on GitHub# File activerecord/lib/active_record/associations/collection_proxy.rb, line 501defdestroy_all@association.destroy_all.tap{reset_scope}enddistinct(value = true)LinkSpecifies whether the records should be unique or not.class Person < ActiveRecord::Base
+  has_many :pets
+end
+
+person.pets.select(:name)
+# => [
+#      #<Pet name: "Fancy-Fancy">,
+#      #<Pet name: "Fancy-Fancy">
+#    ]
+
+person.pets.select(:name).distinct
+# => [#<Pet name: "Fancy-Fancy">]
+
+person.pets.select(:name).distinct.distinct(false)
+# => [
+#      #<Pet name: "Fancy-Fancy">,
+#      #<Pet name: "Fancy-Fancy">
+#    ]Source:on GitHub# File activerecord/lib/active_record/associations/collection_proxy.rb, line 697empty?()LinkReturnstrueif the collection is empty. If the collection has been loaded it is equivalent tocollection.size.zero?. If the collection has not been loaded, it is equivalent to!collection.exists?. If the collection has not already been loaded and you are going to fetch the records anyway it is better to checkcollection.load.empty?.class Person < ActiveRecord::Base
+  has_many :pets
+end
+
+person.pets.count  # => 1
+person.pets.empty? # => false
+
+person.pets.delete_all
+
+person.pets.count  # => 0
+person.pets.empty? # => trueSource:show|on GitHub# File activerecord/lib/active_record/associations/collection_proxy.rb, line 831defempty?@association.empty?endfifth()LinkSame asfirstexcept returns only the fifth record.Source:on GitHub# File activerecord/lib/active_record/associations/collection_proxy.rb, line 201find(*args)LinkFinds an object in the collection responding to theid. Uses the same rules asActiveRecord::FinderMethods.find. ReturnsActiveRecord::RecordNotFounderror if the object cannot be found.class Person < ActiveRecord::Base
+  has_many :pets
+end
+
+person.pets
+# => [
+#       #<Pet id: 1, name: "Fancy-Fancy", person_id: 1>,
+#       #<Pet id: 2, name: "Spook", person_id: 1>,
+#       #<Pet id: 3, name: "Choo-Choo", person_id: 1>
+#    ]
+
+person.pets.find(1) # => #<Pet id: 1, name: "Fancy-Fancy", person_id: 1>
+person.pets.find(4) # => ActiveRecord::RecordNotFound: Couldn't find Pet with 'id'=4
+
+person.pets.find(2) { |pet| pet.name.downcase! }
+# => #<Pet id: 2, name: "fancy-fancy", person_id: 1>
+
+person.pets.find(2, 3)
+# => [
+#       #<Pet id: 2, name: "Spook", person_id: 1>,
+#       #<Pet id: 3, name: "Choo-Choo", person_id: 1>
+#    ]Source:show|on GitHub# File activerecord/lib/active_record/associations/collection_proxy.rb, line 138deffind(*args)returnsuperifblock_given?@association.find(*args)endfirst(limit = nil)LinkReturns the first record, or the firstnrecords, from the collection. If the collection is empty, the first form returnsnil, and the second form returns an empty array.class Person < ActiveRecord::Base
+  has_many :pets
+end
+
+person.pets
+# => [
+#       #<Pet id: 1, name: "Fancy-Fancy", person_id: 1>,
+#       #<Pet id: 2, name: "Spook", person_id: 1>,
+#       #<Pet id: 3, name: "Choo-Choo", person_id: 1>
+#    ]
+
+person.pets.first # => #<Pet id: 1, name: "Fancy-Fancy", person_id: 1>
+
+person.pets.first(2)
+# => [
+#      #<Pet id: 1, name: "Fancy-Fancy", person_id: 1>,
+#      #<Pet id: 2, name: "Spook", person_id: 1>
+#    ]
+
+another_person_without.pets          # => []
+another_person_without.pets.first    # => nil
+another_person_without.pets.first(3) # => []Source:on GitHub# File activerecord/lib/active_record/associations/collection_proxy.rb, line 144forty_two()LinkSame asfirstexcept returns only the forty second record. Also known as accessing âthe redditâ.Source:on GitHub# File activerecord/lib/active_record/associations/collection_proxy.rb, line 209fourth()LinkSame asfirstexcept returns only the fourth record.Source:on GitHub# File activerecord/lib/active_record/associations/collection_proxy.rb, line 193include?(record)LinkReturnstrueif the givenrecordis present in the collection.class Person < ActiveRecord::Base
+  has_many :pets
+end
+
+person.pets # => [#<Pet id: 20, name: "Snoop">]
+
+person.pets.include?(Pet.find(20)) # => true
+person.pets.include?(Pet.find(21)) # => falseSource:show|on GitHub# File activerecord/lib/active_record/associations/collection_proxy.rb, line 927definclude?(record)!!@association.include?(record)endlast(limit = nil)LinkReturns the last record, or the lastnrecords, from the collection. If the collection is empty, the first form returnsnil, and the second form returns an empty array.class Person < ActiveRecord::Base
+  has_many :pets
+end
+
+person.pets
+# => [
+#       #<Pet id: 1, name: "Fancy-Fancy", person_id: 1>,
+#       #<Pet id: 2, name: "Spook", person_id: 1>,
+#       #<Pet id: 3, name: "Choo-Choo", person_id: 1>
+#    ]
+
+person.pets.last # => #<Pet id: 3, name: "Choo-Choo", person_id: 1>
+
+person.pets.last(2)
+# => [
+#      #<Pet id: 2, name: "Spook", person_id: 1>,
+#      #<Pet id: 3, name: "Choo-Choo", person_id: 1>
+#    ]
+
+another_person_without.pets         # => []
+another_person_without.pets.last    # => nil
+another_person_without.pets.last(3) # => []Source:show|on GitHub# File activerecord/lib/active_record/associations/collection_proxy.rb, line 259deflast(limit=nil)load_targetiffind_from_target?superendlength()LinkReturns the size of the collection callingsizeon the target. If the collection has been already loaded,lengthandsizeare equivalent. If not and you are going to need the records anyway this method will take one less query. Otherwisesizeis more efficient.class Person < ActiveRecord::Base
+  has_many :pets
+end
+
+person.pets.length # => 3
+# executes something like SELECT "pets".* FROM "pets" WHERE "pets"."person_id" = 1
+
+# Because the collection is loaded, you can
+# call the collection with no additional queries:
+person.pets
+# => [
+#       #<Pet id: 1, name: "Fancy-Fancy", person_id: 1>,
+#       #<Pet id: 2, name: "Spook", person_id: 1>,
+#       #<Pet id: 3, name: "Choo-Choo", person_id: 1>
+#    ]Source:on GitHub# File activerecord/lib/active_record/associations/collection_proxy.rb, line 787load_target()LinkSource:show|on GitHub# File activerecord/lib/active_record/associations/collection_proxy.rb, line 44defload_target@association.load_targetendloaded()LinkAlias for:loaded?loaded?()LinkReturnstrueif the association has been loaded, otherwisefalse.person.pets.loaded? # => false
+person.pets.records
+person.pets.loaded? # => trueAlso aliased as:loadedSource:show|on GitHub# File activerecord/lib/active_record/associations/collection_proxy.rb, line 53defloaded?@association.loaded?endmany?()LinkReturns true if the collection has more than one record. Equivalent tocollection.size > 1.class Person < ActiveRecord::Base
+  has_many :pets
+end
+
+person.pets.count # => 1
+person.pets.many? # => false
+
+person.pets << Pet.new(name: 'Snoopy')
+person.pets.count # => 2
+person.pets.many? # => trueYou can also pass ablockto define criteria. The behavior is the same, it returns true if the collection based on the criteria has more than one record.person.pets
+# => [
+#      #<Pet name: "Gorby", group: "cats">,
+#      #<Pet name: "Puff", group: "cats">,
+#      #<Pet name: "Snoop", group: "dogs">
+#    ]
+
+person.pets.many? do |pet|
+  pet.group == 'dogs'
+end
+# => false
+
+person.pets.many? do |pet|
+  pet.group == 'cats'
+end
+# => trueSource:on GitHub# File activerecord/lib/active_record/associations/collection_proxy.rb, line 877new(attributes = {}, &block)LinkAlias for:buildpluck(*column_names)LinkSource:show|on GitHub# File activerecord/lib/active_record/associations/collection_proxy.rb, line 728defpluck(*column_names)null_scope??scope.pluck(*column_names):superendproxy_association()LinkReturns the association object for the collection.class Person < ActiveRecord::Base
+  has_many :pets
+end
+
+person.pets.proxy_association
+# => #<ActiveRecord::Associations::HasManyAssociation owner="#<Person:0x00>">Returns the same object asperson.association(:pets), allowing you to make calls likeperson.pets.proxy_association.owner.SeeAssociation extensions atAssociations::ClassMethodsfor more.Source:show|on GitHub# File activerecord/lib/active_record/associations/collection_proxy.rb, line 944defproxy_association@associationendpush(*records)LinkAlias for:<<reload()LinkReloads the collection from the database. Returnsself.class Person < ActiveRecord::Base
+  has_many :pets
+end
+
+person.pets # fetches pets from the database
+# => [#<Pet id: 1, name: "Snoop", group: "dogs", person_id: 1>]
+
+person.pets # uses the pets cache
+# => [#<Pet id: 1, name: "Snoop", group: "dogs", person_id: 1>]
+
+person.pets.reload # fetches pets from the database
+# => [#<Pet id: 1, name: "Snoop", group: "dogs", person_id: 1>]Source:show|on GitHub# File activerecord/lib/active_record/associations/collection_proxy.rb, line 1085defreloadproxy_association.reload(true)reset_scopeendreplace(other_array)LinkReplaces this collection withother_array. This will perform a diff and delete/add only records that have changed.class Person < ActiveRecord::Base
+  has_many :pets
+end
+
+person.pets
+# => [#<Pet id: 1, name: "Gorby", group: "cats", person_id: 1>]
+
+other_pets = [Pet.new(name: 'Puff', group: 'celebrities')]
+
+person.pets.replace(other_pets)
+
+person.pets
+# => [#<Pet id: 2, name: "Puff", group: "celebrities", person_id: 1>]If the supplied array has an incorrect association type, it raises anActiveRecord::AssociationTypeMismatcherror:person.pets.replace(["doo", "ggie", "gaga"])
+# => ActiveRecord::AssociationTypeMismatch: Pet expected, got StringSource:show|on GitHub# File activerecord/lib/active_record/associations/collection_proxy.rb, line 391defreplace(other_array)@association.replace(other_array)endreset()LinkUnloads the association. Returnsself.class Person < ActiveRecord::Base
+  has_many :pets
+end
+
+person.pets # fetches pets from the database
+# => [#<Pet id: 1, name: "Snoop", group: "dogs", person_id: 1>]
+
+person.pets # uses the pets cache
+# => [#<Pet id: 1, name: "Snoop", group: "dogs", person_id: 1>]
+
+person.pets.reset # clears the pets cache
+
+person.pets  # fetches pets from the database
+# => [#<Pet id: 1, name: "Snoop", group: "dogs", person_id: 1>]Source:show|on GitHub# File activerecord/lib/active_record/associations/collection_proxy.rb, line 1106defresetproxy_association.resetproxy_association.reset_scopereset_scopeendscope()LinkReturns aRelationobject for the records in this associationSource:show|on GitHub# File activerecord/lib/active_record/associations/collection_proxy.rb, line 949defscope@scope||=@association.scopeendsecond()LinkSame asfirstexcept returns only the second record.Source:on GitHub# File activerecord/lib/active_record/associations/collection_proxy.rb, line 177second_to_last()LinkSame aslastexcept returns only the second-to-last record.Source:on GitHub# File activerecord/lib/active_record/associations/collection_proxy.rb, line 226select(*fields, █)LinkWorks in two ways.First:Specify a subset of fields to be selected from the result set.class Person < ActiveRecord::Base
+  has_many :pets
+end
+
+person.pets
+# => [
+#       #<Pet id: 1, name: "Fancy-Fancy", person_id: 1>,
+#       #<Pet id: 2, name: "Spook", person_id: 1>,
+#       #<Pet id: 3, name: "Choo-Choo", person_id: 1>
+#    ]
+
+person.pets.select(:name)
+# => [
+#      #<Pet id: nil, name: "Fancy-Fancy">,
+#      #<Pet id: nil, name: "Spook">,
+#      #<Pet id: nil, name: "Choo-Choo">
+#    ]
+
+person.pets.select(:id, :name)
+# => [
+#      #<Pet id: 1, name: "Fancy-Fancy">,
+#      #<Pet id: 2, name: "Spook">,
+#      #<Pet id: 3, name: "Choo-Choo">
+#    ]Be careful because this also means youâre initializing a model object with only the fields that youâve selected. If you attempt to access a field exceptidthat is not in the initialized record youâll receive:person.pets.select(:name).first.person_id
+# => ActiveModel::MissingAttributeError: missing attribute 'person_id' for PetSecond:You can pass a block so it can be used just likeArray#select. This builds an array of objects from the database for the scope, converting them into an array and iterating through them usingArray#select.person.pets.select { |pet| /oo/.match?(pet.name) }
+# => [
+#      #<Pet id: 2, name: "Spook", person_id: 1>,
+#      #<Pet id: 3, name: "Choo-Choo", person_id: 1>
+#    ]Source:on GitHub# File activerecord/lib/active_record/associations/collection_proxy.rb, line 59size()LinkReturns the size of the collection. If the collection hasnât been loaded, it executes aSELECT COUNT(*)query. Else it callscollection.size.If the collection has been already loadedsizeandlengthare equivalent. If not and you are going to need the records anywaylengthwill take one less query. Otherwisesizeis more efficient.class Person < ActiveRecord::Base
+  has_many :pets
+end
+
+person.pets.size # => 3
+# executes something like SELECT COUNT(*) FROM "pets" WHERE "pets"."person_id" = 1
+
+person.pets # This will execute a SELECT * FROM query
+# => [
+#       #<Pet id: 1, name: "Fancy-Fancy", person_id: 1>,
+#       #<Pet id: 2, name: "Spook", person_id: 1>,
+#       #<Pet id: 3, name: "Choo-Choo", person_id: 1>
+#    ]
+
+person.pets.size # => 3
+# Because the collection is already loaded, this will behave like
+# collection.size and no SQL count query is executed.Source:show|on GitHub# File activerecord/lib/active_record/associations/collection_proxy.rb, line 782defsize@association.sizeendtake(limit = nil)LinkGives a record (or N records if a parameter is supplied) from the collection using the same rules asActiveRecord::FinderMethods.take.class Person < ActiveRecord::Base
+  has_many :pets
+end
+
+person.pets
+# => [
+#       #<Pet id: 1, name: "Fancy-Fancy", person_id: 1>,
+#       #<Pet id: 2, name: "Spook", person_id: 1>,
+#       #<Pet id: 3, name: "Choo-Choo", person_id: 1>
+#    ]
+
+person.pets.take # => #<Pet id: 1, name: "Fancy-Fancy", person_id: 1>
+
+person.pets.take(2)
+# => [
+#      #<Pet id: 1, name: "Fancy-Fancy", person_id: 1>,
+#      #<Pet id: 2, name: "Spook", person_id: 1>
+#    ]
+
+another_person_without.pets         # => []
+another_person_without.pets.take    # => nil
+another_person_without.pets.take(2) # => []Source:show|on GitHub# File activerecord/lib/active_record/associations/collection_proxy.rb, line 289deftake(limit=nil)load_targetiffind_from_target?superendtarget()LinkSource:show|on GitHub# File activerecord/lib/active_record/associations/collection_proxy.rb, line 40deftarget@association.targetendthird()LinkSame asfirstexcept returns only the third record.Source:on GitHub# File activerecord/lib/active_record/associations/collection_proxy.rb, line 185third_to_last()LinkSame aslastexcept returns only the third-to-last record.Source:on GitHub# File activerecord/lib/active_record/associations/collection_proxy.rb, line 218

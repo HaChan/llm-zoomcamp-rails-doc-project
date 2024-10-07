@@ -1,0 +1,1 @@
+Required Filesrails/generatorsNamespaceMODULERailsMODULERails::GeneratorsCLASSRails::Generators::Database

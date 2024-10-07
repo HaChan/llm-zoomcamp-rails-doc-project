@@ -1,0 +1,1 @@
+ConnectionFailedwill be raised when the network connection to the database fails while sending a query or waiting for its result.

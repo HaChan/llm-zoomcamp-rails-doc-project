@@ -1,0 +1,1 @@
+MethodsBbodyNnewAttributes[R]formatClass Public methodsnew(format)LinkSource:show|on GitHub# File actionview/lib/action_view/renderer/abstract_renderer.rb, line 133definitialize(format)@format=formatendInstance Public methodsbody()LinkSource:show|on GitHub# File actionview/lib/action_view/renderer/abstract_renderer.rb, line 137defbody;nil;end

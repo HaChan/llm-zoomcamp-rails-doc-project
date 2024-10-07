@@ -1,0 +1,1 @@
+DatabaseVersionErrorwill be raised when the database version is not supported, or when the database version cannot be determined.

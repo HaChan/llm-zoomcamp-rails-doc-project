@@ -1,0 +1,1 @@
+NamespaceMODULEActionCable::Server::Worker::ActiveRecordConnectionManagement

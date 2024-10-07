@@ -1,0 +1,37 @@
+MethodsPprotect_from_forgerySskip_forgery_protectionInstance Public methodsprotect_from_forgery(options = {})LinkTurn on request forgery protection. Bear in mind that GET and HEAD requests are not checked.class ApplicationController < ActionController::Base
+  protect_from_forgery
+end
+
+class FooController < ApplicationController
+  protect_from_forgery except: :index
+endYou can disable forgery protection on a controller usingskip_forgery_protection:class BarController < ApplicationController
+  skip_forgery_protection
+endValid Options::only/:except- Only apply forgery protection to a subset of actions. For exampleonly: [ :create, :create_all ].:if/:unless- Turn off the forgery protection entirely depending on the passed Proc or method reference.:prepend- By default, the verification of the authentication token will be added at the position of theprotect_from_forgerycall in your application. This means any callbacks added before are run first. This is useful when you want your forgery protection to depend on other callbacks, like authentication methods (Oauth vs Cookie auth).If you need to add verification to the beginning of the callback chain, useprepend: true.:with- Set the method to handle unverified request. Note ifdefault_protect_from_forgeryis true,Railscallprotect_from_forgerywithwith :exception.Built-in unverified request handling methods are: *:exception- Raises ActionController::InvalidAuthenticityToken exception. *:reset_session- Resets the session. *:null_session- Provides an empty session during request but doesnât reset it completely. Used as default if:withoption is not specified.You can also implement custom strategy classes for unverified request handling:class CustomStrategy
+  def initialize(controller)
+    @controller = controller
+  end
+
+  def handle_unverified_request
+    # Custom behavior for unverfied request
+  end
+end
+
+class ApplicationController < ActionController::Base
+  protect_from_forgery with: CustomStrategy
+end:store- Set the strategy to store and retrieve CSRF tokens.Built-in session token strategies are: *:session- Store the CSRF token in the session. Used as default if:storeoption is not specified. *:cookie- Store the CSRF token in an encrypted cookie.You can also implement custom strategy classes for CSRF token storage:class CustomStore
+  def fetch(request)
+    # Return the token from a custom location
+  end
+
+  def store(request, csrf_token)
+    # Store the token in a custom location
+  end
+
+  def reset(request)
+    # Delete the stored session token
+  end
+end
+
+class ApplicationController < ActionController::Base
+  protect_from_forgery store: CustomStore.new
+endSource:show|on GitHub# File actionpack/lib/action_controller/metal/request_forgery_protection.rb, line 197defprotect_from_forgery(options= {})options=options.reverse_merge(prepend:false)self.forgery_protection_strategy=protection_method_class(options[:with]||:null_session)self.request_forgery_protection_token||=:authenticity_tokenself.csrf_token_storage_strategy=storage_strategy(options[:store]||SessionStore.new)before_action:verify_authenticity_token,optionsappend_after_action:verify_same_origin_requestendskip_forgery_protection(options = {})LinkTurn off request forgery protection. This is a wrapper for:skip_before_action :verify_authenticity_tokenSeeskip_before_actionfor allowed options.Source:show|on GitHub# File actionpack/lib/action_controller/metal/request_forgery_protection.rb, line 214defskip_forgery_protection(options= {})skip_before_action:verify_authenticity_token,options.reverse_merge(raise:false)end

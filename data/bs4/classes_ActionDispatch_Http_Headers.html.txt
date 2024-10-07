@@ -1,0 +1,29 @@
+Action Dispatch HTTPHeadersProvides access to the requestâs HTTP headers from the environment.env     = { "CONTENT_TYPE" => "text/plain", "HTTP_USER_AGENT" => "curl/7.43.0" }
+headers = ActionDispatch::Http::Headers.from_hash(env)
+headers["Content-Type"] # => "text/plain"
+headers["User-Agent"] # => "curl/7.43.0"Also note that when headers are mapped to CGI-like variables by the Rack server, both dashes and underscores are converted to underscores. This ambiguity cannot be resolved at this stage anymore. Both underscores and dashes have to be interpreted as if they were originally sent as dashes.# GET / HTTP/1.1
+# ...
+# User-Agent: curl/7.43.0
+# X_Custom_Header: token
+
+headers["X_Custom_Header"] # => nil
+headers["X-Custom-Header"] # => "token"Methods#[],[]=AaddEeach,envFfetch,from_hashIinclude?Kkey?Mmerge,merge!Included ModulesEnumerableConstantsCGI_VARIABLES=Set.new(%W[
+AUTH_TYPE
+CONTENT_LENGTH
+CONTENT_TYPE
+GATEWAY_INTERFACE
+HTTPS
+PATH_INFO
+PATH_TRANSLATED
+QUERY_STRING
+REMOTE_ADDR
+REMOTE_HOST
+REMOTE_IDENT
+REMOTE_USER
+REQUEST_METHOD
+SCRIPT_NAME
+SERVER_NAME
+SERVER_PORT
+SERVER_PROTOCOL
+SERVER_SOFTWARE
+]).freezeHTTP_HEADER=/\A[A-Za-z0-9-]+\z/Class Public methodsfrom_hash(hash)LinkSource:show|on GitHub# File actionpack/lib/action_dispatch/http/headers.rb, line 54defself.from_hash(hash)newActionDispatch::Request.newhashendInstance Public methods[](key)LinkReturns the value for the given key mapped to @env.Source:show|on GitHub# File actionpack/lib/action_dispatch/http/headers.rb, line 63def[](key)@req.get_headerenv_name(key)end[]=(key, value)LinkSets the given value for the key mapped to @env.Source:show|on GitHub# File actionpack/lib/action_dispatch/http/headers.rb, line 68def[]=(key,value)@req.set_headerenv_name(key),valueendadd(key, value)LinkAdd a value to a multivalued header likeVaryorAccept-Encoding.Source:show|on GitHub# File actionpack/lib/action_dispatch/http/headers.rb, line 73defadd(key,value)@req.add_headerenv_name(key),valueendeach(&block)LinkSource:show|on GitHub# File actionpack/lib/action_dispatch/http/headers.rb, line 98defeach(&block)@req.each_header(&block)endenv()LinkSource:show|on GitHub# File actionpack/lib/action_dispatch/http/headers.rb, line 118defenv;@req.env.dup;endfetch(key, default = DEFAULT)LinkReturns the value for the given key mapped to @env.If the key is not found and an optional code block is not provided, raises aKeyErrorexception.If the code block is provided, then it will be run and its result returned.Source:show|on GitHub# File actionpack/lib/action_dispatch/http/headers.rb, line 90deffetch(key,default=DEFAULT)@req.fetch_header(env_name(key))doreturndefaultunlessdefault==DEFAULTreturnyieldifblock_given?raiseKeyError,keyendendinclude?(key)LinkAlias for:key?key?(key)LinkAlso aliased as:include?Source:show|on GitHub# File actionpack/lib/action_dispatch/http/headers.rb, line 77defkey?(key)@req.has_header?env_name(key)endmerge(headers_or_env)LinkReturns a newHttp::Headersinstance containing the contents ofheaders_or_envand the original instance.Source:show|on GitHub# File actionpack/lib/action_dispatch/http/headers.rb, line 104defmerge(headers_or_env)headers=@req.dup.headersheaders.merge!(headers_or_env)headersendmerge!(headers_or_env)LinkAdds the contents ofheaders_or_envto original instance entries; duplicate keys are overwritten with the values fromheaders_or_env.Source:show|on GitHub# File actionpack/lib/action_dispatch/http/headers.rb, line 112defmerge!(headers_or_env)headers_or_env.eachdo|key,value|@req.set_headerenv_name(key),valueendend

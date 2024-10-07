@@ -1,0 +1,1 @@
+Raised when raw data from the request cannot be parsed by the parser defined for requestâs content MIME type.MethodsNnewClass Public methodsnew(message = $!.message)LinkSource:show|on GitHub# File actionpack/lib/action_dispatch/http/parameters.rb, line 22definitialize(message=$!.message)super(message)end

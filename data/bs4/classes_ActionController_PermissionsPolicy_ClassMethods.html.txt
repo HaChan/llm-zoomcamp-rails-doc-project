@@ -1,0 +1,9 @@
+MethodsPpermissions_policyInstance Public methodspermissions_policy(**options, &block)LinkOverrides parts of the globally configuredFeature-Policyheader:class PagesController < ApplicationController
+  permissions_policy do |policy|
+    policy.geolocation "https://example.com"
+  end
+endOptions can be passed similar tobefore_action. For example, passonly: :indexto override the header on the index action only:class PagesController < ApplicationController
+  permissions_policy(only: :index) do |policy|
+    policy.camera :self
+  end
+endSource:show|on GitHub# File actionpack/lib/action_controller/metal/permissions_policy.rb, line 27defpermissions_policy(**options,&block)before_action(options)doifblock_given?policy=request.permissions_policy.cloneinstance_exec(policy,&block)request.permissions_policy=policyendendend

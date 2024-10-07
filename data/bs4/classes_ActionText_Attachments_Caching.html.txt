@@ -1,0 +1,2 @@
+MethodsCcache_keyInstance Public methodscache_key(*args)LinkSource:show|on GitHub# File actiontext/lib/action_text/attachments/caching.rb, line 8defcache_key(*args)
+  [self.class.name,cache_digest,*attachable.cache_key(*args)].join("/")end

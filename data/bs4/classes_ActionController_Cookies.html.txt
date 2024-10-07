@@ -1,0 +1,1 @@
+MethodsCcookiesInstance Private methodscookies()LinkThe cookies for the current request. SeeActionDispatch::Cookiesfor more information.Source:show|on GitHub# File actionpack/lib/action_controller/metal/cookies.rb, line 16defcookies# :doc:request.cookie_jarend

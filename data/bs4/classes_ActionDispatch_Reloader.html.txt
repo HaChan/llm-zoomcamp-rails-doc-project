@@ -1,0 +1,1 @@
+Action DispatchReloaderActionDispatch::Reloaderwraps the request with callbacks provided byActiveSupport::Reloader, intended to assist with code reloading during development.ActionDispatch::Reloaderis included in the middleware stack only if reloading is enabled, which it is by the default indevelopmentmode.

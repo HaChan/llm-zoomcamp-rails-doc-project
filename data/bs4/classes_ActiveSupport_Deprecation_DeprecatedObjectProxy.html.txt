@@ -1,0 +1,7 @@
+DeprecatedObjectProxytransforms an object into a deprecated one. It takes an object, a deprecation message, and a deprecator.deprecated_object = ActiveSupport::Deprecation::DeprecatedObjectProxy.new(Object.new, "This object is now deprecated", ActiveSupport::Deprecation.new)
+# => #<Object:0x007fb9b34c34b0>
+
+deprecated_object.to_s
+DEPRECATION WARNING: This object is now deprecated.
+(Backtrace)
+# => "#<Object:0x007fb9b34c34b0>"MethodsNnewClass Public methodsnew(object, message, deprecator)LinkSource:show|on GitHub# File activesupport/lib/active_support/deprecation/proxy_wrappers.rb, line 39definitialize(object,message,deprecator)@object=object@message=message@deprecator=deprecatorend

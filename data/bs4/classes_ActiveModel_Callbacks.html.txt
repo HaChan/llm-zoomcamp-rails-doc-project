@@ -1,0 +1,31 @@
+Active Model CallbacksProvides an interface for any class to have Active Record like callbacks.Like the Active Record methods, the callback chain is aborted as soon as one of the methods throws:abort.First, extendActiveModel::Callbacksfrom the class you are creating:class MyModel
+  extend ActiveModel::Callbacks
+endThen define a list of methods that you want callbacks attached to:define_model_callbacks :create, :updateThis will provide all three standard callbacks (before, around and after) for both the:createand:updatemethods. To implement, you need to wrap the methods you want callbacks on in a block so that the callbacks get a chance to fire:def create
+  run_callbacks :create do
+    # Your create action methods here
+  end
+endThen in your class, you can use thebefore_create,after_create, andaround_createmethods, just as you would in an Active Record model.before_create :action_before_create
+
+def action_before_create
+  # Your code here
+endWhen defining an around callback remember to yield to the block, otherwise it wonât be executed:around_create :log_status
+
+def log_status
+  puts 'going to call the block...'
+  yield
+  puts 'block successfully called.'
+endYou can choose to have only specific callbacks by passing a hash to thedefine_model_callbacksmethod.define_model_callbacks :create, only: [:after, :before]Would only create theafter_createandbefore_createcallback methods in your class.NOTE: Defining the same callback multiple times will overwrite previous callback definitions.MethodsDdefine_model_callbacksIncluded ModulesActiveSupport::CallbacksInstance Public methodsdefine_model_callbacks(*callbacks)Linkdefine_model_callbacksaccepts the same optionsdefine_callbacksdoes, in case you want to overwrite a default. Besides that, it also accepts an:onlyoption, where you can choose if you want all types (before, around or after) or just some.define_model_callbacks :initialize, only: :afterNote, theonly: <type>hash will apply to all callbacks defined on that method call. To get around this you can call thedefine_model_callbacksmethod as many times as you need.define_model_callbacks :create,  only: :after
+define_model_callbacks :update,  only: :before
+define_model_callbacks :destroy, only: :aroundWould createafter_create,before_update, andaround_destroymethods only.You can pass in a class to before_<type>, after_<type> and around_<type>, in which case the callback will call that classâs <action>_<type> method passing the object that the callback is being called on.class MyModel
+  extend ActiveModel::Callbacks
+  define_model_callbacks :create
+
+  before_create AnotherClass
+end
+
+class AnotherClass
+  def self.before_create( obj )
+    # obj is the MyModel instance that the callback is being called on
+  end
+endNOTE:method_namepassed todefine_model_callbacksmust not end with!,?or=.Source:show|on GitHub# File activemodel/lib/active_model/callbacks.rb, line 109defdefine_model_callbacks(*callbacks)options=callbacks.extract_options!options= {skip_after_callbacks_if_terminated:true,scope:[:kind,:name],only:[:before,:around,:after]
+  }.merge!(options)types=Array(options.delete(:only))callbacks.eachdo|callback|define_callbacks(callback,options)types.eachdo|type|send("_define_#{type}_model_callback",self,callback)endendend

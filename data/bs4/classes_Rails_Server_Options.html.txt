@@ -1,0 +1,1 @@
+MethodsPparse!Instance Public methodsparse!(args)LinkSource:show|on GitHub# File railties/lib/rails/commands/server/server_command.rb, line 13defparse!(args)Rails::Command::ServerCommand.new([],args).server_optionsend

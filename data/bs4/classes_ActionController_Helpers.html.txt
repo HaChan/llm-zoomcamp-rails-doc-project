@@ -1,0 +1,18 @@
+Action ControllerHelpersTheRailsframework provides a large number of helpers for working with assets, dates, forms, numbers and model objects, to name a few. These helpers are available to all templates by default.In addition to using the standard template helpers provided, creating custom helpers to extract complicated logic or reusable functionality is strongly encouraged. By default, each controller will include all helpers. These helpers are only accessible on the controller through#helpersIn previous versions ofRailsthe controller will include a helper which matches the name of the controller, e.g.,MyControllerwill automatically includeMyHelper. You can revert to the old behavior with the following:# config/application.rb
+class Application < Rails::Application
+  config.action_controller.include_all_helpers = false
+endAdditional helpers can be specified using thehelperclass method inActionController::Baseor any controller which inherits from it.Theto_smethod from theTimeclass can be wrapped in a helper method to display a custom message if aTimeobject is blank:module FormattedTimeHelper
+  def format_time(time, format=:long, blank_message="&nbsp;")
+    time.blank? ? blank_message : time.to_fs(format)
+  end
+endFormattedTimeHelper can now be included in a controller, using thehelperclass method:class EventsController < ActionController::Base
+  helper FormattedTimeHelper
+  def index
+    @events = Event.all
+  end
+endThen, in any view rendered byEventsController, theformat_timemethod can be called:<% @events.each do |event| -%>
+  <p>
+    <%= format_time(event.time, :short, "N/A") %> | <%= event.name %>
+  </p>
+<% end -%>Finally, assuming we have two event instances, one which has a time and one which does not, the output might look like this:23 Aug 11:30 | Carolina Railhawks Soccer Match
+N/A | Carolina Railhawks Training WorkshopNamespaceMODULEActionController::Helpers::ClassMethodsMethodsHhelpersIncluded ModulesAbstractController::HelpersAttributes[RW]helpers_pathInstance Public methodshelpers()LinkProvides a proxy to access helper methods from outside the view.Source:show|on GitHub# File actionpack/lib/action_controller/metal/helpers.rb, line 125defhelpers@_helper_proxy||=view_contextend

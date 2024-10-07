@@ -1,0 +1,1 @@
+Required Filesactive_support/message_packNamespaceMODULEActiveRecordMODULEActiveRecord::EncryptionMODULEActiveRecord::Encryption::ErrorsMODULEActiveSupportCLASSActiveRecord::Encryption::MessagePackMessageSerializer

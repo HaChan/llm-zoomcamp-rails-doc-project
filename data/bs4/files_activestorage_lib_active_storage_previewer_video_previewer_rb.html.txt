@@ -1,0 +1,1 @@
+Required FilesshellwordsNamespaceMODULEActiveStorageCLASSActiveStorage::PreviewerCLASSActiveStorage::Previewer::VideoPreviewer

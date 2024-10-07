@@ -1,0 +1,1 @@
+MethodsAas_jsonInstance Public methodsas_json(options = nil)LinkSource:show|on GitHub# File activesupport/lib/active_support/core_ext/object/json.rb, line 249defas_json(options=nil)to_send

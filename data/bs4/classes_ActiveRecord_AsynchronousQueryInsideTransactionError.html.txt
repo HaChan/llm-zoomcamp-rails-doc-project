@@ -1,0 +1,1 @@
+AsynchronousQueryInsideTransactionErrorwill be raised when attempting to perform an asynchronous query from inside a transaction

@@ -1,0 +1,1 @@
+NamespaceCLASSActionCable::SubscriptionAdapter::Redis::Listener

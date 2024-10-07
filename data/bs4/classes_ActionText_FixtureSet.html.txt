@@ -1,0 +1,11 @@
+Action TextFixtureSetFixtures are a way of organizing data that you want to test against; in short, sample data.To learn more about fixtures, read theActiveRecord::FixtureSetdocumentation.YAMLLike other Active Record-backed models,ActionText::RichTextrecords inherit fromActiveRecord::Baseinstances and can therefore be populated by fixtures.Consider anArticleclass:class Article < ApplicationRecord
+  has_rich_text :content
+endTo declare fixture data for the relatedcontent, first declare fixture data forArticleinstances intest/fixtures/articles.yml:first:
+  title: An ArticleThen declare theActionText::RichTextfixture data intest/fixtures/action_text/rich_texts.yml, making sure to declare each entryâsrecord:key as a polymorphic relationship:first:
+  record: first (Article)
+  name: content
+  body: <div>Hello, world.</div>When processed, Active Record will insert database records for each fixture entry and will ensure the Action Text relationship is intact.MethodsAattachmentClass Public methodsattachment(fixture_set_name, label, column_type: :integer)LinkFixtures support Action Text attachments as part of theirbodyHTML.ExamplesFor example, consider a secondArticlefixture declared intest/fixtures/articles.yml:second:
+  title: Another ArticleYou can attach a mention ofarticles(:first)tosecondâscontentby embedding a call toActionText::FixtureSet.attachmentin thebody:value intest/fixtures/action_text/rich_texts.yml:second:
+  record: second (Article)
+  name: content
+  body: <div>Hello, <%= ActionText::FixtureSet.attachment("articles", :first) %></div>Source:show|on GitHub# File actiontext/lib/action_text/fixture_set.rb, line 61defself.attachment(fixture_set_name,label,column_type::integer)signed_global_id=ActiveRecord::FixtureSet.signed_global_idfixture_set_name,label,column_type:column_type,for:ActionText::Attachable::LOCATOR_NAME%(<action-text-attachment sgid="#{signed_global_id}"></action-text-attachment>)end

@@ -1,0 +1,1 @@
+NamespaceCLASSMail::AddressCLASSMail::MessageMethodsFfrom_sourceClass Public methodsfrom_source(source)LinkSource:show|on GitHub# File actionmailbox/lib/action_mailbox/mail_ext/from_source.rb, line 4defself.from_source(source)Mail.newMail::Utilities.binary_unsafe_to_crlf(source.to_s)end

@@ -1,0 +1,1 @@
+MethodsNnewAttributes[R]type[R]valueClass Public methodsnew(value, type)LinkSource:show|on GitHub# File activerecord/lib/active_record/encryption/extended_deterministic_queries.rb, line 135definitialize(value,type)@type=type@value=process(value)end
