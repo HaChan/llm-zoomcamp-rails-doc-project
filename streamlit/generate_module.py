@@ -1,6 +1,9 @@
 from sentence_transformers import SentenceTransformer
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
+# from langchain_community.embeddings import HuggingFaceInstructEmbeddings
+# from langchain_huggingface import HuggingFaceEndpoint
+# from langchain.text_splitter import CharacterTextSplitter
 from langchain_ollama import ChatOllama
 from openai import OpenAI
 from rails_doc_es_index import RailsDocESIndex
@@ -23,36 +26,39 @@ Your response should be clear and concise, focusing on solving the user's questi
 class RailsDocOllama:
     def __init__(self):
         self.indexer = RailsDocESIndex()
-        self.embed_model = SentenceTransformer('all-MiniLM-L6-v2')
+        self.embed_model = SentenceTransformer('multi-qa-distilbert-cos-v1')
         self.llm = ChatOllama(
             model="gemma:2b",
-            base_url="http://localhost:11434/"
+            base_url="http://ollama_llama:11434/"
         )
         self.prompt = self.prompt_template()
 
     def prompt_template(self):
         return ChatPromptTemplate.from_template(TEMPLATE)
 
+    def answers(self, question):
+        results = self.retrieve_answers(question)
+        return "\n".join([f"Result {i}: {r}" for i, r in enumerate(results)])
+
     def retrieve_answers(self, question):
         query_embedding = self.embed_model.encode([question])[0]
         results = self.indexer.search(query_embedding, top_k=10)
-        answers = "\n".join([f"Result 1: {r}" for r in results])
-        return answers
+        return results
 
     def generate_answer(self, question):
         llm_chain = self.prompt | self.llm
         response = llm_chain.invoke({
             "question": question,
-            "answers": self.retrieve_answers(question)
+            "answers": self.answers(question)
         })
         return response.content
 
 class RailsDocOpenAI:
     def __init__(self):
         self.indexer = RailsDocESIndex()
-        self.embed_model = SentenceTransformer('all-MiniLM-L6-v2')
+        self.embed_model = SentenceTransformer('multi-qa-distilbert-cos-v1')
         self.llm = OpenAI(
-            base_url='http://localhost:11434/v1/',
+            base_url='http://ollama_llama:11434/v1/',
             api_key='ollama',
         )
 

@@ -2,15 +2,7 @@ import streamlit as st
 import textwrap
 from sentence_transformers import SentenceTransformer
 from dotenv import load_dotenv
-from langchain_community.embeddings import HuggingFaceInstructEmbeddings
-from langchain_huggingface import HuggingFaceEndpoint
-from langchain.text_splitter import CharacterTextSplitter
-from langchain.memory import ConversationBufferMemory
-from langchain.chains import ConversationalRetrievalChain
-from langchain.prompts import PromptTemplate
-from langchain_openai import ChatOpenAI
 from generate_module import RailsDocOllama
-#from htmlTemplates import css, bot_template, user_template
 
 def main():
     load_dotenv()
@@ -23,7 +15,7 @@ def main():
         rag_rails = RailsDocOllama()
         return rag_rails
 
-    model, searcher, llm = load_model_and_searcher()
+    rag_rails = load_model_and_searcher()
 
     user_question = st.text_input("Ask a question about Ruby on Rails API:")
 
