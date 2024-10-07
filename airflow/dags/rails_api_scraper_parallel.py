@@ -8,7 +8,7 @@ from queue import Queue
 import threading
 import timeit
 
-data_dir = "/opt/airflow/data/"
+data_dir = "data/bs4/"
 
 def extract_main_content(soup):
     main_content = soup.find('main')
@@ -52,8 +52,8 @@ def scrape_page(url, base_url):
 def save_content(url, content):
     page_name = "_".join(url.split('/')[3:]) or 'index'
     print(page_name)
-    with open(f"{data_dir}{page_name}.txt", 'w', encoding='utf-8') as f:
-        f.write(content)
+    #with open(f"{data_dir}{page_name}.txt", 'w', encoding='utf-8') as f:
+    #    f.write(content)
 
 def parallel_scrape_rails_api(base_url='https://api.rubyonrails.org/', max_workers=5):
     visited = set()
